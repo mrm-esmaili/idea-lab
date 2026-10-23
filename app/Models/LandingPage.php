@@ -36,4 +36,9 @@ class LandingPage extends Model
     {
         return $this->hasMany(LandingPageEvent::class);
     }
+    public function leads()
+    {
+        return $this->hasMany(Lead::class);
+    }
+
 }

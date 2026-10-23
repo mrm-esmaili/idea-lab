@@ -164,3 +164,100 @@ https://example.com/l/clubyar?utm_source=divar&utm_medium=paid&utm_campaign=club
 https://example.com/l/clubyar?utm_source=instagram&utm_medium=social&utm_campaign=clubyar01
 https://example.com/l/clubyar?utm_source=telegram&utm_medium=social&utm_campaign=clubyar01
 ```
+
+## Step5: Register Form
+
+### Chart:
+تبلیغ
+
+دیوار، اینستاگرام، تلگرام و سایر کانال‌ها
+
+Landing Page
+
+ثبت بازدید و منبع ورودی
+
+فرم علاقه‌مندی
+
+نام، شماره تماس و اطلاعات موردنیاز
+
+مدیریت Leadها
+
+پیگیری، سنجش علاقه و ثبت پیش‌پرداخت
+
+### Leads DB
+```bash
+php artisan make:model Lead -m
+```
+
+### Stats
+- new
+- contacted
+- interested
+- prepaid
+- customer
+- rejected
+
+### Migrate
+```bash
+php artisan migrate
+```
+
+### Debug
+- delete repeated migration file
+- delete sql.lite database
+```bash
+php artisan tinker
+Schema::dropIfExists('leads');
+exit
+php artisan migrate
+php artisan migrate:status
+```
+
+### Controller
+```bash
+php artisan make:controller LeadController
+```
+
+### Test
+```bash
+php artisan serve
+php artisan tinker
+
+\App\Models\Lead::count();
+
+\App\Models\Lead::latest()->first();
+
+\App\Models\LandingPageEvent::where(
+    'event_name',
+    'form_submit'
+)->count();
+
+\App\Models\LandingPage::where(
+    'slug',
+    'test'
+)->first()?->leads()->count();
+```
+
+### Test Data Process
+```bash
+$page = \App\Models\LandingPage::where(
+    'slug',
+    'test'
+)->firstOrFail();
+
+$views = $page->events()
+    ->where('event_name', 'page_view')
+    ->count();
+
+$leads = $page->leads()->count();
+
+$conversionRate = $views > 0
+    ? round(($leads / $views) * 100, 2)
+    : 0;
+
+[
+    'views' => $views,
+    'leads' => $leads,
+    'conversion_rate' => $conversionRate,
+];
+```

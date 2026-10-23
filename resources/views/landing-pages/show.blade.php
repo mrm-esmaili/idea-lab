@@ -138,9 +138,97 @@
             </p>
 
             <div id="lead-form">
-                <p>
-                    فرم ثبت‌نام در مرحله بعدی توسعه اضافه خواهد شد.
-                </p>
+
+                <h2>دریافت اطلاعات و ثبت علاقه‌مندی</h2>
+
+                @if (session('lead_success'))
+                    <div role="status">
+                        اطلاعات شما با موفقیت ثبت شد.
+                        در صورت نیاز به پیگیری، از طریق اطلاعات تماس
+                        ارائه‌شده با شما ارتباط خواهیم گرفت.
+                    </div>
+                @else
+
+                    @if ($errors->any())
+                        <div role="alert">
+                            <ul>
+                                @foreach ($errors->all() as $error)
+                                    <li>{{ $error }}</li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    @endif
+
+                    <form
+                        action="{{ route('leads.store', $landingPage->slug) }}"
+                        method="POST"
+                    >
+                        @csrf
+
+                        <div>
+                            <label for="lead-name">نام</label>
+                            <input
+                                id="lead-name"
+                                type="text"
+                                name="name"
+                                value="{{ old('name') }}"
+                                maxlength="120"
+                                autocomplete="name"
+                                required
+                            >
+                        </div>
+
+                        <div>
+                            <label for="lead-phone">شماره تماس</label>
+                            <input
+                                id="lead-phone"
+                                type="tel"
+                                name="phone"
+                                value="{{ old('phone') }}"
+                                maxlength="30"
+                                autocomplete="tel"
+                                required
+                            >
+                        </div>
+
+                        <div>
+                            <label for="lead-email">
+                                ایمیل (اختیاری)
+                            </label>
+                            <input
+                                id="lead-email"
+                                type="email"
+                                name="email"
+                                value="{{ old('email') }}"
+                                maxlength="255"
+                                autocomplete="email"
+                            >
+                        </div>
+
+                        <div>
+                            <label>
+                                <input
+                                    type="checkbox"
+                                    name="consent"
+                                    value="1"
+                                    required
+                                >
+
+                                موافقم برای پیگیری درخواست و اطلاع‌رسانی
+                                مرتبط با این محصول با من تماس گرفته شود.
+                                <a href="/privacy" target="_blank">
+                                    سیاست حریم خصوصی
+                                </a>
+                            </label>
+                        </div>
+
+                        <button type="submit">
+                            ثبت علاقه‌مندی
+                        </button>
+                    </form>
+
+                @endif
+
             </div>
 
         </section>

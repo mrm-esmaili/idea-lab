@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\IdeaController;
 use App\Http\Controllers\LandingPageController;
 use App\Http\Controllers\PublicLandingPageController;
+use App\Http\Controllers\LeadController;
 
 // home page
 Route::get('/', function () {
@@ -27,6 +28,13 @@ Route::post(
     '/ideas/{idea}/landing-pages',
     [LandingPageController::class, 'store']
 )->name('landing-pages.store');
+
+Route::post('/l/{slug}/leads', [
+    LeadController::class,
+    'store',
+])
+    ->middleware('throttle:5,1')
+    ->name('leads.store');
 
 // resource
 Route::resource('ideas', IdeaController::class)
