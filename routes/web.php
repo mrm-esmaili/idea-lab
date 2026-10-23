@@ -8,6 +8,7 @@ use App\Http\Controllers\LandingPageController;
 use App\Http\Controllers\PublicLandingPageController;
 use App\Http\Controllers\LeadController;
 use App\Http\Controllers\Admin\LeadManagementController;
+use App\Http\Controllers\Admin\DashboardController;
 
 Route::get('/login', [
     AuthController::class,
@@ -39,7 +40,8 @@ Route::post('/l/{slug}/leads', [
 // پنل مدیریت
 Route::middleware('auth')->group(function () {
     Route::get('/', function () {
-        return redirect()->route('admin.leads.index');
+        // return redirect()->route('admin.leads.index');
+        return redirect()->route('admin.dashboard');
     });
 
     Route::resource('ideas', IdeaController::class)
@@ -64,4 +66,7 @@ Route::middleware('auth')->group(function () {
         LeadManagementController::class,
         'update',
     ])->name('admin.leads.update');
+
+    Route::get('/admin', [DashboardController::class, 'index'])
+    ->name('admin.dashboard');
 });

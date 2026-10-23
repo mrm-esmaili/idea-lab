@@ -296,3 +296,18 @@ rret.rocket@gmail.com
 - /ideas
 - /admin/leads
 - /l/test
+
+## Step7: Dashboard
+
+### CMD
+```bash
+php artisan make:controller Admin/DashboardController
+```
+
+### Test
+```bash
+php artisan route:list
+php artisan view:clear
+php artisan serve
+```
+http://127.0.0.1:8000/admin
