@@ -64,3 +64,45 @@ Landing Page
 تولید خودکار URL
     ↓
 مشاهده صفحه
+
+---
+
+## Step2: Idea & Landing Page Management
+
+### 2.1 - Controllers
+```bash
+php artisan make:controller IdeaController
+php artisan make:controller LandingPageController
+```
+
+### chart
+GET     /ideas
+GET     /ideas/create
+POST    /ideas
+GET     /ideas/{idea}
+
+### test
+```bash
+php artisan serve
+```
+
+http://127.0.0.1:8000/ideas
+
++ ایجاد ایده جدید
+
+نام ایده:
+سیستم مدیریت باشگاه
+
+توضیحات:
+سیستم آنلاین مدیریت باشگاه‌های ورزشی
+
+### chart
+/ideas
+    ↓
+ایجاد ایده
+    ↓
+/ideas/{idea}
+    ↓
+ساخت Landing Page
+    ↓
+Landing Page داخل ایده
