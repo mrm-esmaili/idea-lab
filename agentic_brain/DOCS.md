@@ -261,3 +261,38 @@ $conversionRate = $views > 0
     'conversion_rate' => $conversionRate,
 ];
 ```
+
+## Step6: Admin Panel Auth
+
+### CMD
+```bash
+php artisan make:controller AuthController
+php artisan make:controller Admin/LeadManagementController
+```
+
+### Insert Admin Data
+```bash
+php artisan tinker
+
+\App\Models\User::create([
+    'name' => 'mrm_esmaili',
+    'email' => 'rret.rocket@gmail.com',
+    'password' => \Illuminate\Support\Facades\Hash::make(
+        '54s2dlotSSSr?'
+    ),
+]);
+
+\App\Models\User::where('email', 'admin@example.com')->delete();
+```
+
+```
+mrm_esmaili
+rret.rocket@gmail.com
+54s2dlotSSSr?
+```
+
+### Test Addresses
+- /login
+- /ideas
+- /admin/leads
+- /l/test
