@@ -113,3 +113,54 @@ Landing Page داخل ایده
 ```bash
 php artisan make:controller PublicLandingPageController
 ```
+
+## Step4: Tracking System
+
+### chart
+LandingPage
+    │
+    └── LandingPageEvent
+             │
+             └── Visitor
+
+Visitor
+    └── چندین بازدید و رویداد
+
+### Migrations
+```bash
+php artisan make:model Visitor -m
+php artisan make:model LandingPageEvent -m
+php artisan migrate
+```
+
+### Test System
+http://127.0.0.1:8000/l/test?utm_source=divar&utm_medium=paid&utm_campaign=test01
+```bash
+php artisan tinker
+
+\App\Models\LandingPageEvent::where(
+    'event_name',
+    'page_view'
+)->count();
+
+\App\Models\LandingPageEvent::latest()
+    ->take(10)
+    ->get();
+
+\App\Models\Visitor::count();
+
+\App\Models\Visitor::select(
+    'uuid',
+    'first_source',
+    'first_medium',
+    'first_campaign',
+    'first_seen_at',
+    'last_seen_at'
+)->get();
+```
+
+```
+https://example.com/l/clubyar?utm_source=divar&utm_medium=paid&utm_campaign=clubyar01
+https://example.com/l/clubyar?utm_source=instagram&utm_medium=social&utm_campaign=clubyar01
+https://example.com/l/clubyar?utm_source=telegram&utm_medium=social&utm_campaign=clubyar01
+```

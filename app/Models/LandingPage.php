@@ -31,4 +31,9 @@ class LandingPage extends Model
     {
         return $this->hasMany(Campaign::class);
     }
+
+    public function events()
+    {
+        return $this->hasMany(LandingPageEvent::class);
+    }
 }
