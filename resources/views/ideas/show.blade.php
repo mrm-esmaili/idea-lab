@@ -41,7 +41,7 @@
             </h3>
 
             <a
-                href="/l/{{ $landingPage->slug }}"
+                href="{{ route('landing-pages.show', $landingPage->slug) }}"
                 target="_blank"
             >
                 مشاهده Landing Page

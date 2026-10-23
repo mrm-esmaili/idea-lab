@@ -106,3 +106,10 @@ http://127.0.0.1:8000/ideas
 ساخت Landing Page
     ↓
 Landing Page داخل ایده
+
+## Step3: Landing Page Public
+
+### Controller Create
+```bash
+php artisan make:controller PublicLandingPageController
+```
