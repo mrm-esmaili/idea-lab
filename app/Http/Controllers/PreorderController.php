@@ -10,6 +10,7 @@ use App\Models\Visitor;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Str;
 
 class PreorderController extends Controller
 {
@@ -85,6 +86,12 @@ class PreorderController extends Controller
                     ?? $visitor?->first_campaign,
 
                 'consented_at' => now(),
+
+                'public_token' => (string) Str::uuid(),
+
+                'amount' => (int) config(
+                    'services.zarinpal.preorder_amount_toman'
+                ),
             ]);
 
             LandingPageEvent::create([
@@ -102,10 +109,14 @@ class PreorderController extends Controller
             return $preorder;
         });
 
-        return redirect()
-            ->route('landing-pages.show', [
-                'slug' => $landingPage->slug,
-            ])
-            ->with('preorder_success', true);
+        // return redirect()
+        //     ->route('landing-pages.show', [
+        //         'slug' => $landingPage->slug,
+        //     ])
+        //     ->with('preorder_success', true);
+        return redirect()->route(
+            'preorders.checkout',
+            ['token' => $preorder->public_token]
+        );
     }
 }

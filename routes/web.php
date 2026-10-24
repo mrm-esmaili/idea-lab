@@ -12,6 +12,7 @@ use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\LandingPageEventController;
 use App\Http\Controllers\PreorderController;
 use App\Http\Controllers\Admin\PreorderManagementController;
+use App\Http\Controllers\ZarinpalPaymentController;
 
 Route::get('/login', [
     AuthController::class,
@@ -53,6 +54,28 @@ Route::post(
 )
     ->middleware('throttle:5,1')
     ->name('preorders.store');
+
+Route::get(
+    '/preorder/{token}/checkout',
+    [ZarinpalPaymentController::class, 'checkout']
+)->name('preorders.checkout');
+
+Route::post(
+    '/preorder/{token}/pay',
+    [ZarinpalPaymentController::class, 'pay']
+)
+    ->middleware('throttle:5,1')
+    ->name('preorders.pay');
+
+Route::get(
+    '/payments/zarinpal/callback',
+    [ZarinpalPaymentController::class, 'callback']
+)->name('payments.zarinpal.callback');
+
+Route::get(
+    '/payments/result',
+    [ZarinpalPaymentController::class, 'result']
+)->name('payments.result');
 
 // پنل مدیریت
 Route::middleware('auth')->group(function () {

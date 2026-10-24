@@ -35,4 +35,15 @@ return [
         ],
     ],
 
+    'zarinpal' => [
+        'merchant_id' => env('ZARINPAL_MERCHANT_ID'),
+
+        'sandbox' => env('ZARINPAL_SANDBOX', true),
+
+        'preorder_amount_toman' => env(
+            'ZARINPAL_PREORDER_AMOUNT_TOMAN',
+            10000
+        ),
+    ],
+
 ];

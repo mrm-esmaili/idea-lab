@@ -19,6 +19,7 @@ class Preorder extends Model
         'medium',
         'campaign',
         'consented_at',
+        'public_token',
     ];
 
     protected function casts(): array
@@ -42,5 +43,10 @@ class Preorder extends Model
     public function lead(): BelongsTo
     {
         return $this->belongsTo(Lead::class);
+    }
+
+    public function payments()
+    {
+        return $this->hasMany(\App\Models\Payment::class);
     }
 }

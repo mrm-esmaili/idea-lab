@@ -320,3 +320,5 @@ php artisan make:controller LandingPageEventController
 ```
 
 ## Step9: PreorderController
+
+## Step10: ZarinPal
