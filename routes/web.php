@@ -9,6 +9,7 @@ use App\Http\Controllers\PublicLandingPageController;
 use App\Http\Controllers\LeadController;
 use App\Http\Controllers\Admin\LeadManagementController;
 use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\LandingPageEventController;
 
 Route::get('/login', [
     AuthController::class,
@@ -36,6 +37,13 @@ Route::post('/l/{slug}/leads', [
     LeadController::class,
     'store',
 ])->middleware('throttle:5,1')->name('leads.store');
+
+Route::post(
+    '/l/{slug}/events',
+    [LandingPageEventController::class, 'store']
+)
+    ->middleware('throttle:30,1')
+    ->name('landing-pages.events.store');
 
 // پنل مدیریت
 Route::middleware('auth')->group(function () {

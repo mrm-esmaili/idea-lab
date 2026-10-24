@@ -50,7 +50,7 @@
 
         .stats {
             display: grid;
-            grid-template-columns: repeat(4, minmax(0, 1fr));
+            grid-template-columns: repeat(3, minmax(0, 1fr));
             gap: 16px;
             margin-bottom: 24px;
         }
@@ -166,6 +166,19 @@
             <div class="stat-label">نرخ تبدیل تقریبی</div>
             <div class="stat-value">
                 {{ number_format($conversionRate, 2) }}%
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="stat-label">کلیک روی CTA</div>
+
+            <div class="stat-value">
+                {{ number_format($ctaClicks) }}
+            </div>
+
+            <div class="muted">
+                نرخ کلیک:
+                {{ number_format($ctaClickRate, 2) }}%
             </div>
         </div>
     </section>

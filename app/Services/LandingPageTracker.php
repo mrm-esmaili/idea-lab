@@ -118,4 +118,83 @@ class LandingPageTracker
 
         return Str::limit($value, 255, '');
     }
+
+    public function trackEvent(
+        \Illuminate\Http\Request $request,
+        \App\Models\LandingPage $landingPage,
+        string $eventName
+    ): void {
+        $allowedEvents = [
+            'cta_click',
+            'form_view',
+            'preorder_submit',
+            'payment_start',
+            'payment_success',
+        ];
+
+        if (!in_array($eventName, $allowedEvents, true)) {
+            return;
+        }
+
+        $visitorUuid = $request->cookie('visitor_uuid');
+
+        $visitor = $visitorUuid
+            ? \App\Models\Visitor::where('uuid', $visitorUuid)->first()
+            : null;
+
+        $latestEvent = null;
+
+        if ($visitor) {
+            $latestEvent = \App\Models\LandingPageEvent::where(
+                'visitor_id',
+                $visitor->id
+            )
+                ->where('landing_page_id', $landingPage->id)
+                ->latest('occurred_at')
+                ->first();
+        }
+
+        $utm = [
+            'source' => $request->query('utm_source'),
+            'medium' => $request->query('utm_medium'),
+            'campaign' => $request->query('utm_campaign'),
+            'content' => $request->query('utm_content'),
+            'term' => $request->query('utm_term'),
+        ];
+
+        \App\Models\LandingPageEvent::create([
+            'landing_page_id' => $landingPage->id,
+            'visitor_id' => $visitor?->id,
+            'event_name' => $eventName,
+
+            'source' => $utm['source']
+                ?? $latestEvent?->source
+                ?? $visitor?->first_source,
+
+            'medium' => $utm['medium']
+                ?? $latestEvent?->medium
+                ?? $visitor?->first_medium,
+
+            'campaign' => $utm['campaign']
+                ?? $latestEvent?->campaign
+                ?? $visitor?->first_campaign,
+
+            'content' => $utm['content']
+                ?? $latestEvent?->content
+                ?? $visitor?->first_content,
+
+            'term' => $utm['term']
+                ?? $latestEvent?->term
+                ?? $visitor?->first_term,
+
+            'referrer_host' => $request->header('referer')
+                ? parse_url(
+                    $request->header('referer'),
+                    PHP_URL_HOST
+                )
+                : null,
+
+            'occurred_at' => now(),
+        ]);
+    }
 }

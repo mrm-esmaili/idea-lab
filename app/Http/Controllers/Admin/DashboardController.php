@@ -17,6 +17,15 @@ class DashboardController extends Controller
             'page_view'
         )->count();
 
+        $ctaClicks = LandingPageEvent::where(
+            'event_name',
+            'cta_click'
+        )->count();
+
+        $ctaClickRate = $pageViews > 0
+            ? round(($ctaClicks / $pageViews) * 100, 2)
+            : 0;
+
         $leads = Lead::count();
 
         $visitors = Visitor::count();
@@ -40,7 +49,9 @@ class DashboardController extends Controller
             'leads',
             'visitors',
             'conversionRate',
-            'landingPages'
+            'landingPages',
+            'ctaClicks',
+            'ctaClickRate',
         ));
     }
 }

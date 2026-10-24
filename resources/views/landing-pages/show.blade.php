@@ -14,6 +14,8 @@
 
     <meta name="robots" content="index, follow">
 
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+
     <style>
         * {
             box-sizing: border-box;
@@ -118,6 +120,7 @@
                     <a
                         href="#lead-form"
                         class="cta"
+                        id="main-cta"
                     >
                         {{ $landingPage->cta_text }}
                     </a>
@@ -239,6 +242,47 @@
             ساخته‌شده با سیستم اعتبارسنجی ایده
         </div>
     </footer>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const cta = document.getElementById('main-cta');
+
+        if (!cta) {
+            return;
+        }
+
+        cta.addEventListener('click', function () {
+            const url = @json(
+                route('landing-pages.events.store', [
+                    'slug' => $landingPage->slug
+                ])
+            );
+
+            const token = document.querySelector(
+                'meta[name="csrf-token"]'
+            )?.getAttribute('content');
+
+            if (!token) {
+                return;
+            }
+
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': token
+                },
+                body: JSON.stringify({
+                    event_name: 'cta_click'
+                }),
+                keepalive: true
+            }).catch(function () {
+                // شکست رهگیری نباید مانع استفاده از صفحه شود.
+            });
+        });
+    });
+    </script>
 
 </body>
 </html>

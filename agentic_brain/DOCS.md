@@ -311,3 +311,11 @@ php artisan view:clear
 php artisan serve
 ```
 http://127.0.0.1:8000/admin
+
+## Step8: preorder
+
+### LandingPageEventController
+```bash
+php artisan make:controller LandingPageEventController
+```
+۸.۵

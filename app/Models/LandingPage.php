@@ -41,4 +41,9 @@ class LandingPage extends Model
         return $this->hasMany(Lead::class);
     }
 
+    public function preorders()
+    {
+        return $this->hasMany(\App\Models\Preorder::class);
+    }
+
 }
