@@ -10,6 +10,8 @@ use App\Http\Controllers\LeadController;
 use App\Http\Controllers\Admin\LeadManagementController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\LandingPageEventController;
+use App\Http\Controllers\PreorderController;
+use App\Http\Controllers\Admin\PreorderManagementController;
 
 Route::get('/login', [
     AuthController::class,
@@ -45,6 +47,13 @@ Route::post(
     ->middleware('throttle:30,1')
     ->name('landing-pages.events.store');
 
+Route::post(
+    '/l/{slug}/preorders',
+    [PreorderController::class, 'store']
+)
+    ->middleware('throttle:5,1')
+    ->name('preorders.store');
+
 // پنل مدیریت
 Route::middleware('auth')->group(function () {
     Route::get('/', function () {
@@ -77,4 +86,14 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/admin', [DashboardController::class, 'index'])
     ->name('admin.dashboard');
+
+    Route::get(
+        '/admin/preorders',
+        [PreorderManagementController::class, 'index']
+    )->name('admin.preorders.index');
+
+    Route::patch(
+        '/admin/preorders/{preorder}',
+        [PreorderManagementController::class, 'update']
+    )->name('admin.preorders.update');
 });

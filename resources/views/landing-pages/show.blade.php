@@ -93,6 +93,53 @@
                 padding: 55px 0;
             }
         }
+
+        .preorder-section {
+            max-width: 560px;
+            margin: 40px auto;
+            padding: 24px;
+            background: #fff;
+            border-radius: 12px;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        .form-group input:not([type="checkbox"]) {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+
+        .preorder-section button {
+            padding: 12px 20px;
+            border: 0;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        .success-message {
+            padding: 12px;
+            margin-bottom: 16px;
+            background: #e8f8ee;
+            color: #176534;
+            border-radius: 8px;
+        }
+
+        .error-message {
+            padding: 12px;
+            margin-bottom: 16px;
+            background: #fff0f0;
+            color: #a32020;
+            border-radius: 8px;
+        }
     </style>
 </head>
 
@@ -233,6 +280,83 @@
                 @endif
 
             </div>
+
+        </section>
+
+        <section id="preorder-form" class="preorder-section">
+
+            <h2>درخواست پیش‌خرید</h2>
+
+            <p>
+                اگر به این محصول علاقه‌مند هستید،
+                اطلاعات خود را وارد کنید تا برای ادامه مراحل با شما تماس بگیریم.
+            </p>
+
+            @if (session('preorder_success'))
+                <div class="success-message" role="status">
+                    درخواست پیش‌خرید شما با موفقیت ثبت شد.
+                </div>
+            @endif
+
+            @if ($errors->any())
+                <div class="error-message" role="alert">
+                    لطفاً اطلاعات واردشده را بررسی کنید.
+                </div>
+            @endif
+
+            <form
+                method="POST"
+                action="{{ route('preorders.store', ['slug' => $landingPage->slug]) }}"
+            >
+                @csrf
+
+                <div class="form-group">
+                    <label for="preorder-name">نام و نام خانوادگی</label>
+
+                    <input
+                        id="preorder-name"
+                        type="text"
+                        name="name"
+                        maxlength="120"
+                        value="{{ old('name') }}"
+                        autocomplete="name"
+                        required
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label for="preorder-phone">شماره تماس</label>
+
+                    <input
+                        id="preorder-phone"
+                        type="tel"
+                        name="phone"
+                        maxlength="30"
+                        value="{{ old('phone') }}"
+                        autocomplete="tel"
+                        inputmode="tel"
+                        required
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label>
+                        <input
+                            type="checkbox"
+                            name="consent"
+                            value="1"
+                            required
+                            @checked(old('consent'))
+                        >
+
+                        با ثبت اطلاعات تماس و پیگیری درخواست پیش‌خرید موافقم.
+                    </label>
+                </div>
+
+                <button type="submit">
+                    ثبت درخواست پیش‌خرید
+                </button>
+            </form>
 
         </section>
     </main>

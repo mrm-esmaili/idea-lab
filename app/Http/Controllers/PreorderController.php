@@ -1,0 +1,111 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\LandingPage;
+use App\Models\LandingPageEvent;
+use App\Models\Lead;
+use App\Models\Preorder;
+use App\Models\Visitor;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
+
+class PreorderController extends Controller
+{
+    public function store(Request $request, string $slug)
+    {
+        $data = $request->validate([
+            'name' => ['required', 'string', 'max:120'],
+
+            'phone' => [
+                'required',
+                'string',
+                'max:30',
+                'regex:/^[0-9۰-۹٠-٩+\s().-]+$/u',
+            ],
+
+            'consent' => ['accepted'],
+        ]);
+
+        $landingPage = LandingPage::where('slug', $slug)
+            ->where('is_active', true)
+            ->firstOrFail();
+
+        $visitorUuid = $request->cookie('visitor_uuid');
+
+        $visitor = $visitorUuid
+            ? Visitor::where('uuid', $visitorUuid)->first()
+            : null;
+
+        $latestEvent = null;
+
+        if ($visitor) {
+            $latestEvent = LandingPageEvent::where(
+                'visitor_id',
+                $visitor->id
+            )
+                ->where('landing_page_id', $landingPage->id)
+                ->latest('occurred_at')
+                ->first();
+        }
+
+        $existingLead = Lead::where(
+            'landing_page_id',
+            $landingPage->id
+        )
+            ->where('phone', $data['phone'])
+            ->latest()
+            ->first();
+
+        $preorder = DB::transaction(function () use (
+            $landingPage,
+            $visitor,
+            $latestEvent,
+            $existingLead,
+            $data
+        ) {
+            $preorder = Preorder::create([
+                'landing_page_id' => $landingPage->id,
+                'visitor_id' => $visitor?->id,
+                'lead_id' => $existingLead?->id,
+
+                'name' => $data['name'],
+                'phone' => $data['phone'],
+
+                'status' => 'requested',
+
+                'source' => $latestEvent?->source
+                    ?? $visitor?->first_source,
+
+                'medium' => $latestEvent?->medium
+                    ?? $visitor?->first_medium,
+
+                'campaign' => $latestEvent?->campaign
+                    ?? $visitor?->first_campaign,
+
+                'consented_at' => now(),
+            ]);
+
+            LandingPageEvent::create([
+                'landing_page_id' => $landingPage->id,
+                'visitor_id' => $visitor?->id,
+                'event_name' => 'preorder_submit',
+
+                'source' => $preorder->source,
+                'medium' => $preorder->medium,
+                'campaign' => $preorder->campaign,
+
+                'occurred_at' => now(),
+            ]);
+
+            return $preorder;
+        });
+
+        return redirect()
+            ->route('landing-pages.show', [
+                'slug' => $landingPage->slug,
+            ])
+            ->with('preorder_success', true);
+    }
+}
