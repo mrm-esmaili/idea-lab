@@ -3,6 +3,8 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\IdeaController;
+use App\Http\Controllers\IdeaSettingsController;
+use App\Http\Controllers\RefundPolicyController;
 use App\Http\Controllers\LandingPageController;
 use App\Http\Controllers\PublicLandingPageController;
 use App\Http\Controllers\LeadController;
@@ -89,6 +91,26 @@ Route::middleware(['auth', 'admin'])->group(function () {
 
     Route::middleware('can:ideas.manage')->group(function () {
         Route::resource('ideas', IdeaController::class);
+
+        Route::get('/ideas/{idea}/settings', [
+            IdeaSettingsController::class,
+            'edit',
+        ])->name('ideas.settings');
+
+        Route::put('/ideas/{idea}/settings', [
+            IdeaSettingsController::class,
+            'update',
+        ])->name('ideas.settings.update');
+
+        Route::get('/ideas/{idea}/refund-policy', [
+            RefundPolicyController::class,
+            'index',
+        ])->name('ideas.refund-policy');
+
+        Route::post('/ideas/{idea}/refund-policy', [
+            RefundPolicyController::class,
+            'store',
+        ])->name('ideas.refund-policy.store');
 
         Route::patch('/ideas/{idea}/status', [
             IdeaController::class,

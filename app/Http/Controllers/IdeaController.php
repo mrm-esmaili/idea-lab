@@ -71,6 +71,7 @@ class IdeaController extends Controller
         $idea->load([
             'landingPages' => fn ($query) => $query->latest(),
             'statusChanges.user',
+            'currentRefundPolicy',
         ]);
 
         $pageStats = $stats->forLandingPages($idea);

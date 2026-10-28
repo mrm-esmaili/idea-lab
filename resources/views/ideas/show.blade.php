@@ -13,6 +13,10 @@
             <i class="bi bi-pencil"></i> ویرایش
         </a>
 
+        <a href="{{ route('ideas.settings', $idea) }}" class="btn btn-outline-secondary">
+            <i class="bi bi-sliders"></i> تنظیمات
+        </a>
+
         @if ($idea->isArchived())
             <form method="POST" action="{{ route('ideas.restore', $idea) }}">
                 @csrf
@@ -203,6 +207,80 @@
         </div>
 
         <div class="col-xl-4">
+            <div class="card mb-3">
+                <div class="card-header d-flex align-items-center">
+                    <h2 class="card-title h5 mb-0">تنظیمات و اهداف</h2>
+                    <a href="{{ route('ideas.settings', $idea) }}" class="btn btn-sm btn-link ms-auto">ویرایش</a>
+                </div>
+                <div class="card-body">
+                    @foreach ([
+                        ['label' => 'سرنخ', 'value' => $totals['leads'], 'goal' => $idea->lead_goal],
+                        ['label' => 'پیش‌خرید پرداخت‌شده', 'value' => $totals['paid_count'], 'goal' => $idea->paid_preorder_goal],
+                    ] as $goal)
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between small">
+                                <span>{{ $goal['label'] }}</span>
+                                <span>
+                                    {{ number_format($goal['value']) }}
+                                    @if ($goal['goal'])
+                                        از {{ number_format($goal['goal']) }}
+                                    @else
+                                        <span class="text-body-secondary">(حدنصاب تعیین نشده)</span>
+                                    @endif
+                                </span>
+                            </div>
+                            @if ($goal['goal'])
+                                @php($percent = min(100, (int) round($goal['value'] / $goal['goal'] * 100)))
+                                <div
+                                    class="progress mt-1" role="progressbar" style="height: 8px"
+                                    aria-label="پیشرفت {{ $goal['label'] }}"
+                                    aria-valuenow="{{ $percent }}" aria-valuemin="0" aria-valuemax="100"
+                                >
+                                    <div @class(['progress-bar', 'bg-success' => $percent >= 100]) style="width: {{ $percent }}%"></div>
+                                </div>
+                            @endif
+                        </div>
+                    @endforeach
+
+                    <dl class="row small mb-0">
+                        <dt class="col-5 fw-normal text-body-secondary">بودجه</dt>
+                        <dd class="col-7">{{ \App\Support\Money::formatRialAsToman($idea->budget_rial) }}</dd>
+
+                        <dt class="col-5 fw-normal text-body-secondary">بازه آزمایش</dt>
+                        <dd class="col-7">
+                            @if ($idea->test_starts_on || $idea->test_ends_on)
+                                از <span class="ltr text-nowrap">{{ $idea->test_starts_on?->format('Y-m-d') ?? '…' }}</span>
+                                تا <span class="ltr text-nowrap">{{ $idea->test_ends_on?->format('Y-m-d') ?? '…' }}</span>
+                            @else
+                                —
+                            @endif
+                        </dd>
+
+                        <dt class="col-5 fw-normal text-body-secondary">مبلغ پیش‌پرداخت</dt>
+                        <dd class="col-7">{{ \App\Support\Money::formatRialAsToman($idea->preorder_amount_rial) }}</dd>
+
+                        <dt class="col-5 fw-normal text-body-secondary">شرایط بازپرداخت</dt>
+                        <dd class="col-7">
+                            @if ($idea->currentRefundPolicy)
+                                <a href="{{ route('ideas.refund-policy', $idea) }}">
+                                    نسخه {{ $idea->currentRefundPolicy->version }}
+                                </a>
+                                — {{ $idea->currentRefundPolicy->summary() }}
+                            @else
+                                <a href="{{ route('ideas.refund-policy', $idea) }}">تعیین نشده</a>
+                            @endif
+                        </dd>
+                    </dl>
+
+                    @if ($blockers = $idea->preorderBlockers())
+                        <div class="alert alert-warning small mb-0 mt-3">
+                            <strong>پیش‌خرید بسته است:</strong>
+                            {{ implode(' ', $blockers) }}
+                        </div>
+                    @endif
+                </div>
+            </div>
+
             <div class="card mb-3">
                 <div class="card-header"><h2 class="card-title h5 mb-0">وضعیت ایده</h2></div>
                 <div class="card-body">

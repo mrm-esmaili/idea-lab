@@ -69,6 +69,7 @@
                             <th>شماره تماس</th>
                             <th>ایده</th>
                             <th>صفحه فرود</th>
+                            <th>مبلغ</th>
                             <th>کمپین</th>
                             <th>تاریخ ثبت</th>
                             <th>وضعیت</th>
@@ -85,6 +86,12 @@
                                 </td>
                                 <td>{{ $preorder->landingPage?->idea?->name ?? '—' }}</td>
                                 <td>{{ $preorder->landingPage?->name ?? '—' }}</td>
+                                <td class="text-nowrap">
+                                    {{ \App\Support\Money::formatRialAsToman($preorder->amount_rial) }}
+                                    @if ($preorder->refundPolicy)
+                                        <div class="small text-body-secondary">شرایط نسخه {{ $preorder->refundPolicy->version }}</div>
+                                    @endif
+                                </td>
                                 <td class="ltr">{{ $preorder->campaign ?? '—' }}</td>
                                 <td class="ltr text-nowrap">{{ \App\Support\Format::datetime($preorder->created_at) }}</td>
                                 <td><x-admin.status-badge group="preorder" :value="$preorder->status" /></td>
@@ -116,7 +123,7 @@
                                 </td>
                             </tr>
                         @empty
-                            <x-admin.empty-row colspan="8">
+                            <x-admin.empty-row colspan="9">
                                 درخواست پیش‌خریدی با این شرایط پیدا نشد.
                             </x-admin.empty-row>
                         @endforelse

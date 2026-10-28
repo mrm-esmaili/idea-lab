@@ -22,6 +22,7 @@ class PreorderManagementController extends Controller
 
         $query = Preorder::with([
             'landingPage.idea',
+            'refundPolicy',
         ])->latest();
 
         if (!empty($data['idea'])) {

@@ -19,6 +19,14 @@ class PublicFormPhoneTest extends TestCase
             'name' => 'Test idea',
             'slug' => 'test-idea',
             'status' => 'draft',
+            'preorder_amount_rial' => 100000,
+        ]);
+
+        $idea->refundPolicies()->create([
+            'version' => 1,
+            'is_refundable' => true,
+            'refund_window_days' => 14,
+            'terms' => 'Terms',
         ]);
 
         return $idea->landingPages()->create([
@@ -69,6 +77,8 @@ class PublicFormPhoneTest extends TestCase
             'name' => 'علی',
             'phone' => '09123456789',
             'consent' => '1',
+            'accept_terms' => '1',
+            'refund_policy_version' => 1,
         ])->assertRedirect();
 
         $preorder = Preorder::sole();

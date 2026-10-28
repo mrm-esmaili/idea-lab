@@ -14,6 +14,9 @@ class Preorder extends Model
         'name',
         'phone',
         'amount',
+        'amount_rial',
+        'refund_policy_id',
+        'terms_accepted_at',
         'status',
         'source',
         'medium',
@@ -26,6 +29,8 @@ class Preorder extends Model
     {
         return [
             'amount' => 'integer',
+            'amount_rial' => 'integer',
+            'terms_accepted_at' => 'datetime',
             'consented_at' => 'datetime',
         ];
     }
@@ -43,6 +48,11 @@ class Preorder extends Model
     public function lead(): BelongsTo
     {
         return $this->belongsTo(Lead::class);
+    }
+
+    public function refundPolicy(): BelongsTo
+    {
+        return $this->belongsTo(RefundPolicy::class);
     }
 
     public function payments()

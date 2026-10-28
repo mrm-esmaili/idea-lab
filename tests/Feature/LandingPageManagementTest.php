@@ -31,6 +31,13 @@ class LandingPageManagementTest extends TestCase
             'name' => 'باشگاه‌یار',
             'slug' => 'clubyar',
             'status' => 'testing',
+            'preorder_amount_rial' => 100000,
+        ]);
+
+        $this->idea->refundPolicies()->create([
+            'version' => 1,
+            'is_refundable' => false,
+            'terms' => 'غیرقابل بازپرداخت',
         ]);
     }
 

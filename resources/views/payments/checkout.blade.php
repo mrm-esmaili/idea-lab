@@ -29,6 +29,16 @@
             margin: 20px 0;
         }
 
+        .terms {
+            margin-bottom: 20px;
+            font-size: 14px;
+            color: #475569;
+        }
+
+        .terms summary {
+            cursor: pointer;
+        }
+
         button {
             width: 100%;
             padding: 14px;
@@ -56,9 +66,18 @@
     </p>
 
     <div class="amount">
-        {{ number_format($preorder->amount) }}
-        تومان
+        {{ \App\Support\Money::formatRialAsToman($preorder->amount_rial) }}
     </div>
+
+    @if ($preorder->refundPolicy)
+        <details class="terms">
+            <summary>
+                شرایط بازپرداخت پذیرفته‌شده:
+                {{ $preorder->refundPolicy->summary() }}
+            </summary>
+            <p>{!! nl2br(e($preorder->refundPolicy->terms)) !!}</p>
+        </details>
+    @endif
 
     <form
         method="POST"

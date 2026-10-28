@@ -40,6 +40,7 @@ return [
 
         'sandbox' => env('ZARINPAL_SANDBOX', true),
 
+        // منسوخ: فقط migration افزودن تنظیمات ایده از آن استفاده می‌کند
         'preorder_amount_toman' => env(
             'ZARINPAL_PREORDER_AMOUNT_TOMAN',
             10000

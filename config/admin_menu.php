@@ -29,7 +29,7 @@ return [
                 'icon' => 'bi-lightbulb',
                 'route' => 'ideas.index',
                 'permission' => 'ideas.manage',
-                'active' => ['ideas.index', 'ideas.show', 'ideas.edit', 'landing-pages.*'],
+                'active' => ['ideas.index', 'ideas.show', 'ideas.edit', 'ideas.settings', 'ideas.refund-policy', 'landing-pages.*'],
             ],
             [
                 'label' => 'ایده جدید',

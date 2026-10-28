@@ -16,7 +16,7 @@ class PublicLandingPageController extends Controller
         $landingPage = LandingPage::query()
             ->where('slug', $slug)
             ->publiclyVisible()
-            ->with('idea')
+            ->with('idea.currentRefundPolicy')
             ->firstOrFail();
 
         $tracker->trackPageView($request, $landingPage);

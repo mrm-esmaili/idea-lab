@@ -29,6 +29,11 @@ class PreorderController extends Controller
             ],
 
             'consent' => ['accepted'],
+
+            'accept_terms' => ['accepted'],
+            'refund_policy_version' => ['required', 'integer'],
+        ], [
+            'accept_terms.accepted' => 'پذیرش شرایط بازپرداخت برای ثبت پیش‌خرید لازم است.',
         ]);
 
         $data['phone'] = PhoneNumber::normalizeMobile($data['phone']);
@@ -39,6 +44,19 @@ class PreorderController extends Controller
 
         // فرم غیرفعال‌شده توسط مدیر نباید از مسیر مستقیم هم قابل ارسال باشد
         abort_unless($landingPage->contentData()['show_preorder_form'], 404);
+
+        $idea = $landingPage->idea()->with('currentRefundPolicy')->first();
+
+        abort_unless($idea->acceptsPreorders(), 404);
+
+        $policy = $idea->currentRefundPolicy;
+
+        // مشتری باید همان نسخه‌ای را پذیرفته باشد که ثبت می‌شود
+        if ((int) $data['refund_policy_version'] !== $policy->version) {
+            throw ValidationException::withMessages([
+                'accept_terms' => 'شرایط بازپرداخت به‌روزرسانی شده است؛ لطفاً شرایط جدید را مطالعه و دوباره ثبت کنید.',
+            ]);
+        }
 
         $visitorUuid = $request->cookie('visitor_uuid');
 
@@ -67,6 +85,8 @@ class PreorderController extends Controller
             ->first();
 
         $preorder = DB::transaction(function () use (
+            $idea,
+            $policy,
             $landingPage,
             $visitor,
             $latestEvent,
@@ -96,9 +116,10 @@ class PreorderController extends Controller
 
                 'public_token' => (string) Str::uuid(),
 
-                'amount' => (int) config(
-                    'services.zarinpal.preorder_amount_toman'
-                ),
+                // snapshot مبلغ و شرایط در لحظه ثبت سفارش
+                'amount_rial' => $idea->preorder_amount_rial,
+                'refund_policy_id' => $policy->id,
+                'terms_accepted_at' => now(),
             ]);
 
             LandingPageEvent::create([

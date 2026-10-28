@@ -166,6 +166,14 @@
                     >
                     <label class="form-check-label" for="show_preorder_form">فرم پیش‌خرید</label>
                 </div>
+
+                @if ($blockers = $idea->preorderBlockers())
+                    <div class="alert alert-warning small mt-3 mb-0">
+                        فرم پیش‌خرید تا رفع این موارد نمایش داده نمی‌شود:
+                        {{ implode(' ', $blockers) }}
+                        <a href="{{ route('ideas.settings', $idea) }}">تنظیمات ایده</a>
+                    </div>
+                @endif
             </div>
         </div>
 

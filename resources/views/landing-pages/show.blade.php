@@ -118,6 +118,21 @@
             border-radius: 8px;
         }
 
+        .preorder-amount {
+            font-size: 18px;
+        }
+
+        .refund-terms {
+            margin-bottom: 16px;
+            padding: 12px 16px;
+            max-height: 220px;
+            overflow-y: auto;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
         .preorder-section button {
             padding: 12px 20px;
             border: 0;
@@ -191,6 +206,8 @@
 
 <body>
     @php($content = $landingPage->contentData())
+    @php($refundPolicy = $landingPage->idea->currentRefundPolicy)
+    @php($preorderOpen = $content['show_preorder_form'] && $landingPage->idea->acceptsPreorders())
 
     <main>
         <section class="hero">
@@ -218,7 +235,7 @@
                     >
                 @endif
 
-                @if ($landingPage->cta_text && ($content['show_lead_form'] || $content['show_preorder_form']))
+                @if ($landingPage->cta_text && ($content['show_lead_form'] || $preorderOpen))
                     <a
                         href="{{ $content['show_lead_form'] ? '#lead-form' : '#preorder-form' }}"
                         class="cta"
@@ -364,7 +381,7 @@
 
         </section>
 
-        @if ($content['show_preorder_form'])
+        @if ($preorderOpen)
         <section id="preorder-form" class="preorder-section">
 
             <h2>درخواست پیش‌خرید</h2>
@@ -380,9 +397,18 @@
                 </div>
             @endif
 
+            <p class="preorder-amount">
+                مبلغ پیش‌پرداخت:
+                <strong>{{ \App\Support\Money::formatRialAsToman($landingPage->idea->preorder_amount_rial) }}</strong>
+            </p>
+
             @if ($errors->any())
                 <div class="error-message" role="alert">
-                    لطفاً اطلاعات واردشده را بررسی کنید.
+                    @if ($errors->has('accept_terms'))
+                        {{ $errors->first('accept_terms') }}
+                    @else
+                        لطفاً اطلاعات واردشده را بررسی کنید.
+                    @endif
                 </div>
             @endif
 
@@ -391,6 +417,8 @@
                 action="{{ route('preorders.store', ['slug' => $landingPage->slug]) }}"
             >
                 @csrf
+
+                <input type="hidden" name="refund_policy_version" value="{{ $refundPolicy->version }}">
 
                 <div class="form-group">
                     <label for="preorder-name">نام و نام خانوادگی</label>
@@ -432,6 +460,26 @@
                         >
 
                         با ثبت اطلاعات تماس و پیگیری درخواست پیش‌خرید موافقم.
+                    </label>
+                </div>
+
+                <div class="refund-terms" id="refund-terms">
+                    <strong>شرایط بازپرداخت: {{ $refundPolicy->summary() }}</strong>
+                    <p>{!! nl2br(e($refundPolicy->terms)) !!}</p>
+                </div>
+
+                <div class="form-group">
+                    <label>
+                        <input
+                            type="checkbox"
+                            name="accept_terms"
+                            value="1"
+                            required
+                            aria-describedby="refund-terms"
+                            @checked(old('accept_terms'))
+                        >
+
+                        شرایط بازپرداخت را خواندم و می‌پذیرم.
                     </label>
                 </div>
 

@@ -22,9 +22,11 @@ class ZarinpalPaymentController extends Controller
             $token
         )->firstOrFail();
 
-        if (!$preorder->amount || $preorder->amount < 1) {
+        if (!$preorder->amount_rial || $preorder->amount_rial < 1) {
             abort(422, 'مبلغ پیش‌خرید تنظیم نشده است.');
         }
+
+        $preorder->load('refundPolicy');
 
         return view(
             'payments.checkout',
@@ -42,7 +44,7 @@ class ZarinpalPaymentController extends Controller
             $token
         )->firstOrFail();
 
-        if (!$preorder->amount || $preorder->amount < 1) {
+        if (!$preorder->amount_rial || $preorder->amount_rial < 1) {
             abort(422, 'مبلغ پیش‌خرید تنظیم نشده است.');
         }
 
@@ -57,7 +59,8 @@ class ZarinpalPaymentController extends Controller
             );
         }
 
-        $amountRial = ((int) $preorder->amount) * 10;
+        // مبلغ snapshot سفارش به ریال؛ تبدیل دوباره لازم نیست
+        $amountRial = (int) $preorder->amount_rial;
 
         $payment = Payment::create([
             'preorder_id' => $preorder->id,
