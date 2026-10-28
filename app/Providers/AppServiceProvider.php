@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use App\Enums\AdminRole;
 use App\Models\User;
+use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 
@@ -22,6 +23,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        Paginator::useBootstrapFive();
+
         foreach (AdminRole::PERMISSIONS as $permission) {
             Gate::define(
                 $permission,

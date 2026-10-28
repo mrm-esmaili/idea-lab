@@ -67,6 +67,9 @@ return [
 
     'timezone' => 'UTC',
 
+    // داده‌ها به UTC ذخیره و فقط در نمایش به این منطقه زمانی تبدیل می‌شوند
+    'display_timezone' => env('APP_DISPLAY_TIMEZONE', 'Asia/Tehran'),
+
     /*
     |--------------------------------------------------------------------------
     | Application Locale Configuration

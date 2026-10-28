@@ -1,228 +1,122 @@
-<!DOCTYPE html>
-<html lang="fa" dir="rtl">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+@extends('layouts.admin')
 
-    <title>مدیریت پیش‌خریدها</title>
+@section('title', 'درخواست‌های پیش‌خرید')
 
-    <style>
-        body {
-            margin: 0;
-            padding: 24px;
-            font-family: Tahoma, Arial, sans-serif;
-            background: #f4f6fa;
-            color: #202938;
-        }
+@section('breadcrumbs')
+    <li class="breadcrumb-item active" aria-current="page">پیش‌خریدها</li>
+@endsection
 
-        .container {
-            max-width: 1200px;
-            margin: auto;
-        }
+@section('content')
+    @php($statuses = config('statuses.preorder'))
 
-        .panel {
-            background: white;
-            padding: 20px;
-            border-radius: 12px;
-            overflow-x: auto;
-        }
+    <div class="card mb-3">
+        <div class="card-body">
+            <form
+                method="GET"
+                action="{{ route('admin.preorders.index') }}"
+                class="row g-2 align-items-end"
+            >
+                <div class="col-sm-6 col-lg-3">
+                    <label for="status" class="form-label">وضعیت</label>
+                    <select id="status" name="status" class="form-select">
+                        <option value="">همه</option>
+                        @foreach ($statuses as $value => $label)
+                            <option value="{{ $value }}" @selected(request('status') === $value)>
+                                {{ $label }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
 
-        .actions {
-            display: flex;
-            gap: 12px;
-            flex-wrap: wrap;
-            margin-bottom: 20px;
-        }
-
-        .button {
-            display: inline-block;
-            padding: 10px 14px;
-            border: 0;
-            border-radius: 8px;
-            background: #26364d;
-            color: white;
-            text-decoration: none;
-            cursor: pointer;
-        }
-
-        table {
-            width: 100%;
-            min-width: 850px;
-            border-collapse: collapse;
-        }
-
-        th, td {
-            padding: 12px;
-            border-bottom: 1px solid #eee;
-            text-align: right;
-            font-size: 13px;
-        }
-
-        th {
-            background: #fafbfc;
-        }
-
-        select {
-            padding: 8px;
-            border-radius: 6px;
-            border: 1px solid #ddd;
-        }
-
-        .success {
-            padding: 12px;
-            margin-bottom: 16px;
-            background: #e8f8ee;
-            color: #176534;
-            border-radius: 8px;
-        }
-    </style>
-</head>
-
-<body>
-<div class="container">
-
-    <h1>مدیریت درخواست‌های پیش‌خرید</h1>
-
-    <div class="actions">
-        <a class="button" href="{{ route('admin.dashboard') }}">
-            داشبورد
-        </a>
-
-        @can('leads.manage')
-        <a class="button" href="{{ route('admin.leads.index') }}">
-            سرنخ‌ها
-        </a>
-        @endcan
-
-        <form method="POST" action="{{ route('logout') }}">
-            @csrf
-            <button class="button" type="submit">خروج</button>
-        </form>
+                <div class="col-auto">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-funnel"></i>
+                        فیلتر
+                    </button>
+                    <a href="{{ route('admin.preorders.index') }}" class="btn btn-outline-secondary">
+                        پاک‌کردن فیلتر
+                    </a>
+                </div>
+            </form>
+        </div>
     </div>
 
-    @if (session('success'))
-        <div class="success">
-            {{ session('success') }}
+    <div class="card">
+        <div class="card-header">
+            <h2 class="card-title h6 mb-0">
+                تعداد نتایج: {{ number_format($preorders->total()) }}
+            </h2>
         </div>
-    @endif
 
-    <form method="GET" action="{{ route('admin.preorders.index') }}">
-        <label for="status">فیلتر وضعیت:</label>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <th>نام</th>
+                            <th>شماره تماس</th>
+                            <th>ایده</th>
+                            <th>صفحه فرود</th>
+                            <th>کمپین</th>
+                            <th>تاریخ ثبت</th>
+                            <th>وضعیت</th>
+                            <th class="table-actions">تغییر وضعیت</th>
+                        </tr>
+                    </thead>
 
-        <select id="status" name="status">
-            <option value="">همه</option>
+                    <tbody>
+                        @forelse ($preorders as $preorder)
+                            <tr>
+                                <td>{{ $preorder->name }}</td>
+                                <td>
+                                    <a href="tel:{{ $preorder->phone }}" class="ltr">{{ $preorder->phone }}</a>
+                                </td>
+                                <td>{{ $preorder->landingPage?->idea?->name ?? '—' }}</td>
+                                <td>{{ $preorder->landingPage?->name ?? '—' }}</td>
+                                <td class="ltr">{{ $preorder->campaign ?? '—' }}</td>
+                                <td class="ltr text-nowrap">{{ \App\Support\Format::datetime($preorder->created_at) }}</td>
+                                <td><x-admin.status-badge group="preorder" :value="$preorder->status" /></td>
+                                <td>
+                                    <form
+                                        method="POST"
+                                        action="{{ route('admin.preorders.update', $preorder) }}"
+                                        class="d-flex gap-1"
+                                    >
+                                        @csrf
+                                        @method('PATCH')
 
-            @foreach ([
-                'requested' => 'درخواست جدید',
-                'contacted' => 'تماس گرفته شده',
-                'interested' => 'علاقه‌مند',
-                'rejected' => 'رد شده',
-                'converted' => 'تبدیل‌شده',
-            ] as $value => $label)
-                <option
-                    value="{{ $value }}"
-                    @selected(request('status') === $value)
-                >
-                    {{ $label }}
-                </option>
-            @endforeach
-        </select>
-
-        <button class="button" type="submit">فیلتر</button>
-    </form>
-
-    <br>
-
-    <section class="panel">
-        <table>
-            <thead>
-                <tr>
-                    <th>نام</th>
-                    <th>شماره تماس</th>
-                    <th>ایده</th>
-                    <th>صفحه فرود</th>
-                    <th>کمپین</th>
-                    <th>تاریخ ثبت</th>
-                    <th>وضعیت</th>
-                    <th>عملیات</th>
-                </tr>
-            </thead>
-
-            <tbody>
-                @forelse ($preorders as $preorder)
-                    <tr>
-                        <td>{{ $preorder->name }}</td>
-
-                        <td>
-                            <a href="tel:{{ $preorder->phone }}">
-                                {{ $preorder->phone }}
-                            </a>
-                        </td>
-
-                        <td>
-                            {{ $preorder->landingPage?->idea?->name ?? '—' }}
-                        </td>
-
-                        <td>
-                            {{ $preorder->landingPage?->name ?? '—' }}
-                        </td>
-
-                        <td>
-                            {{ $preorder->campaign ?? '—' }}
-                        </td>
-
-                        <td>
-                            {{ $preorder->created_at?->format('Y-m-d H:i') }}
-                        </td>
-
-                        <td>{{ $preorder->status }}</td>
-
-                        <td>
-                            <form
-                                method="POST"
-                                action="{{ route('admin.preorders.update', $preorder) }}"
-                            >
-                                @csrf
-                                @method('PATCH')
-
-                                <select name="status">
-                                    @foreach ([
-                                        'requested' => 'درخواست جدید',
-                                        'contacted' => 'تماس گرفته شده',
-                                        'interested' => 'علاقه‌مند',
-                                        'rejected' => 'رد شده',
-                                        'converted' => 'تبدیل‌شده',
-                                    ] as $value => $label)
-                                        <option
-                                            value="{{ $value }}"
-                                            @selected($preorder->status === $value)
+                                        <select
+                                            name="status"
+                                            class="form-select form-select-sm"
+                                            aria-label="وضعیت پیش‌خرید {{ $preorder->name }}"
                                         >
-                                            {{ $label }}
-                                        </option>
-                                    @endforeach
-                                </select>
+                                            @foreach ($statuses as $value => $label)
+                                                <option value="{{ $value }}" @selected($preorder->status === $value)>
+                                                    {{ $label }}
+                                                </option>
+                                            @endforeach
+                                        </select>
 
-                                <button class="button" type="submit">
-                                    ذخیره
-                                </button>
-                            </form>
-                        </td>
-                    </tr>
-                @empty
-                    <tr>
-                        <td colspan="8">
-                            هنوز درخواست پیش‌خریدی ثبت نشده است.
-                        </td>
-                    </tr>
-                @endforelse
-            </tbody>
-        </table>
-
-        <div style="margin-top: 20px">
-            {{ $preorders->links() }}
+                                        <button type="submit" class="btn btn-sm btn-primary">
+                                            ذخیره
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                        @empty
+                            <x-admin.empty-row colspan="8">
+                                درخواست پیش‌خریدی با این شرایط پیدا نشد.
+                            </x-admin.empty-row>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
         </div>
-    </section>
 
-</div>
-</body>
-</html>
+        @if ($preorders->hasPages())
+            <div class="card-footer">
+                {{ $preorders->links() }}
+            </div>
+        @endif
+    </div>
+@endsection

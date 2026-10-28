@@ -14,14 +14,7 @@ class LeadManagementController extends Controller
         $filters = $request->validate([
             'status' => [
                 'nullable',
-                Rule::in([
-                    'new',
-                    'contacted',
-                    'interested',
-                    'prepaid',
-                    'customer',
-                    'rejected',
-                ]),
+                Rule::in(array_keys(config('statuses.lead'))),
             ],
             'campaign' => ['nullable', 'string', 'max:255'],
         ]);
@@ -51,14 +44,7 @@ class LeadManagementController extends Controller
         $data = $request->validate([
             'status' => [
                 'required',
-                Rule::in([
-                    'new',
-                    'contacted',
-                    'interested',
-                    'prepaid',
-                    'customer',
-                    'rejected',
-                ]),
+                Rule::in(array_keys(config('statuses.lead'))),
             ],
             'notes' => ['nullable', 'string', 'max:5000'],
         ]);

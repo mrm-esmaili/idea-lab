@@ -30,6 +30,14 @@ php artisan serve
 تعریف نقش‌ها و مجوزها: `app/Enums/AdminRole.php`.
 هنگام اجرای migration نقش، همه کاربران موجود `super_admin` می‌شوند.
 
+## قالب مدیریتی
+
+AdminLTE 4 (RTL) با Bootstrap 5، Bootstrap Icons و فونت Vazirmatn. فایل‌های build‌شده در `public/vendor` قرار دارند و به npm یا CDN نیازی نیست.
+
+- layout مشترک: `resources/views/layouts/admin.blade.php`
+- منو: `config/admin_menu.php` (هر آیتم با مجوز نقش نمایش داده می‌شود)
+- برچسب وضعیت‌ها: `config/statuses.php`
+
 ## امنیت
 
 فایل `.env`، کلیدهای API، رمزها و داده شخصی واقعی هرگز در Git قرار نمی‌گیرند.

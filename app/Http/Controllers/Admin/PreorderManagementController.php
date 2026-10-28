@@ -14,13 +14,7 @@ class PreorderManagementController extends Controller
         $data = $request->validate([
             'status' => [
                 'nullable',
-                Rule::in([
-                    'requested',
-                    'contacted',
-                    'interested',
-                    'rejected',
-                    'converted',
-                ]),
+                Rule::in(array_keys(config('statuses.preorder'))),
             ],
         ]);
 
@@ -47,13 +41,7 @@ class PreorderManagementController extends Controller
         $data = $request->validate([
             'status' => [
                 'required',
-                Rule::in([
-                    'requested',
-                    'contacted',
-                    'interested',
-                    'rejected',
-                    'converted',
-                ]),
+                Rule::in(array_keys(config('statuses.preorder'))),
             ],
         ]);
 

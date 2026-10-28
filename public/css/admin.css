@@ -1,0 +1,32 @@
+@font-face {
+    font-family: 'Vazirmatn';
+    src: url('../vendor/vazirmatn/Vazirmatn-Variable.woff2') format('woff2-variations'),
+         url('../vendor/vazirmatn/Vazirmatn-Variable.woff2') format('woff2');
+    font-weight: 100 900;
+    font-style: normal;
+    font-display: swap;
+}
+
+:root {
+    --bs-font-sans-serif: 'Vazirmatn', Tahoma, sans-serif;
+    --bs-body-font-family: var(--bs-font-sans-serif);
+}
+
+body {
+    font-family: var(--bs-body-font-family);
+}
+
+/* اعداد لاتین مانند شماره تماس و UTM چپ‌به‌راست نمایش داده شوند */
+.ltr {
+    direction: ltr;
+    unicode-bidi: embed;
+}
+
+.table td,
+.table th {
+    vertical-align: middle;
+}
+
+.table-actions {
+    min-width: 260px;
+}

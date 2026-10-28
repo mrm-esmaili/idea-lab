@@ -1,45 +1,52 @@
-<!DOCTYPE html>
-<html lang="fa" dir="rtl">
-<head>
-    <meta charset="UTF-8">
-    <title>ایده‌ها</title>
-</head>
+@extends('layouts.admin')
 
-<body>
+@section('title', 'ایده‌ها')
 
-    <h1>ایده‌ها</h1>
+@section('breadcrumbs')
+    <li class="breadcrumb-item active" aria-current="page">ایده‌ها</li>
+@endsection
 
-    <a href="{{ route('ideas.create') }}">
-        + ایجاد ایده جدید
+@section('page-actions')
+    <a href="{{ route('ideas.create') }}" class="btn btn-primary">
+        <i class="bi bi-plus-lg"></i>
+        ایجاد ایده جدید
     </a>
+@endsection
 
-    <hr>
+@section('content')
+    <div class="card">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <th>نام ایده</th>
+                            <th>توضیحات</th>
+                            <th>وضعیت</th>
+                            <th>تاریخ ایجاد</th>
+                        </tr>
+                    </thead>
 
-    @forelse($ideas as $idea)
-
-        <div>
-            <h3>
-                <a href="{{ route('ideas.show', $idea) }}">
-                    {{ $idea->name }}
-                </a>
-            </h3>
-
-            <p>
-                {{ $idea->description }}
-            </p>
-
-            <small>
-                وضعیت: {{ $idea->status }}
-            </small>
+                    <tbody>
+                        @forelse ($ideas as $idea)
+                            <tr>
+                                <td class="fw-semibold">
+                                    <a href="{{ route('ideas.show', $idea) }}">{{ $idea->name }}</a>
+                                </td>
+                                <td class="text-body-secondary">
+                                    {{ \Illuminate\Support\Str::limit($idea->description, 120) ?: '—' }}
+                                </td>
+                                <td><x-admin.status-badge group="idea" :value="$idea->status" /></td>
+                                <td class="ltr text-nowrap">{{ \App\Support\Format::datetime($idea->created_at, 'Y-m-d') }}</td>
+                            </tr>
+                        @empty
+                            <x-admin.empty-row colspan="4" icon="bi-lightbulb">
+                                هنوز ایده‌ای ایجاد نشده است.
+                            </x-admin.empty-row>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
         </div>
-
-        <hr>
-
-    @empty
-
-        <p>هنوز ایده‌ای ایجاد نشده است.</p>
-
-    @endforelse
-
-</body>
-</html>
+    </div>
+@endsection
