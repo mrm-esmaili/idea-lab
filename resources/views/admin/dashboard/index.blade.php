@@ -125,13 +125,17 @@
         </div>
 
         <div class="actions">
+            @can('ideas.manage')
             <a class="button" href="{{ route('ideas.index') }}">
                 مدیریت ایده‌ها
             </a>
+            @endcan
 
+            @can('leads.manage')
             <a class="button" href="{{ route('admin.leads.index') }}">
                 مدیریت سرنخ‌ها
             </a>
+            @endcan
 
             <form method="POST" action="{{ route('logout') }}">
                 @csrf

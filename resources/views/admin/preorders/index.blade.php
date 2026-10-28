@@ -88,9 +88,11 @@
             داشبورد
         </a>
 
+        @can('leads.manage')
         <a class="button" href="{{ route('admin.leads.index') }}">
             سرنخ‌ها
         </a>
+        @endcan
 
         <form method="POST" action="{{ route('logout') }}">
             @csrf

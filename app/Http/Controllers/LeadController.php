@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\LandingPage;
+use App\Rules\IranianMobile;
+use App\Support\PhoneNumber;
 use App\Models\Visitor;
 use App\Models\LandingPageEvent;
 use Illuminate\Http\Request;
@@ -25,11 +27,13 @@ class LeadController extends Controller
                 'required',
                 'string',
                 'max:30',
-                'regex:/^[0-9۰-۹٠-٩+\s().-]+$/u',
+                new IranianMobile(),
             ],
             'email' => ['nullable', 'email', 'max:255'],
             'consent' => ['accepted'],
         ]);
+
+        $data['phone'] = PhoneNumber::normalizeMobile($data['phone']);
 
         $visitorUuid = $request->cookie('visitor_uuid');
 
@@ -64,7 +68,7 @@ class LeadController extends Controller
             $lead = $landingPage->leads()->create([
                 'visitor_id' => $visitor?->id,
                 'name' => trim($data['name']),
-                'phone' => trim($data['phone']),
+                'phone' => $data['phone'],
                 'email' => $data['email'] ?? null,
                 'status' => 'new',
 

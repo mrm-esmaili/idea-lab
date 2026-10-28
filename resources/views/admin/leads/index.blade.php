@@ -9,9 +9,11 @@
 
     <h1>مدیریت مشتریان بالقوه</h1>
 
+    @can('ideas.manage')
     <p>
         <a href="{{ route('ideas.index') }}">مدیریت ایده‌ها</a>
     </p>
+    @endcan
 
     <form method="GET" action="{{ route('admin.leads.index') }}">
         <label for="status">وضعیت</label>

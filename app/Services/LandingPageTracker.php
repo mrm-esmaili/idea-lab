@@ -58,16 +58,7 @@ class LandingPageTracker
                 'last_seen_at' => $now,
             ]);
 
-            $referrerHost = null;
-            $referer = $request->headers->get('referer');
-
-            if ($referer) {
-                $host = parse_url($referer, PHP_URL_HOST);
-
-                if (is_string($host)) {
-                    $referrerHost = Str::limit($host, 255, '');
-                }
-            }
+            $referrerHost = $this->getReferrerHost($request);
 
             LandingPageEvent::create([
                 'landing_page_id' => $landingPage->id,
@@ -119,6 +110,21 @@ class LandingPageTracker
         return Str::limit($value, 255, '');
     }
 
+    private function getReferrerHost(Request $request): ?string
+    {
+        $referer = $request->headers->get('referer');
+
+        if (! is_string($referer) || $referer === '') {
+            return null;
+        }
+
+        $host = parse_url($referer, PHP_URL_HOST);
+
+        return is_string($host)
+            ? Str::limit($host, 255, '')
+            : null;
+    }
+
     public function trackEvent(
         \Illuminate\Http\Request $request,
         \App\Models\LandingPage $landingPage,
@@ -138,7 +144,7 @@ class LandingPageTracker
 
         $visitorUuid = $request->cookie('visitor_uuid');
 
-        $visitor = $visitorUuid
+        $visitor = is_string($visitorUuid) && Str::isUuid($visitorUuid)
             ? \App\Models\Visitor::where('uuid', $visitorUuid)->first()
             : null;
 
@@ -155,11 +161,11 @@ class LandingPageTracker
         }
 
         $utm = [
-            'source' => $request->query('utm_source'),
-            'medium' => $request->query('utm_medium'),
-            'campaign' => $request->query('utm_campaign'),
-            'content' => $request->query('utm_content'),
-            'term' => $request->query('utm_term'),
+            'source' => $this->getUtm($request, 'utm_source'),
+            'medium' => $this->getUtm($request, 'utm_medium'),
+            'campaign' => $this->getUtm($request, 'utm_campaign'),
+            'content' => $this->getUtm($request, 'utm_content'),
+            'term' => $this->getUtm($request, 'utm_term'),
         ];
 
         \App\Models\LandingPageEvent::create([
@@ -187,12 +193,7 @@ class LandingPageTracker
                 ?? $latestEvent?->term
                 ?? $visitor?->first_term,
 
-            'referrer_host' => $request->header('referer')
-                ? parse_url(
-                    $request->header('referer'),
-                    PHP_URL_HOST
-                )
-                : null,
+            'referrer_host' => $this->getReferrerHost($request),
 
             'occurred_at' => now(),
         ]);

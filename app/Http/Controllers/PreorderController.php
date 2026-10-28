@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\LandingPage;
+use App\Rules\IranianMobile;
+use App\Support\PhoneNumber;
 use App\Models\LandingPageEvent;
 use App\Models\Lead;
 use App\Models\Preorder;
@@ -23,11 +25,13 @@ class PreorderController extends Controller
                 'required',
                 'string',
                 'max:30',
-                'regex:/^[0-9۰-۹٠-٩+\s().-]+$/u',
+                new IranianMobile(),
             ],
 
             'consent' => ['accepted'],
         ]);
+
+        $data['phone'] = PhoneNumber::normalizeMobile($data['phone']);
 
         $landingPage = LandingPage::where('slug', $slug)
             ->where('is_active', true)

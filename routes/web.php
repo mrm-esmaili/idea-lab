@@ -1,4 +1,3 @@
-
 <?php
 
 use Illuminate\Support\Facades\Route;
@@ -78,45 +77,51 @@ Route::get(
 )->name('payments.result');
 
 // پنل مدیریت
-Route::middleware('auth')->group(function () {
+Route::middleware(['auth', 'admin'])->group(function () {
     Route::get('/', function () {
-        // return redirect()->route('admin.leads.index');
         return redirect()->route('admin.dashboard');
     });
 
-    Route::resource('ideas', IdeaController::class)
-        ->only(['index', 'create', 'store', 'show']);
-
-    Route::get('/ideas/{idea}/landing-pages/create', [
-        LandingPageController::class,
-        'create',
-    ])->name('landing-pages.create');
-
-    Route::post('/ideas/{idea}/landing-pages', [
-        LandingPageController::class,
-        'store',
-    ])->name('landing-pages.store');
-
-    Route::get('/admin/leads', [
-        LeadManagementController::class,
-        'index',
-    ])->name('admin.leads.index');
-
-    Route::patch('/admin/leads/{lead}', [
-        LeadManagementController::class,
-        'update',
-    ])->name('admin.leads.update');
-
     Route::get('/admin', [DashboardController::class, 'index'])
-    ->name('admin.dashboard');
+        ->middleware('can:dashboard.view')
+        ->name('admin.dashboard');
 
-    Route::get(
-        '/admin/preorders',
-        [PreorderManagementController::class, 'index']
-    )->name('admin.preorders.index');
+    Route::middleware('can:ideas.manage')->group(function () {
+        Route::resource('ideas', IdeaController::class)
+            ->only(['index', 'create', 'store', 'show']);
 
-    Route::patch(
-        '/admin/preorders/{preorder}',
-        [PreorderManagementController::class, 'update']
-    )->name('admin.preorders.update');
+        Route::get('/ideas/{idea}/landing-pages/create', [
+            LandingPageController::class,
+            'create',
+        ])->name('landing-pages.create');
+
+        Route::post('/ideas/{idea}/landing-pages', [
+            LandingPageController::class,
+            'store',
+        ])->name('landing-pages.store');
+    });
+
+    Route::middleware('can:leads.manage')->group(function () {
+        Route::get('/admin/leads', [
+            LeadManagementController::class,
+            'index',
+        ])->name('admin.leads.index');
+
+        Route::patch('/admin/leads/{lead}', [
+            LeadManagementController::class,
+            'update',
+        ])->name('admin.leads.update');
+    });
+
+    Route::middleware('can:preorders.manage')->group(function () {
+        Route::get(
+            '/admin/preorders',
+            [PreorderManagementController::class, 'index']
+        )->name('admin.preorders.index');
+
+        Route::patch(
+            '/admin/preorders/{preorder}',
+            [PreorderManagementController::class, 'update']
+        )->name('admin.preorders.update');
+    });
 });
