@@ -19,7 +19,7 @@ body {
 /* اعداد لاتین مانند شماره تماس و UTM چپ‌به‌راست نمایش داده شوند */
 .ltr {
     direction: ltr;
-    unicode-bidi: embed;
+    unicode-bidi: isolate;
 }
 
 .table td,

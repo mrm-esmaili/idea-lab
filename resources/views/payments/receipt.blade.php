@@ -46,7 +46,7 @@
         dt { color: #64748b; }
         dd { margin: 0; }
 
-        .ltr { direction: ltr; unicode-bidi: embed; }
+        .ltr { direction: ltr; unicode-bidi: isolate; }
 
         .button {
             display: block;
