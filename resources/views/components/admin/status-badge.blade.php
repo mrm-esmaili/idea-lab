@@ -2,11 +2,12 @@
 
 @php
     $color = match ($value) {
-        'new', 'requested', 'draft' => 'secondary',
+        'new', 'requested', 'draft', 'unpaid', 'cancelled' => 'secondary',
         'contacted', 'testing', 'building' => 'info',
         'interested' => 'primary',
-        'prepaid', 'customer', 'converted', 'validated', 'launched' => 'success',
-        'rejected' => 'danger',
+        'pending' => 'warning',
+        'prepaid', 'customer', 'validated', 'launched', 'paid' => 'success',
+        'rejected', 'failed' => 'danger',
         default => 'light',
     };
 @endphp

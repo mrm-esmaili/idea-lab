@@ -2,28 +2,18 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\LandingPageEvent;
-use App\Models\Payment;
 use App\Models\Preorder;
-use App\Services\ZarinpalService;
+use App\Services\Payments\PreorderPaymentService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Schema;
-use RuntimeException;
-use Throwable;
 
 class ZarinpalPaymentController extends Controller
 {
     public function checkout(string $token)
     {
-        $preorder = Preorder::where(
-            'public_token',
-            $token
-        )->firstOrFail();
+        $preorder = $this->findPreorder($token);
 
-        if (!$preorder->amount_rial || $preorder->amount_rial < 1) {
-            abort(422, 'مبلغ پیش‌خرید تنظیم نشده است.');
+        if ($preorder->isPaid()) {
+            return redirect()->route('preorders.receipt', $token);
         }
 
         $preorder->load('refundPolicy');
@@ -35,184 +25,64 @@ class ZarinpalPaymentController extends Controller
     }
 
     public function pay(
-        Request $request,
         string $token,
-        ZarinpalService $zarinpal
+        PreorderPaymentService $payments
     ) {
-        $preorder = Preorder::where(
-            'public_token',
-            $token
-        )->firstOrFail();
+        $preorder = $this->findPreorder($token);
 
-        if (!$preorder->amount_rial || $preorder->amount_rial < 1) {
-            abort(422, 'مبلغ پیش‌خرید تنظیم نشده است.');
-        }
+        $result = $payments->start($preorder);
 
-        $paidPayment = $preorder->payments()
-            ->where('status', 'paid')
-            ->first();
-
-        if ($paidPayment) {
-            return redirect()->route(
-                'payments.result',
-                ['status' => 'success']
-            );
-        }
-
-        // مبلغ snapshot سفارش به ریال؛ تبدیل دوباره لازم نیست
-        $amountRial = (int) $preorder->amount_rial;
-
-        $payment = Payment::create([
-            'preorder_id' => $preorder->id,
-            'gateway' => 'zarinpal',
-            'amount_rial' => $amountRial,
-            'status' => 'pending',
-        ]);
-
-        try {
-            $result = $zarinpal->requestPayment(
-                $amountRial,
-                route('payments.zarinpal.callback'),
-                'Preorder #' . $preorder->id,
-                $preorder->phone
-            );
-
-            $payment->update([
-                'authority' => $result['authority'],
-            ]);
-
-            return redirect()->away(
-                $result['payment_url']
-            );
-        } catch (Throwable $e) {
-            $payment->update([
-                'status' => 'failed',
-            ]);
-
-            Log::error('Zarinpal request failed.', [
-                'payment_id' => $payment->id,
-                'exception' => $e->getMessage(),
-            ]);
-
-            return redirect()
-                ->route('payments.result', [
-                    'status' => 'error',
-                ]);
-        }
+        return match ($result['action']) {
+            'paid' => redirect()->route('preorders.receipt', $token),
+            'redirect' => redirect()->away($result['url']),
+            'busy' => redirect()
+                ->route('preorders.checkout', $token)
+                ->with('payment_notice', 'درخواست پرداخت شما در حال ارسال به درگاه است؛ چند لحظه بعد دوباره تلاش کنید.'),
+            'error' => redirect()
+                ->route('preorders.checkout', $token)
+                ->with('payment_error', 'اتصال به درگاه پرداخت ممکن نشد. لطفاً دوباره تلاش کنید.'),
+        };
     }
 
     public function callback(
         Request $request,
-        ZarinpalService $zarinpal
+        PreorderPaymentService $payments
     ) {
-        $authority = $request->query('Authority');
-        $gatewayStatus = $request->query('Status');
+        $payment = $payments->handleCallback(
+            $request->query('Authority'),
+            $request->query('Status')
+        );
 
-        if (!is_string($authority) || $authority === '') {
-            return redirect()->route(
-                'payments.result',
-                ['status' => 'failed']
-            );
+        if (! $payment) {
+            return redirect()->route('payments.result', ['status' => 'failed']);
         }
 
-        $payment = Payment::where(
-            'authority',
-            $authority
-        )->first();
-
-        if (!$payment) {
-            return redirect()->route(
-                'payments.result',
-                ['status' => 'failed']
-            );
-        }
-
-        if ($payment->status === 'paid') {
-            return redirect()->route(
-                'payments.result',
-                ['status' => 'success']
-            );
-        }
-
-        if ($gatewayStatus !== 'OK') {
-            $payment->update([
-                'status' => 'failed',
-            ]);
-
-            return redirect()->route(
-                'payments.result',
-                ['status' => 'failed']
-            );
-        }
-
-        try {
-            $verification = $zarinpal->verifyPayment(
-                $payment->authority,
-                $payment->amount_rial
-            );
-
-            if (empty($verification['ref_id'])) {
-                throw new RuntimeException(
-                    'Zarinpal returned no reference ID.'
-                );
-            }
-
-            DB::transaction(function () use (
-                $payment,
-                $verification
-            ) {
-                $lockedPayment = Payment::whereKey(
-                    $payment->id
-                )->lockForUpdate()->firstOrFail();
-
-                if ($lockedPayment->status === 'paid') {
-                    return;
-                }
-
-                $lockedPayment->update([
-                    'status' => 'paid',
-                    'ref_id' => (string) $verification['ref_id'],
-                    'verified_at' => now(),
-                ]);
-
-                $preorder = Preorder::findOrFail(
-                    $lockedPayment->preorder_id
-                );
-
-                $preorder->update([
-                    'status' => 'converted',
-                ]);
-
-                $eventData = [
-                    'landing_page_id' => $preorder->landing_page_id,
-                    'visitor_id' => $preorder->visitor_id,
-                    'event_name' => 'payment_success',
-                    'source' => $preorder->source,
-                    'medium' => $preorder->medium,
-                    'campaign' => $preorder->campaign,
-                    'occurred_at' => now(),
-                ];
-
-                LandingPageEvent::create($eventData);
-            });
-
-            return redirect()->route(
-                'payments.result',
-                ['status' => 'success']
-            );
-        } catch (Throwable $e) {
-            Log::error('Zarinpal verification failed.', [
-                'payment_id' => $payment->id,
-                'exception' => $e->getMessage(),
-            ]);
-
-            return redirect()->route(
-                'payments.result',
-                ['status' => 'error']
-            );
-        }
+        return redirect()->route(
+            'preorders.receipt',
+            $payment->preorder->public_token
+        );
     }
 
+    /**
+     * وضعیت واقعی از پایگاه داده خوانده می‌شود، نه از پارامتر آدرس.
+     */
+    public function receipt(string $token)
+    {
+        $preorder = $this->findPreorder($token);
+
+        $preorder->load(['landingPage.idea', 'refundPolicy']);
+
+        $payment = $preorder->payments()
+            ->orderByRaw("CASE WHEN status = 'paid' THEN 0 ELSE 1 END")
+            ->latest('id')
+            ->first();
+
+        return view('payments.receipt', compact('preorder', 'payment'));
+    }
+
+    /**
+     * فقط برای بازگشتی که تراکنش آن شناخته نشد.
+     */
     public function result(Request $request)
     {
         $status = $request->query('status');
@@ -229,5 +99,18 @@ class ZarinpalPaymentController extends Controller
             'payments.result',
             compact('status')
         );
+    }
+
+    private function findPreorder(string $token): Preorder
+    {
+        abort_unless(preg_match('/^[0-9a-f-]{36}$/i', $token), 404);
+
+        $preorder = Preorder::where('public_token', $token)->firstOrFail();
+
+        if (! $preorder->amount_rial || $preorder->amount_rial < 1) {
+            abort(422, 'مبلغ پیش‌خرید تنظیم نشده است.');
+        }
+
+        return $preorder;
     }
 }

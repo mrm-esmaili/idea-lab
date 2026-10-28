@@ -12,6 +12,7 @@ use App\Http\Controllers\Admin\LeadManagementController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\LandingPageEventController;
 use App\Http\Controllers\PreorderController;
+use App\Http\Controllers\Admin\PaymentReportController;
 use App\Http\Controllers\Admin\PreorderManagementController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\ZarinpalPaymentController;
@@ -60,7 +61,8 @@ Route::post(
 Route::get(
     '/preorder/{token}/checkout',
     [ZarinpalPaymentController::class, 'checkout']
-)->name('preorders.checkout');
+)->middleware('throttle:30,1')
+    ->name('preorders.checkout');
 
 Route::post(
     '/preorder/{token}/pay',
@@ -70,9 +72,16 @@ Route::post(
     ->name('preorders.pay');
 
 Route::get(
+    '/preorder/{token}/receipt',
+    [ZarinpalPaymentController::class, 'receipt']
+)->middleware('throttle:30,1')
+    ->name('preorders.receipt');
+
+Route::get(
     '/payments/zarinpal/callback',
     [ZarinpalPaymentController::class, 'callback']
-)->name('payments.zarinpal.callback');
+)->middleware('throttle:30,1')
+    ->name('payments.zarinpal.callback');
 
 Route::get(
     '/payments/result',
@@ -177,9 +186,27 @@ Route::middleware(['auth', 'admin'])->group(function () {
             [PreorderManagementController::class, 'index']
         )->name('admin.preorders.index');
 
+        Route::get(
+            '/admin/preorders/{preorder}',
+            [PreorderManagementController::class, 'show']
+        )->name('admin.preorders.show');
+
         Route::patch(
             '/admin/preorders/{preorder}',
             [PreorderManagementController::class, 'update']
         )->name('admin.preorders.update');
+
+        Route::post(
+            '/admin/payments/{payment}/verify',
+            [PreorderManagementController::class, 'verifyPayment']
+        )->middleware('throttle:10,1')
+            ->name('admin.payments.verify');
+    });
+
+    Route::middleware('can:finance.manage')->group(function () {
+        Route::get(
+            '/admin/payments',
+            [PaymentReportController::class, 'index']
+        )->name('admin.payments.index');
     });
 });

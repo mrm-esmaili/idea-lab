@@ -39,11 +39,21 @@ class AdminPagesTest extends TestCase
             'campaign' => 'clubyar01',
         ]);
 
-        Preorder::create([
+        $preorder = Preorder::create([
             'landing_page_id' => $page->id,
             'name' => 'خریدار نمونه',
             'phone' => '09123456789',
-            'status' => 'converted',
+            'status' => 'interested',
+            'payment_status' => 'paid',
+            'amount_rial' => 1_200_000,
+        ]);
+
+        $preorder->payments()->create([
+            'amount_rial' => 1_200_000,
+            'status' => 'paid',
+            'authority' => 'A0001',
+            'ref_id' => '987654',
+            'verified_at' => now(),
         ]);
     }
 
@@ -62,7 +72,10 @@ class AdminPagesTest extends TestCase
         $this->get(route('ideas.show', $this->idea))->assertOk()->assertSee('/l/clubyar');
         $this->get(route('landing-pages.create', $this->idea))->assertOk();
         $this->get('/admin/leads')->assertOk()->assertSee('سرنخ نمونه')->assertSee('علاقه‌مند');
-        $this->get('/admin/preorders')->assertOk()->assertSee('خریدار نمونه')->assertSee('تبدیل‌شده');
+        $this->get('/admin/preorders')->assertOk()->assertSee('خریدار نمونه')->assertSee('پرداخت‌شده');
+        $this->get(route('admin.preorders.show', Preorder::sole()))->assertOk()->assertSee('987654')->assertSee('120,000 تومان');
+        $this->get('/admin/payments')->assertOk()->assertSee('987654');
+        $this->get('/admin/users')->assertOk();
     }
 
     public function test_menu_only_shows_permitted_sections(): void

@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
+    <meta name="robots" content="noindex, nofollow">
+    <meta name="referrer" content="no-referrer">
+
     <title>پرداخت پیش‌خرید</title>
 
     <style>
@@ -27,6 +30,23 @@
             font-size: 24px;
             font-weight: bold;
             margin: 20px 0;
+        }
+
+        .alert {
+            padding: 12px;
+            margin-bottom: 16px;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        .alert-error {
+            background: #fff0f0;
+            color: #a32020;
+        }
+
+        .alert-notice {
+            background: #fff8e6;
+            color: #7a5200;
         }
 
         .terms {
@@ -55,6 +75,14 @@
 <body>
 <div class="box">
     <h1>تکمیل پیش‌خرید</h1>
+
+    @if (session('payment_error'))
+        <div class="alert alert-error" role="alert">{{ session('payment_error') }}</div>
+    @endif
+
+    @if (session('payment_notice'))
+        <div class="alert alert-notice" role="status">{{ session('payment_notice') }}</div>
+    @endif
 
     <p>
         متقاضی:

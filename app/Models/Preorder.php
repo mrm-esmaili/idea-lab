@@ -18,6 +18,7 @@ class Preorder extends Model
         'refund_policy_id',
         'terms_accepted_at',
         'status',
+        'payment_status',
         'source',
         'medium',
         'campaign',
@@ -48,6 +49,14 @@ class Preorder extends Model
     public function lead(): BelongsTo
     {
         return $this->belongsTo(Lead::class);
+    }
+
+    public const PAYMENT_UNPAID = 'unpaid';
+    public const PAYMENT_PAID = 'paid';
+
+    public function isPaid(): bool
+    {
+        return $this->payment_status === self::PAYMENT_PAID;
     }
 
     public function refundPolicy(): BelongsTo

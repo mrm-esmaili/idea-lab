@@ -16,7 +16,8 @@ use Illuminate\Support\Collection;
  * - page_views: تعداد رویداد page_view
  * - unique_visitors: تعداد بازدیدکننده یکتا (بر اساس کوکی) با رویداد page_view
  * - leads / preorders: تعداد رکوردهای ثبت‌شده
- * - paid_count / paid_rial: پرداخت‌های تأییدشده (status = paid)
+ * - paid_count: تعداد سفارش‌های دارای پرداخت تأییدشده (پرداخت تکراری یک سفارش یک بار شمرده می‌شود)
+ * - paid_rial: جمع وجه دریافت‌شده از پرداخت‌های تأییدشده (status = paid)
  * - lead_rate: سرنخ تقسیم بر بازدیدکننده یکتا
  */
 class IdeaStatsService
@@ -60,7 +61,7 @@ class IdeaStatsService
             ->whereIn('preorders.landing_page_id', $pageIds)
             ->where('payments.status', 'paid')
             ->selectRaw('preorders.landing_page_id AS landing_page_id')
-            ->selectRaw('COUNT(*) AS paid_count')
+            ->selectRaw('COUNT(DISTINCT payments.preorder_id) AS paid_count')
             ->selectRaw('SUM(payments.amount_rial) AS paid_rial')
             ->groupBy('preorders.landing_page_id')
             ->get()

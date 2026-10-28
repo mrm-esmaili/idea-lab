@@ -62,6 +62,19 @@ return [
     ],
 
     [
+        'header' => 'امور مالی',
+        'items' => [
+            [
+                'label' => 'پرداخت‌ها',
+                'icon' => 'bi-credit-card',
+                'route' => 'admin.payments.index',
+                'permission' => 'finance.manage',
+                'active' => ['admin.payments.*'],
+            ],
+        ],
+    ],
+
+    [
         'header' => 'تنظیمات',
         'items' => [
             [

@@ -29,13 +29,23 @@
                 </div>
 
                 <div class="col-sm-6 col-lg-3">
-                    <label for="status" class="form-label">وضعیت</label>
+                    <label for="status" class="form-label">وضعیت پیگیری</label>
                     <select id="status" name="status" class="form-select">
                         <option value="">همه</option>
                         @foreach ($statuses as $value => $label)
                             <option value="{{ $value }}" @selected(request('status') === $value)>
                                 {{ $label }}
                             </option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <div class="col-sm-6 col-lg-2">
+                    <label for="payment_status" class="form-label">وضعیت پرداخت</label>
+                    <select id="payment_status" name="payment_status" class="form-select">
+                        <option value="">همه</option>
+                        @foreach (config('statuses.preorder_payment') as $value => $label)
+                            <option value="{{ $value }}" @selected(request('payment_status') === $value)>{{ $label }}</option>
                         @endforeach
                     </select>
                 </div>
@@ -72,7 +82,8 @@
                             <th>مبلغ</th>
                             <th>کمپین</th>
                             <th>تاریخ ثبت</th>
-                            <th>وضعیت</th>
+                            <th>پرداخت</th>
+                            <th>پیگیری</th>
                             <th class="table-actions">تغییر وضعیت</th>
                         </tr>
                     </thead>
@@ -80,7 +91,9 @@
                     <tbody>
                         @forelse ($preorders as $preorder)
                             <tr>
-                                <td>{{ $preorder->name }}</td>
+                                <td>
+                                    <a href="{{ route('admin.preorders.show', $preorder) }}" class="fw-semibold">{{ $preorder->name }}</a>
+                                </td>
                                 <td>
                                     <a href="tel:{{ $preorder->phone }}" class="ltr">{{ $preorder->phone }}</a>
                                 </td>
@@ -94,6 +107,7 @@
                                 </td>
                                 <td class="ltr">{{ $preorder->campaign ?? '—' }}</td>
                                 <td class="ltr text-nowrap">{{ \App\Support\Format::datetime($preorder->created_at) }}</td>
+                                <td><x-admin.status-badge group="preorder_payment" :value="$preorder->payment_status" /></td>
                                 <td><x-admin.status-badge group="preorder" :value="$preorder->status" /></td>
                                 <td>
                                     <form
@@ -123,7 +137,7 @@
                                 </td>
                             </tr>
                         @empty
-                            <x-admin.empty-row colspan="9">
+                            <x-admin.empty-row colspan="10">
                                 درخواست پیش‌خریدی با این شرایط پیدا نشد.
                             </x-admin.empty-row>
                         @endforelse
