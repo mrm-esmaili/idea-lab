@@ -18,7 +18,7 @@ class PreorderController extends Controller
 {
     public function store(Request $request, string $slug)
     {
-        $data = $request->validate([
+        $data = $request->validateWithBag('preorder', [
             'name' => ['required', 'string', 'max:120'],
 
             'phone' => [
@@ -55,7 +55,7 @@ class PreorderController extends Controller
         if ((int) $data['refund_policy_version'] !== $policy->version) {
             throw ValidationException::withMessages([
                 'accept_terms' => 'شرایط بازپرداخت به‌روزرسانی شده است؛ لطفاً شرایط جدید را مطالعه و دوباره ثبت کنید.',
-            ]);
+            ])->errorBag('preorder');
         }
 
         $visitorUuid = $request->cookie('visitor_uuid');

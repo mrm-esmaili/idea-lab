@@ -42,6 +42,19 @@ return [
     ],
 
     [
+        'header' => 'بازاریابی',
+        'items' => [
+            [
+                'label' => 'کمپین‌ها',
+                'icon' => 'bi-megaphone',
+                'route' => 'admin.campaigns.index',
+                'permission' => 'ideas.manage',
+                'active' => ['admin.campaigns.*'],
+            ],
+        ],
+    ],
+
+    [
         'header' => 'مخاطبان و فروش',
         'items' => [
             [

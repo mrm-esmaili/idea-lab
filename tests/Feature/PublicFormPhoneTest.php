@@ -58,7 +58,7 @@ class PublicFormPhoneTest extends TestCase
             'name' => 'علی',
             'phone' => '12345',
             'consent' => '1',
-        ])->assertSessionHasErrors('phone');
+        ])->assertSessionHasErrorsIn('lead', 'phone');
 
         $this->assertSame(0, Lead::count());
     }

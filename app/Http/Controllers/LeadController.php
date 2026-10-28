@@ -24,7 +24,8 @@ class LeadController extends Controller
         // فرم غیرفعال‌شده توسط مدیر نباید از مسیر مستقیم هم قابل ارسال باشد
         abort_unless($landingPage->contentData()['show_lead_form'], 404);
 
-        $data = $request->validate([
+        // کیسه خطای جدا تا خطای این فرم روی فرم پیش‌خرید همان صفحه نمایش داده نشود
+        $data = $request->validateWithBag('lead', [
             'name' => ['required', 'string', 'max:120'],
             'phone' => [
                 'required',
@@ -111,7 +112,7 @@ class LeadController extends Controller
         });
 
         return redirect()
-            ->route('landing-pages.show', $landingPage->slug)
+            ->to(route('landing-pages.show', $landingPage->slug) . '#lead-form')
             ->with('lead_success', true);
     }
 }

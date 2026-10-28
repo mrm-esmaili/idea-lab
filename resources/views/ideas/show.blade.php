@@ -172,6 +172,77 @@
 
             <div class="card mb-3">
                 <div class="card-header d-flex align-items-center">
+                    <h2 class="card-title h5 mb-0">کمپین‌ها</h2>
+                    <a href="{{ route('admin.campaigns.create', ['landing_page' => $idea->landingPages->first()?->id]) }}" class="btn btn-sm btn-link ms-auto">
+                        <i class="bi bi-plus-lg"></i> کمپین جدید
+                    </a>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0 align-middle">
+                            <thead>
+                                <tr>
+                                    <th>کمپین</th>
+                                    <th>وضعیت</th>
+                                    <th>بازدیدکننده</th>
+                                    <th>سرنخ</th>
+                                    <th>پیش‌خرید</th>
+                                    <th>پرداخت</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @forelse ($campaigns as $campaign)
+                                    @php($cs = $campaignReport['campaigns'][$campaign->id])
+                                    <tr>
+                                        <td>
+                                            <a href="{{ route('admin.campaigns.show', $campaign) }}">{{ $campaign->name }}</a>
+                                            <div class="small text-body-secondary">{{ $campaign->landingPage->name }}</div>
+                                        </td>
+                                        <td><x-admin.status-badge group="campaign" :value="$campaign->status" /></td>
+                                        <td>{{ number_format($cs['unique_visitors']) }}</td>
+                                        <td>{{ number_format($cs['leads']) }} <span class="small text-body-secondary">({{ number_format($cs['lead_rate'], 2) }}%)</span></td>
+                                        <td>{{ number_format($cs['preorders']) }}</td>
+                                        <td>{{ number_format($cs['paid_count']) }}</td>
+                                    </tr>
+                                @empty
+                                    <x-admin.empty-row colspan="6" icon="bi-megaphone">هنوز کمپینی برای صفحات این ایده ثبت نشده است.</x-admin.empty-row>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                @if ($campaignReport['other']->isNotEmpty())
+                    <div class="card-footer">
+                        <div class="small fw-semibold mb-2">ترافیک بدون کمپین ثبت‌شده</div>
+                        <div class="table-responsive">
+                            <table class="table table-sm mb-0 small">
+                                <tbody>
+                                    @foreach ($campaignReport['other'] as $row)
+                                        <tr>
+                                            <td>
+                                                @if ($row['campaign'])
+                                                    <span class="ltr">{{ $row['campaign'] }}</span>
+                                                    <span class="badge text-bg-warning">کد ثبت‌نشده</span>
+                                                @else
+                                                    <span class="text-body-secondary">بدون utm_campaign (مستقیم/ارگانیک)</span>
+                                                @endif
+                                                <div class="text-body-secondary">{{ $idea->landingPages->firstWhere('id', $row['landing_page_id'])?->name }}</div>
+                                            </td>
+                                            <td>{{ number_format($row['unique_visitors']) }} بازدیدکننده</td>
+                                            <td>{{ number_format($row['leads']) }} سرنخ</td>
+                                            <td>{{ number_format($row['preorders']) }} پیش‌خرید</td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                @endif
+            </div>
+
+            <div class="card mb-3">
+                <div class="card-header d-flex align-items-center">
                     <h2 class="card-title h5 mb-0">آخرین سرنخ‌ها</h2>
                     @can('leads.manage')
                         <a href="{{ route('admin.leads.index', ['idea' => $idea->id]) }}" class="btn btn-sm btn-link ms-auto">همه سرنخ‌های این ایده</a>

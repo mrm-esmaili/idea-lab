@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Enums\IdeaStatus;
+use App\Models\Campaign;
 use App\Models\Idea;
+use App\Services\CampaignStatsService;
 use App\Services\IdeaStatsService;
 use App\Support\Slug;
 use Illuminate\Http\Request;
@@ -66,8 +68,11 @@ class IdeaController extends Controller
             ->with('success', 'ایده با موفقیت ایجاد شد.');
     }
 
-    public function show(Idea $idea, IdeaStatsService $stats)
-    {
+    public function show(
+        Idea $idea,
+        IdeaStatsService $stats,
+        CampaignStatsService $campaignStats
+    ) {
         $idea->load([
             'landingPages' => fn ($query) => $query->latest(),
             'statusChanges.user',
@@ -76,6 +81,15 @@ class IdeaController extends Controller
 
         $pageStats = $stats->forLandingPages($idea);
         $totals = $stats->totals($pageStats);
+
+        $pageIds = $idea->landingPages->pluck('id');
+
+        $campaigns = Campaign::whereIn('landing_page_id', $pageIds)
+            ->with('landingPage')
+            ->latest()
+            ->get();
+
+        $campaignReport = $campaignStats->report($pageIds, $campaigns);
 
         $recentLeads = $idea->leads()
             ->with('landingPage')
@@ -88,6 +102,8 @@ class IdeaController extends Controller
             'pageStats',
             'totals',
             'recentLeads',
+            'campaigns',
+            'campaignReport',
         ));
     }
 

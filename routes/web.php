@@ -9,6 +9,7 @@ use App\Http\Controllers\LandingPageController;
 use App\Http\Controllers\PublicLandingPageController;
 use App\Http\Controllers\LeadController;
 use App\Http\Controllers\Admin\LeadManagementController;
+use App\Http\Controllers\Admin\CampaignController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\LandingPageEventController;
 use App\Http\Controllers\PreorderController;
@@ -145,6 +146,10 @@ Route::middleware(['auth', 'admin'])->group(function () {
             LandingPageController::class,
             'store',
         ])->name('landing-pages.store');
+
+        Route::resource('/admin/campaigns', CampaignController::class)
+            ->parameters(['campaigns' => 'campaign'])
+            ->names('admin.campaigns');
 
         Route::get('/landing-pages/{landingPage}/edit', [
             LandingPageController::class,

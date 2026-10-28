@@ -202,7 +202,7 @@ class IdeaSettingsAndPreorderTest extends TestCase
         $this->openPreorders();
 
         $this->submitPreorder(['accept_terms' => null])
-            ->assertSessionHasErrors('accept_terms');
+            ->assertSessionHasErrorsIn('preorder', 'accept_terms');
 
         $this->assertSame(0, Preorder::count());
     }
@@ -217,7 +217,7 @@ class IdeaSettingsAndPreorderTest extends TestCase
         ]);
 
         $this->submitPreorder(['refund_policy_version' => 1])
-            ->assertSessionHasErrors('accept_terms');
+            ->assertSessionHasErrorsIn('preorder', 'accept_terms');
 
         $this->assertSame(0, Preorder::count());
     }

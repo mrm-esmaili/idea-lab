@@ -2,8 +2,10 @@
 
 @php
     $color = match ($value) {
-        'new', 'requested', 'draft', 'unpaid', 'cancelled' => 'secondary',
-        'contacted', 'testing', 'building' => 'info',
+        'new', 'requested', 'draft', 'unpaid', 'cancelled', 'ended' => 'secondary',
+        'contacted', 'testing', 'building', 'planned' => 'info',
+        'running' => 'success',
+        'paused' => 'warning',
         'interested' => 'primary',
         'pending' => 'warning',
         'prepaid', 'customer', 'validated', 'launched', 'paid' => 'success',

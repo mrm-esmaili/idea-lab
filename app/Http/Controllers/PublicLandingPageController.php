@@ -19,7 +19,13 @@ class PublicLandingPageController extends Controller
             ->with('idea.currentRefundPolicy')
             ->firstOrFail();
 
-        $tracker->trackPageView($request, $landingPage);
+        // بازگشت پس از ارسال فرم (موفق یا با خطا) بازدید جدید نیست
+        $isFormReturn = $request->session()->has('errors')
+            || $request->session()->has('lead_success');
+
+        if (! $isFormReturn) {
+            $tracker->trackPageView($request, $landingPage);
+        }
 
         return response()
             ->view('landing-pages.show', compact('landingPage'));
