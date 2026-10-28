@@ -15,7 +15,7 @@ class PublicLandingPageController extends Controller
     ) {
         $landingPage = LandingPage::query()
             ->where('slug', $slug)
-            ->where('is_active', true)
+            ->publiclyVisible()
             ->with('idea')
             ->firstOrFail();
 

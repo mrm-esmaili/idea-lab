@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Idea;
 use App\Models\Lead;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -17,6 +18,7 @@ class LeadManagementController extends Controller
                 Rule::in(array_keys(config('statuses.lead'))),
             ],
             'campaign' => ['nullable', 'string', 'max:255'],
+            'idea' => ['nullable', 'integer', 'exists:ideas,id'],
         ]);
 
         $query = Lead::query()
@@ -25,6 +27,13 @@ class LeadManagementController extends Controller
 
         if (! empty($filters['status'])) {
             $query->where('status', $filters['status']);
+        }
+
+        if (! empty($filters['idea'])) {
+            $query->whereHas(
+                'landingPage',
+                fn ($page) => $page->where('idea_id', $filters['idea'])
+            );
         }
 
         if (! empty($filters['campaign'])) {
@@ -36,7 +45,9 @@ class LeadManagementController extends Controller
 
         $leads = $query->paginate(20)->withQueryString();
 
-        return view('admin.leads.index', compact('leads'));
+        $ideas = Idea::orderBy('name')->get(['id', 'name']);
+
+        return view('admin.leads.index', compact('leads', 'ideas'));
     }
 
     public function update(Request $request, Lead $lead)

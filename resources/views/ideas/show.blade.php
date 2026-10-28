@@ -8,76 +8,257 @@
 @endsection
 
 @section('page-actions')
-    <a href="{{ route('landing-pages.create', $idea) }}" class="btn btn-primary">
-        <i class="bi bi-plus-lg"></i>
-        ساخت صفحه فرود
-    </a>
+    <div class="d-flex flex-wrap gap-2">
+        <a href="{{ route('ideas.edit', $idea) }}" class="btn btn-outline-secondary">
+            <i class="bi bi-pencil"></i> ویرایش
+        </a>
+
+        @if ($idea->isArchived())
+            <form method="POST" action="{{ route('ideas.restore', $idea) }}">
+                @csrf
+                <button type="submit" class="btn btn-outline-success">
+                    <i class="bi bi-arrow-counterclockwise"></i> خروج از بایگانی
+                </button>
+            </form>
+        @else
+            <form
+                method="POST"
+                action="{{ route('ideas.archive', $idea) }}"
+                onsubmit="return confirm('با بایگانی، صفحات فرود این ایده برای عموم غیرقابل‌دسترس می‌شوند. ادامه می‌دهید؟')"
+            >
+                @csrf
+                <button type="submit" class="btn btn-outline-warning">
+                    <i class="bi bi-archive"></i> بایگانی
+                </button>
+            </form>
+        @endif
+
+        @if ($idea->landingPages->isEmpty())
+            <form
+                method="POST"
+                action="{{ route('ideas.destroy', $idea) }}"
+                onsubmit="return confirm('این ایده برای همیشه حذف می‌شود. مطمئن هستید؟')"
+            >
+                @csrf
+                @method('DELETE')
+                <button type="submit" class="btn btn-outline-danger">
+                    <i class="bi bi-trash"></i> حذف
+                </button>
+            </form>
+        @endif
+
+        <a href="{{ route('landing-pages.create', $idea) }}" class="btn btn-primary">
+            <i class="bi bi-plus-lg"></i> ساخت صفحه فرود
+        </a>
+    </div>
 @endsection
 
 @section('content')
-    <div class="card mb-3">
-        <div class="card-body">
-            <div class="mb-2">
-                وضعیت:
-                <x-admin.status-badge group="idea" :value="$idea->status" />
-            </div>
-
-            <p class="mb-0 text-body-secondary">
-                {{ $idea->description ?: 'توضیحی ثبت نشده است.' }}
-            </p>
+    @if ($idea->isArchived())
+        <div class="alert alert-warning">
+            <i class="bi bi-archive me-1"></i>
+            این ایده در {{ \App\Support\Format::datetime($idea->archived_at) }} بایگانی شده و صفحات فرود آن عمومی نیستند.
         </div>
+    @endif
+
+    <div class="row row-cols-1 row-cols-sm-2 row-cols-xl-4 g-3 mb-3">
+        @foreach ([
+            ['label' => 'بازدیدکننده یکتا', 'value' => number_format($totals['unique_visitors']), 'hint' => number_format($totals['page_views']) . ' بازدید صفحه', 'icon' => 'bi-people', 'color' => 'primary'],
+            ['label' => 'سرنخ', 'value' => number_format($totals['leads']), 'hint' => 'نرخ ثبت: ' . number_format($totals['lead_rate'], 2) . '%', 'icon' => 'bi-person-lines-fill', 'color' => 'success'],
+            ['label' => 'درخواست پیش‌خرید', 'value' => number_format($totals['preorders']), 'hint' => null, 'icon' => 'bi-bag', 'color' => 'info'],
+            ['label' => 'پرداخت موفق', 'value' => number_format($totals['paid_count']), 'hint' => \App\Support\Money::formatRialAsToman($totals['paid_rial']), 'icon' => 'bi-credit-card', 'color' => 'warning'],
+        ] as $stat)
+            <div class="col">
+                <div class="info-box h-100">
+                    <span class="info-box-icon text-bg-{{ $stat['color'] }} shadow-sm"><i class="bi {{ $stat['icon'] }}"></i></span>
+                    <div class="info-box-content">
+                        <span class="info-box-text">{{ $stat['label'] }}</span>
+                        <span class="info-box-number">{{ $stat['value'] }}</span>
+                        @if ($stat['hint'])
+                            <span class="small text-body-secondary">{{ $stat['hint'] }}</span>
+                        @endif
+                    </div>
+                </div>
+            </div>
+        @endforeach
     </div>
 
-    <div class="card">
-        <div class="card-header">
-            <h2 class="card-title h5 mb-0">صفحات فرود</h2>
+    <div class="row g-3">
+        <div class="col-xl-8">
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h2 class="card-title h5 mb-0">صفحات فرود</h2>
+                </div>
+
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0 align-middle">
+                            <thead>
+                                <tr>
+                                    <th>صفحه</th>
+                                    <th>وضعیت</th>
+                                    <th title="بازدیدکننده یکتا">بازدیدکننده</th>
+                                    <th>سرنخ</th>
+                                    <th>پیش‌خرید</th>
+                                    <th>پرداخت</th>
+                                    <th>عملیات</th>
+                                </tr>
+                            </thead>
+
+                            <tbody>
+                                @forelse ($idea->landingPages as $landingPage)
+                                    @php($s = $pageStats[$landingPage->id])
+                                    <tr>
+                                        <td>
+                                            <div class="fw-semibold">{{ $landingPage->name }}</div>
+                                            <div class="small text-body-secondary ltr text-end">/l/{{ $landingPage->slug }}</div>
+                                        </td>
+                                        <td>
+                                            @if ($landingPage->is_active)
+                                                <span class="badge text-bg-success">منتشرشده</span>
+                                            @else
+                                                <span class="badge text-bg-secondary">غیرفعال</span>
+                                            @endif
+                                        </td>
+                                        <td>{{ number_format($s['unique_visitors']) }}</td>
+                                        <td>
+                                            {{ number_format($s['leads']) }}
+                                            <div class="small text-body-secondary">{{ number_format($s['lead_rate'], 2) }}%</div>
+                                        </td>
+                                        <td>{{ number_format($s['preorders']) }}</td>
+                                        <td>{{ number_format($s['paid_count']) }}</td>
+                                        <td class="text-nowrap">
+                                            <a href="{{ route('landing-pages.edit', $landingPage) }}" class="btn btn-sm btn-outline-secondary" title="ویرایش" aria-label="ویرایش {{ $landingPage->name }}">
+                                                <i class="bi bi-pencil"></i>
+                                            </a>
+                                            <a href="{{ route('landing-pages.show', $landingPage->slug) }}" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-outline-primary" title="مشاهده" aria-label="مشاهده {{ $landingPage->name }}">
+                                                <i class="bi bi-box-arrow-up-left"></i>
+                                            </a>
+                                            <form
+                                                method="POST"
+                                                action="{{ route('landing-pages.toggle', $landingPage) }}"
+                                                class="d-inline"
+                                                @if ($landingPage->is_active)
+                                                    onsubmit="return confirm('صفحه غیرفعال شود؟ لینک‌های تبلیغاتی این صفحه از کار می‌افتند.')"
+                                                @endif
+                                            >
+                                                @csrf
+                                                @method('PATCH')
+                                                @if ($landingPage->is_active)
+                                                    <button type="submit" class="btn btn-sm btn-outline-warning">غیرفعال‌سازی</button>
+                                                @else
+                                                    <button type="submit" class="btn btn-sm btn-outline-success">انتشار</button>
+                                                @endif
+                                            </form>
+                                        </td>
+                                    </tr>
+                                @empty
+                                    <x-admin.empty-row colspan="7" icon="bi-window">
+                                        هنوز صفحه فرودی برای این ایده ساخته نشده است.
+                                    </x-admin.empty-row>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="card-footer small text-body-secondary">
+                    نرخ ثبت = سرنخ تقسیم بر بازدیدکننده یکتای همان صفحه. بازدیدکننده یکتا بر اساس کوکی مرورگر شمرده می‌شود.
+                </div>
+            </div>
+
+            <div class="card mb-3">
+                <div class="card-header d-flex align-items-center">
+                    <h2 class="card-title h5 mb-0">آخرین سرنخ‌ها</h2>
+                    @can('leads.manage')
+                        <a href="{{ route('admin.leads.index', ['idea' => $idea->id]) }}" class="btn btn-sm btn-link ms-auto">همه سرنخ‌های این ایده</a>
+                    @endcan
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table mb-0">
+                            <tbody>
+                                @forelse ($recentLeads as $lead)
+                                    <tr>
+                                        <td>{{ $lead->name }}</td>
+                                        <td class="ltr">{{ $lead->phone }}</td>
+                                        <td class="small text-body-secondary">{{ $lead->landingPage->name }}</td>
+                                        <td><x-admin.status-badge group="lead" :value="$lead->status" /></td>
+                                        <td class="ltr text-nowrap small">{{ \App\Support\Format::datetime($lead->created_at) }}</td>
+                                    </tr>
+                                @empty
+                                    <x-admin.empty-row colspan="5">هنوز سرنخی ثبت نشده است.</x-admin.empty-row>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            @if ($idea->description)
+                <div class="card mb-3">
+                    <div class="card-header"><h2 class="card-title h5 mb-0">توضیحات</h2></div>
+                    <div class="card-body">{!! nl2br(e($idea->description)) !!}</div>
+                </div>
+            @endif
         </div>
 
-        <div class="card-body p-0">
-            <div class="table-responsive">
-                <table class="table table-hover mb-0">
-                    <thead>
-                        <tr>
-                            <th>نام</th>
-                            <th>عنوان</th>
-                            <th>آدرس</th>
-                            <th>وضعیت</th>
-                            <th>لینک</th>
-                        </tr>
-                    </thead>
+        <div class="col-xl-4">
+            <div class="card mb-3">
+                <div class="card-header"><h2 class="card-title h5 mb-0">وضعیت ایده</h2></div>
+                <div class="card-body">
+                    <p>
+                        وضعیت فعلی:
+                        <x-admin.status-badge group="idea" :value="$idea->status" class="fs-6" />
+                    </p>
 
-                    <tbody>
-                        @forelse ($idea->landingPages as $landingPage)
-                            <tr>
-                                <td class="fw-semibold">{{ $landingPage->name }}</td>
-                                <td>{{ $landingPage->title }}</td>
-                                <td class="ltr small">/l/{{ $landingPage->slug }}</td>
-                                <td>
-                                    @if ($landingPage->is_active)
-                                        <span class="badge text-bg-success">فعال</span>
-                                    @else
-                                        <span class="badge text-bg-secondary">غیرفعال</span>
-                                    @endif
-                                </td>
-                                <td>
-                                    <a
-                                        href="{{ route('landing-pages.show', $landingPage->slug) }}"
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        class="btn btn-sm btn-outline-primary"
-                                    >
-                                        <i class="bi bi-box-arrow-up-left"></i>
-                                        مشاهده
-                                    </a>
-                                </td>
-                            </tr>
-                        @empty
-                            <x-admin.empty-row colspan="5" icon="bi-window">
-                                هنوز صفحه فرودی برای این ایده ساخته نشده است.
-                            </x-admin.empty-row>
-                        @endforelse
-                    </tbody>
-                </table>
+                    @php($transitions = $idea->statusEnum()->allowedTransitions())
+
+                    <form method="POST" action="{{ route('ideas.status', $idea) }}">
+                        @csrf
+                        @method('PATCH')
+
+                        <div class="mb-2">
+                            <label for="status" class="form-label">تغییر به</label>
+                            <select id="status" name="status" required @class(['form-select', 'is-invalid' => $errors->has('status')])>
+                                @foreach ($transitions as $status)
+                                    <option value="{{ $status->value }}" @selected(old('status') === $status->value)>{{ $status->label() }}</option>
+                                @endforeach
+                            </select>
+                            @error('status')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                        </div>
+
+                        <div class="mb-2">
+                            <label for="note" class="form-label">دلیل یا توضیح</label>
+                            <textarea id="note" name="note" rows="2" maxlength="2000" class="form-control">{{ old('note') }}</textarea>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary btn-sm">ثبت تغییر وضعیت</button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="card mb-3">
+                <div class="card-header"><h2 class="card-title h5 mb-0">تاریخچه وضعیت</h2></div>
+                <ul class="list-group list-group-flush">
+                    @forelse ($idea->statusChanges as $change)
+                        <li class="list-group-item">
+                            <div>
+                                <x-admin.status-badge group="idea" :value="$change->from_status" />
+                                <i class="bi bi-arrow-left mx-1"></i>
+                                <x-admin.status-badge group="idea" :value="$change->to_status" />
+                            </div>
+                            @if ($change->note)
+                                <div class="small mt-1">{{ $change->note }}</div>
+                            @endif
+                            <div class="small text-body-secondary mt-1">
+                                {{ $change->user?->name ?? 'کاربر حذف‌شده' }}
+                                — <span class="ltr">{{ \App\Support\Format::datetime($change->created_at) }}</span>
+                            </div>
+                        </li>
+                    @empty
+                        <li class="list-group-item text-body-secondary small">هنوز تغییری ثبت نشده است.</li>
+                    @endforelse
+                </ul>
             </div>
         </div>
     </div>

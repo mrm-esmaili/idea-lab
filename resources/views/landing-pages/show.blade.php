@@ -140,10 +140,57 @@
             color: #a32020;
             border-radius: 8px;
         }
+
+        .hero-image {
+            display: block;
+            max-width: 100%;
+            max-height: 420px;
+            margin: 0 auto 30px;
+            border-radius: 12px;
+        }
+
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 12px;
+            padding: 0;
+            margin: 30px 0;
+            list-style: none;
+        }
+
+        .features li {
+            padding: 14px 18px;
+            background: #fff;
+            border-radius: 10px;
+        }
+
+        .body-text {
+            max-width: 720px;
+            margin: 0 auto;
+        }
+
+        .faq {
+            max-width: 720px;
+            margin: 40px auto;
+            text-align: right;
+        }
+
+        .faq details {
+            margin-bottom: 10px;
+            padding: 12px 18px;
+            background: #fff;
+            border-radius: 10px;
+        }
+
+        .faq summary {
+            cursor: pointer;
+            font-weight: bold;
+        }
     </style>
 </head>
 
 <body>
+    @php($content = $landingPage->contentData())
 
     <main>
         <section class="hero">
@@ -163,9 +210,17 @@
                     </p>
                 @endif
 
-                @if ($landingPage->cta_text)
+                @if ($heroImageUrl = $landingPage->heroImageUrl())
+                    <img
+                        src="{{ $heroImageUrl }}"
+                        alt="{{ $landingPage->title }}"
+                        class="hero-image"
+                    >
+                @endif
+
+                @if ($landingPage->cta_text && ($content['show_lead_form'] || $content['show_preorder_form']))
                     <a
-                        href="#lead-form"
+                        href="{{ $content['show_lead_form'] ? '#lead-form' : '#preorder-form' }}"
                         class="cta"
                         id="main-cta"
                     >
@@ -179,14 +234,39 @@
         <section class="content container">
 
             <h2>
-                به‌زودی اطلاعات بیشتری منتشر می‌شود
+                {{ $content['body_title'] ?? 'به‌زودی اطلاعات بیشتری منتشر می‌شود' }}
             </h2>
 
-            <p>
-                اگر به این محصول علاقه‌مند هستید،
-                می‌توانید برای دریافت اطلاعات بیشتر ثبت‌نام کنید.
-            </p>
+            @if ($content['body_text'])
+                <p class="body-text">{!! nl2br(e($content['body_text'])) !!}</p>
+            @else
+                <p>
+                    اگر به این محصول علاقه‌مند هستید،
+                    می‌توانید برای دریافت اطلاعات بیشتر ثبت‌نام کنید.
+                </p>
+            @endif
 
+            @if ($content['features'])
+                <ul class="features">
+                    @foreach ($content['features'] as $feature)
+                        <li>{{ $feature }}</li>
+                    @endforeach
+                </ul>
+            @endif
+
+            @if ($content['faq'])
+                <div class="faq">
+                    <h2>پرسش‌های متداول</h2>
+                    @foreach ($content['faq'] as $item)
+                        <details>
+                            <summary>{{ $item['q'] }}</summary>
+                            <p>{!! nl2br(e($item['a'])) !!}</p>
+                        </details>
+                    @endforeach
+                </div>
+            @endif
+
+            @if ($content['show_lead_form'])
             <div id="lead-form">
 
                 <h2>دریافت اطلاعات و ثبت علاقه‌مندی</h2>
@@ -280,9 +360,11 @@
                 @endif
 
             </div>
+            @endif
 
         </section>
 
+        @if ($content['show_preorder_form'])
         <section id="preorder-form" class="preorder-section">
 
             <h2>درخواست پیش‌خرید</h2>
@@ -359,6 +441,7 @@
             </form>
 
         </section>
+        @endif
     </main>
 
     <footer class="footer">

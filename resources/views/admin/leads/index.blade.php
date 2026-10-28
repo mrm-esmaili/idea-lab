@@ -17,6 +17,18 @@
                 class="row g-2 align-items-end"
             >
                 <div class="col-sm-6 col-lg-3">
+                    <label for="idea" class="form-label">ایده</label>
+                    <select id="idea" name="idea" class="form-select">
+                        <option value="">همه ایده‌ها</option>
+                        @foreach ($ideas as $ideaOption)
+                            <option value="{{ $ideaOption->id }}" @selected((string) request('idea') === (string) $ideaOption->id)>
+                                {{ $ideaOption->name }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <div class="col-sm-6 col-lg-3">
                     <label for="status" class="form-label">وضعیت</label>
                     <select name="status" id="status" class="form-select">
                         <option value="">همه وضعیت‌ها</option>

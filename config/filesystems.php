@@ -38,6 +38,15 @@ return [
             'report' => false,
         ],
 
+        // تصاویر صفحات فرود؛ مستقیم در public تا روی cPanel به storage:link نیاز نباشد
+        'uploads' => [
+            'driver' => 'local',
+            'root' => public_path('uploads'),
+            'visibility' => 'public',
+            'throw' => true,
+            'report' => false,
+        ],
+
         'public' => [
             'driver' => 'local',
             'root' => storage_path('app/public'),

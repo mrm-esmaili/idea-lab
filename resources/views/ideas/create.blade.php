@@ -35,6 +35,7 @@
                         id="description"
                         name="description"
                         rows="4"
+                        maxlength="5000"
                         @class(['form-control', 'is-invalid' => $errors->has('description')])
                     >{{ old('description') }}</textarea>
                     @error('description')

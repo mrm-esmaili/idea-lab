@@ -18,8 +18,11 @@ class LeadController extends Controller
     {
         $landingPage = LandingPage::query()
             ->where('slug', $slug)
-            ->where('is_active', true)
+            ->publiclyVisible()
             ->firstOrFail();
+
+        // فرم غیرفعال‌شده توسط مدیر نباید از مسیر مستقیم هم قابل ارسال باشد
+        abort_unless($landingPage->contentData()['show_lead_form'], 404);
 
         $data = $request->validate([
             'name' => ['required', 'string', 'max:120'],

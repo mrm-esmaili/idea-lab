@@ -11,6 +11,7 @@ use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\LandingPageEventController;
 use App\Http\Controllers\PreorderController;
 use App\Http\Controllers\Admin\PreorderManagementController;
+use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\ZarinpalPaymentController;
 
 Route::get('/login', [
@@ -87,8 +88,22 @@ Route::middleware(['auth', 'admin'])->group(function () {
         ->name('admin.dashboard');
 
     Route::middleware('can:ideas.manage')->group(function () {
-        Route::resource('ideas', IdeaController::class)
-            ->only(['index', 'create', 'store', 'show']);
+        Route::resource('ideas', IdeaController::class);
+
+        Route::patch('/ideas/{idea}/status', [
+            IdeaController::class,
+            'changeStatus',
+        ])->name('ideas.status');
+
+        Route::post('/ideas/{idea}/archive', [
+            IdeaController::class,
+            'archive',
+        ])->name('ideas.archive');
+
+        Route::post('/ideas/{idea}/restore', [
+            IdeaController::class,
+            'restore',
+        ])->name('ideas.restore');
 
         Route::get('/ideas/{idea}/landing-pages/create', [
             LandingPageController::class,
@@ -99,6 +114,21 @@ Route::middleware(['auth', 'admin'])->group(function () {
             LandingPageController::class,
             'store',
         ])->name('landing-pages.store');
+
+        Route::get('/landing-pages/{landingPage}/edit', [
+            LandingPageController::class,
+            'edit',
+        ])->name('landing-pages.edit');
+
+        Route::put('/landing-pages/{landingPage}', [
+            LandingPageController::class,
+            'update',
+        ])->name('landing-pages.update');
+
+        Route::patch('/landing-pages/{landingPage}/toggle', [
+            LandingPageController::class,
+            'toggle',
+        ])->name('landing-pages.toggle');
     });
 
     Route::middleware('can:leads.manage')->group(function () {
@@ -111,6 +141,12 @@ Route::middleware(['auth', 'admin'])->group(function () {
             LeadManagementController::class,
             'update',
         ])->name('admin.leads.update');
+    });
+
+    Route::middleware('can:users.manage')->group(function () {
+        Route::resource('/admin/users', UserController::class)
+            ->only(['index', 'create', 'store', 'edit', 'update'])
+            ->names('admin.users');
     });
 
     Route::middleware('can:preorders.manage')->group(function () {

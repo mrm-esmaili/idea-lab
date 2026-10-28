@@ -34,8 +34,11 @@ class PreorderController extends Controller
         $data['phone'] = PhoneNumber::normalizeMobile($data['phone']);
 
         $landingPage = LandingPage::where('slug', $slug)
-            ->where('is_active', true)
+            ->publiclyVisible()
             ->firstOrFail();
+
+        // فرم غیرفعال‌شده توسط مدیر نباید از مسیر مستقیم هم قابل ارسال باشد
+        abort_unless($landingPage->contentData()['show_preorder_form'], 404);
 
         $visitorUuid = $request->cookie('visitor_uuid');
 

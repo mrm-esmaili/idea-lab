@@ -29,7 +29,7 @@ return [
                 'icon' => 'bi-lightbulb',
                 'route' => 'ideas.index',
                 'permission' => 'ideas.manage',
-                'active' => ['ideas.index', 'ideas.show', 'landing-pages.*'],
+                'active' => ['ideas.index', 'ideas.show', 'ideas.edit', 'landing-pages.*'],
             ],
             [
                 'label' => 'ایده جدید',
@@ -57,6 +57,19 @@ return [
                 'route' => 'admin.preorders.index',
                 'permission' => 'preorders.manage',
                 'active' => ['admin.preorders.*'],
+            ],
+        ],
+    ],
+
+    [
+        'header' => 'تنظیمات',
+        'items' => [
+            [
+                'label' => 'کاربران پنل',
+                'icon' => 'bi-people',
+                'route' => 'admin.users.index',
+                'permission' => 'users.manage',
+                'active' => ['admin.users.*'],
             ],
         ],
     ],
