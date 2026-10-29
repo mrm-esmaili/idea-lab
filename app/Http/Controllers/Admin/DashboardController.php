@@ -4,54 +4,25 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\LandingPage;
-use App\Models\LandingPageEvent;
-use App\Models\Lead;
-use App\Models\Visitor;
+use App\Services\FunnelStats;
+use App\Services\Reports\DashboardService;
+use Illuminate\Http\Request;
 
 class DashboardController extends Controller
 {
-    public function index()
+    public function index(Request $request, DashboardService $dashboard, FunnelStats $funnel)
     {
-        $pageViews = LandingPageEvent::where(
-            'event_name',
-            'page_view'
-        )->count();
+        $landingPages = LandingPage::with('idea')->latest()->paginate(10);
 
-        $ctaClicks = LandingPageEvent::where(
-            'event_name',
-            'cta_click'
-        )->count();
+        // شاخص هر صفحه با همان تعاریف گزارش‌ها (کل دوره)
+        $pageStats = $funnel->grouped($landingPages->getCollection()->pluck('id'), false);
 
-        $ctaClickRate = $pageViews > 0
-            ? round(($ctaClicks / $pageViews) * 100, 2)
-            : 0;
-
-        $leads = Lead::count();
-
-        $visitors = Visitor::count();
-
-        $conversionRate = $pageViews > 0
-            ? round(($leads / $pageViews) * 100, 2)
-            : 0;
-
-        $landingPages = LandingPage::with('idea')
-            ->withCount([
-                'events as page_views_count' => function ($query) {
-                    $query->where('event_name', 'page_view');
-                },
-                'leads as leads_count',
-            ])
-            ->latest()
-            ->paginate(20);
-
-        return view('admin.dashboard.index', compact(
-            'pageViews',
-            'leads',
-            'visitors',
-            'conversionRate',
-            'landingPages',
-            'ctaClicks',
-            'ctaClickRate',
-        ));
+        return view('admin.dashboard.index', [
+            'attention' => $dashboard->attention($request->user()),
+            'activity' => $dashboard->activity(),
+            'ideasByStatus' => $dashboard->ideasByStatus(),
+            'landingPages' => $landingPages,
+            'pageStats' => $pageStats,
+        ]);
     }
 }

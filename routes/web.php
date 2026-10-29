@@ -24,6 +24,7 @@ use App\Http\Controllers\Admin\FinanceReportController;
 use App\Http\Controllers\Admin\PaymentReportController;
 use App\Http\Controllers\Admin\RefundRequestController;
 use App\Http\Controllers\Admin\PreorderManagementController;
+use App\Http\Controllers\Admin\ReportController;
 use App\Http\Controllers\Admin\SmsBroadcastController;
 use App\Http\Controllers\Admin\SmsMessageController;
 use App\Http\Controllers\Admin\SmsTemplateController;
@@ -258,6 +259,14 @@ Route::middleware(['auth:web', 'admin'])->group(function () {
         Route::get('/admin/groups/{group}/export', [ContactGroupController::class, 'export'])
             ->middleware(['can:contacts.export', 'throttle:10,1'])
             ->name('admin.groups.export');
+    });
+
+    Route::middleware('can:reports.view')->group(function () {
+        Route::get('/admin/reports/funnel', [ReportController::class, 'funnel'])->name('admin.reports.funnel');
+        Route::get('/admin/reports/ideas', [ReportController::class, 'ideas'])->name('admin.reports.ideas');
+        Route::get('/admin/reports/sources', [ReportController::class, 'sources'])->name('admin.reports.sources');
+        Route::get('/admin/reports/contacts', [ReportController::class, 'contacts'])->name('admin.reports.contacts');
+        Route::get('/admin/reports/sms', [ReportController::class, 'sms'])->name('admin.reports.sms');
     });
 
     Route::middleware('can:sms.broadcast')->group(function () {

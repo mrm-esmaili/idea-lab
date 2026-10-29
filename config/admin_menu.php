@@ -22,6 +22,17 @@ return [
     ],
 
     [
+        'header' => 'گزارش‌ها',
+        'items' => [
+            ['label' => 'قیف تبدیل', 'icon' => 'bi-funnel', 'route' => 'admin.reports.funnel', 'permission' => 'reports.view', 'active' => ['admin.reports.funnel']],
+            ['label' => 'اقتصاد ایده‌ها', 'icon' => 'bi-calculator', 'route' => 'admin.reports.ideas', 'permission' => 'reports.view', 'active' => ['admin.reports.ideas']],
+            ['label' => 'منابع جذب', 'icon' => 'bi-signpost-split', 'route' => 'admin.reports.sources', 'permission' => 'reports.view', 'active' => ['admin.reports.sources']],
+            ['label' => 'باشگاه مشتریان', 'icon' => 'bi-person-hearts', 'route' => 'admin.reports.contacts', 'permission' => 'reports.view', 'active' => ['admin.reports.contacts']],
+            ['label' => 'پیامک و هزینه', 'icon' => 'bi-chat-square-dots', 'route' => 'admin.reports.sms', 'permission' => 'reports.view', 'active' => ['admin.reports.sms']],
+        ],
+    ],
+
+    [
         'header' => 'ایده‌ها',
         'items' => [
             [

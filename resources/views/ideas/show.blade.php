@@ -324,8 +324,8 @@
                         <dt class="col-5 fw-normal text-body-secondary">بازه آزمایش</dt>
                         <dd class="col-7">
                             @if ($idea->test_starts_on || $idea->test_ends_on)
-                                از <span class="ltr text-nowrap">{{ $idea->test_starts_on?->format('Y-m-d') ?? '…' }}</span>
-                                تا <span class="ltr text-nowrap">{{ $idea->test_ends_on?->format('Y-m-d') ?? '…' }}</span>
+                                از <span class="ltr text-nowrap">{{ $idea->test_starts_on ? \App\Support\Format::date($idea->test_starts_on) : '…' }}</span>
+                                تا <span class="ltr text-nowrap">{{ $idea->test_ends_on ? \App\Support\Format::date($idea->test_ends_on) : '…' }}</span>
                             @else
                                 —
                             @endif

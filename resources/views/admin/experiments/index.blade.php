@@ -22,7 +22,7 @@
                             <span class="text-body-secondary small">— {{ $decision->experiment->idea->name }}</span>
                             <x-admin.status-badge group="experiment_decision" :value="$decision->decision" />
                         </span>
-                        <span class="small ltr">{{ $decision->review_on->toDateString() }}</span>
+                        <span class="small ltr">{{ \App\Support\Format::date($decision->review_on) }}</span>
                     </li>
                 @endforeach
             </ul>
@@ -78,7 +78,7 @@
                                     <div class="small text-body-secondary">{{ $experiment->campaigns->isEmpty() ? 'همه ترافیک ایده' : $experiment->campaigns->pluck('name')->join('، ') }}</div>
                                 </td>
                                 <td>{{ $experiment->idea->name }}</td>
-                                <td class="ltr small text-nowrap">{{ $experiment->starts_on->toDateString() }} → {{ $experiment->ends_on->toDateString() }}</td>
+                                <td class="small text-nowrap">{{ \App\Support\Format::date($experiment->starts_on) }} تا {{ \App\Support\Format::date($experiment->ends_on) }}</td>
                                 <td><x-admin.status-badge group="experiment" :value="$experiment->status()" /></td>
                                 <td>
                                     @if ($last = $experiment->decisions->first())

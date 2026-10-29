@@ -214,7 +214,7 @@
                                         <td class="text-nowrap">{{ $toman($refund->amount_rial) }}</td>
                                         <td>{{ \App\Models\Refund::METHODS[$refund->method] ?? $refund->method }}</td>
                                         <td class="ltr">{{ $refund->reference }}</td>
-                                        <td class="ltr text-nowrap">{{ $refund->refunded_on->format('Y-m-d') }}</td>
+                                        <td class="ltr text-nowrap">{{ \App\Support\Format::date($refund->refunded_on) }}</td>
                                         <td>{{ $refund->executor?->name }}</td>
                                     </tr>
                                 @empty

@@ -40,8 +40,8 @@
                 <x-admin.status-badge group="campaign" :value="$campaign->status" />
                 {{ $campaign->landingPage->idea->name }} / {{ $campaign->landingPage->name }}
                 @if ($campaign->starts_on || $campaign->ends_on)
-                    — از <span class="ltr">{{ $campaign->starts_on?->format('Y-m-d') ?? '…' }}</span>
-                    تا <span class="ltr">{{ $campaign->ends_on?->format('Y-m-d') ?? '…' }}</span>
+                    — از <span class="ltr">{{ $campaign->starts_on ? \App\Support\Format::date($campaign->starts_on) : '…' }}</span>
+                    تا <span class="ltr">{{ $campaign->ends_on ? \App\Support\Format::date($campaign->ends_on) : '…' }}</span>
                 @endif
             </div>
         </div>

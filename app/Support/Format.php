@@ -7,6 +7,10 @@ use Illuminate\Support\Carbon;
 
 class Format
 {
+    /**
+     * تاریخ و ساعت شمسی به وقت نمایش؛ قالب با نشانه‌های میلادی (Y-m-d H:i)
+     * داده می‌شود و خروجی شمسی با جداکننده «/» است.
+     */
     public static function datetime(
         ?DateTimeInterface $value,
         string $format = 'Y-m-d H:i'
@@ -15,9 +19,22 @@ class Format
             return '—';
         }
 
-        return Carbon::instance($value)
-            ->timezone(config('app.display_timezone'))
-            ->format($format);
+        return Jalali::format($value, str_replace('-', '/', $format));
+    }
+
+    public static function date(?DateTimeInterface $value): string
+    {
+        return self::datetime($value, 'Y-m-d');
+    }
+
+    /**
+     * تاریخ میلادی برای ورودی‌های فرم و تبادل داده.
+     */
+    public static function gregorian(?DateTimeInterface $value, string $format = 'Y-m-d H:i'): string
+    {
+        return $value === null
+            ? '—'
+            : Carbon::instance($value)->timezone(config('app.display_timezone'))->format($format);
     }
 
     public static function status(string $group, ?string $value): string

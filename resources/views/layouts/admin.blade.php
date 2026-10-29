@@ -114,6 +114,7 @@
 
 <script src="{{ asset('vendor/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
 <script src="{{ asset('vendor/adminlte/js/adminlte.min.js') }}"></script>
+<script src="{{ asset('js/jalali-hint.js') }}" defer></script>
 @stack('scripts')
 </body>
 </html>

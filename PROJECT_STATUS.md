@@ -6,8 +6,8 @@
 |---|---|
 | آخرین به‌روزرسانی | ۱۴۰۵/۰۸/۰۷ |
 | شاخه | `claude/new-session-ebbvr0` |
-| آخرین قابلیت تکمیل‌شده | گام K — آزمایش‌ها و تصمیم‌گیری (مراحل ۶۶ تا ۷۲) |
-| تست‌ها | ۱۴۴ تست، همه پاس روی SQLite و MariaDB 10.11 (strict) |
+| آخرین قابلیت تکمیل‌شده | گام L — داشبورد و گزارش‌ها (مراحل ۷۳ تا ۷۸) |
+| تست‌ها | ۱۴۹ تست، همه پاس روی SQLite و MariaDB 10.11 (strict) |
 | محیط هدف | MariaDB 11.4، PHP 8.4، cPanel بدون SSH و npm |
 
 ## قابلیت‌های تکمیل‌شده
@@ -27,19 +27,19 @@
 | I | ۵۰ تا ۵۷ | درخواست بازپرداخت مشتری، صف بررسی و تأیید/رد، ثبت اجرای واقعی با مرجع، جلوگیری از بازپرداخت اضافه، سابقه ممیزی فقط‌افزودنی، هزینه‌ها، هزینه واقعی کمپین، گزارش مالی | `ec98580` |
 | J | ۵۸ تا ۶۵ | مدیریت قالب با پیش‌نمایش و فعال‌سازی، پیامک پرداخت/بازپرداخت/وضعیت ایده، ارسال گروهی با پیش‌نمایش و تأیید و رعایت رضایت، ارسال دستی، سابقه پیامک، صف با ضدتکرار و محدودیت نرخ و تلاش دوباره محدود | `d1a4cfa` |
 | K | ۶۶ تا ۷۲ | تعریف آزمایش با فرضیه و معیار موفقیت/توقف، نتایج فقط از داده بازه، مقایسه کمپین‌ها با تعاریف یکسان، تصمیم مدیر با دلیل و snapshot، ارزیابی پس از تصمیم | `d74baf9` |
+| L | ۷۳ تا ۷۸ | داشبورد با کارهای نیازمند رسیدگی و مقایسه هفتگی، قیف تبدیل، اقتصاد ایده با CAC، منابع جذب، گزارش باشگاه مشتریان و پیامک، نمایش تاریخ شمسی | (همین کامیت) |
 
-## آخرین قابلیت: گام K — فایل‌های تغییرکرده
+## آخرین قابلیت: گام L — فایل‌های تغییرکرده
 
 **جدید**
-- migration: `database/migrations/2026_11_06_100000_create_experiments_tables.php` (`experiments`، `experiment_campaign`، `experiment_decisions`)
-- مدل‌ها: `app/Models/Experiment.php`، `app/Models/ExperimentDecision.php`
-- سرویس: `app/Services/ExperimentMetrics.php`
-- کنترلرها: `app/Http/Controllers/Admin/ExperimentController.php`، `CampaignComparisonController.php`
-- نما: `resources/views/admin/experiments/{index,_form,create,edit,show}.blade.php`، `resources/views/admin/campaigns/compare.blade.php`
-- تست: `tests/Feature/ExperimentTest.php`
+- سرویس‌ها: `app/Services/Reports/DashboardService.php`، `app/Services/Reports/ReportService.php`
+- تاریخ شمسی: `app/Support/Jalali.php`، `public/js/jalali-hint.js`
+- کنترلر: `app/Http/Controllers/Admin/ReportController.php`
+- نما: `resources/views/admin/reports/{_range,funnel,ideas,sources,contacts,sms}.blade.php`
+- تست: `tests/Feature/ReportsTest.php`
 
 **تغییریافته**
-`app/Services/FunnelStats.php` (بازه زمانی اختیاری)، `app/Support/Format.php` (`metric`)، `app/Enums/AdminRole.php` (مجوز `experiments.decide`)، `config/{statuses,admin_menu,admin_permissions}.php`، `routes/web.php`، `resources/views/admin/campaigns/index.blade.php`، `resources/views/ideas/show.blade.php`، `resources/views/components/admin/status-badge.blade.php`، `agentic_brain/GAP_ANALYSIS.md`
+`app/Http/Controllers/Admin/DashboardController.php` و `resources/views/admin/dashboard/index.blade.php` (بازنویسی)، `app/Support/Format.php` (شمسی، `date`، `gregorian`)، `app/Enums/AdminRole.php` (مجوز `reports.view`)، `config/{admin_menu,admin_permissions}.php`، `routes/web.php`، `resources/views/layouts/admin.blade.php`، نمایش تاریخ در `resources/views/admin/{expenses/index,refunds/show,experiments/index,experiments/show,campaigns/show}.blade.php` و `resources/views/ideas/show.blade.php`، `agentic_brain/GAP_ANALYSIS.md`
 
 ## خطاها و محدودیت‌های باقی‌مانده
 
@@ -48,10 +48,10 @@
 | قالب OTP در SMS.ir | شناسه قالب هنوز تنظیم نشده؛ تا تنظیم آن ورود مخاطب روی سرور ممکن نیست | اقدام مالک (پنل ← تنظیمات ← پیامک) |
 | آزمون واقعی درگاه‌ها | اتصال به sandbox زرین‌پال و SMS.ir از محیط توسعه ممکن نبود؛ همه مسیرها با شبیه‌سازی آزموده شده‌اند | مراحل ۹۷ و ۹۹ |
 | هم‌زمانی پرداخت | قفل ردیف در شروع پرداخت زیر بار هم‌زمان واقعی MariaDB آزمایش نشده | مرحله ۹۷ |
-| تاریخ شمسی | همه تاریخ‌ها میلادی (به وقت تهران) نمایش داده و وارد می‌شوند (از جمله بازه آزمایش‌ها) | گام L |
+| ورود تاریخ | تاریخ‌ها شمسی نمایش داده می‌شوند ولی ورودی‌ها انتخابگر میلادی مرورگر با راهنمای شمسی زیر آن‌اند | در صورت نیاز انتخابگر شمسی (مرحله ۸۴) |
+| نمودار | گزارش‌ها جدول و نوار پیشرفت‌اند؛ نمودار زمانی (روند روزانه) هنوز نیست | مرحله ۸۱ |
 | ستون قدیمی `preorders.amount` | دیگر خوانده یا نوشته نمی‌شود ولی هنوز حذف نشده | مرحله ۸۵ |
 | بازپرداخت خودکار درگاه | اجرای بازپرداخت دستی ثبت می‌شود (مرجع بانکی)؛ فراخوانی API بازپرداخت زرین‌پال ساخته نشده | در صورت فعال بودن این سرویس برای حساب پذیرنده |
-| داشبورد کلی | آمار پرداخت و کارهای نیازمند رسیدگی (بازپرداخت در انتظار، بازبینی آزمایش سررسیده) هنوز در داشبورد اصلی نیست | مرحله ۷۳ |
 | هزینه در ارزیابی پس از تصمیم | هزینه‌ها تاریخ روزانه دارند؛ عملکرد پس از تصمیم از ابتدای روز تصمیم شمرده می‌شود | پذیرفته‌شده |
 | اجرای migration روی هاست | روش اجرای migration بدون SSH هنوز تعیین نشده | مرحله ۹۵ |
 | کارایی گروه پویا | تعداد اعضای هر گروه پویا هنگام نمایش فهرست گروه‌ها محاسبه می‌شود؛ برای ده‌ها هزار مخاطب ممکن است کند شود | بازبینی در مرحله ۸۵ در صورت نیاز |
@@ -73,4 +73,4 @@
 
 ## قدم بعدی
 
-**گام L — داشبورد و گزارش‌ها (مراحل ۷۳ تا ۷۸):** داشبورد کلی با کارهای نیازمند رسیدگی (بازپرداخت در انتظار، پرداخت معلق، بازبینی سررسیده، پیامک ناموفق)، قیف تبدیل با تعاریف مشخص، اقتصاد ایده (هزینه، دریافتی، بازپرداخت، درآمد، CAC)، عملکرد منابع جذب، گزارش باشگاه مشتریان با تفکیک رضایت، و گزارش پیامک و هزینه؛ همراه با نمایش تاریخ شمسی.
+**گام M — رابط مدیریت یکپارچه (مراحل ۷۹ تا ۸۴):** بازبینی یکدستی همه صفحات پنل (اجزای مشترک فرم، جدول، پیام و حالت خالی)، نمودار روند روزانه در داشبورد، بررسی دسترس‌پذیری و موبایل همه صفحات، جست‌وجوی سریع سراسری، فیلترهای کاربردی و تأیید عملیات حساس.

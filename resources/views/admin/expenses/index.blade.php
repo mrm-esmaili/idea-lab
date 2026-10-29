@@ -69,7 +69,7 @@
                     <tbody>
                         @forelse ($expenses as $expense)
                             <tr>
-                                <td class="ltr text-nowrap small">{{ $expense->incurred_on->format('Y-m-d') }}</td>
+                                <td class="ltr text-nowrap small">{{ \App\Support\Format::date($expense->incurred_on) }}</td>
                                 <td>{{ $expense->description }}<div class="small text-body-secondary">{{ $expense->creator?->name }}</div></td>
                                 <td class="small">
                                     {{ $expense->idea?->name ?? 'عمومی' }}

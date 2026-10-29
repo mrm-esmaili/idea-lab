@@ -44,7 +44,7 @@
                         <dt>هدف</dt>
                         <dd style="white-space: pre-line">{{ $experiment->goal }}</dd>
                         <dt>بازه</dt>
-                        <dd class="ltr text-end">{{ $experiment->starts_on->toDateString() }} → {{ $experiment->ends_on->toDateString() }}</dd>
+                        <dd>{{ \App\Support\Format::date($experiment->starts_on) }} تا {{ \App\Support\Format::date($experiment->ends_on) }}</dd>
                         <dt>دامنه داده</dt>
                         <dd>
                             @forelse ($experiment->campaigns as $campaign)
@@ -122,7 +122,7 @@
                 <div class="card-header d-block">
                     <h2 class="card-title h6 mb-1 float-none">نتایج بازه آزمایش</h2>
                     <div class="small text-body-secondary">
-                        <span class="ltr">{{ \App\Support\Format::datetime(\Illuminate\Support\Carbon::parse($result['from'])) }} → {{ \App\Support\Format::datetime(\Illuminate\Support\Carbon::parse($result['to'])) }}</span>
+                        از <span class="ltr d-inline-block">{{ \App\Support\Format::datetime(\Illuminate\Support\Carbon::parse($result['from'])) }}</span> تا <span class="ltr d-inline-block">{{ \App\Support\Format::datetime(\Illuminate\Support\Carbon::parse($result['to'])) }}</span>
                         — فقط داده ثبت‌شده در این بازه
                     </div>
                 </div>
@@ -214,7 +214,7 @@
                             @endforeach
                         </div>
                         @if ($decision->review_on)
-                            <div>بازبینی: <span class="ltr">{{ $decision->review_on->toDateString() }}</span>
+                            <div>بازبینی: <span class="ltr">{{ \App\Support\Format::date($decision->review_on) }}</span>
                                 @if ($decision->isReviewDue())<span class="badge text-bg-warning">سررسیده</span>@endif
                             </div>
                         @endif
