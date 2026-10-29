@@ -6,8 +6,8 @@
 |---|---|
 | آخرین به‌روزرسانی | ۱۴۰۵/۰۸/۰۷ |
 | شاخه | `claude/new-session-ebbvr0` |
-| آخرین قابلیت تکمیل‌شده | گام G — حساب مخاطب و ورود با OTP (مراحل ۲۷ تا ۳۲) |
-| تست‌ها | ۱۰۸ تست، همه پاس روی SQLite و MariaDB 10.11 (strict) |
+| آخرین قابلیت تکمیل‌شده | گام H — باشگاه مشتریان (مراحل ۳۳ تا ۴۰) |
+| تست‌ها | ۱۱۹ تست، همه پاس روی SQLite و MariaDB 10.11 (strict) |
 | محیط هدف | MariaDB 11.4، PHP 8.4، cPanel بدون SSH و npm |
 
 ## قابلیت‌های تکمیل‌شده
@@ -23,21 +23,20 @@
 | E | ۴۱ تا ۴۸ | تفکیک وضعیت پرداخت از پیگیری، پرداخت تکرارناپذیر، رسید، استعلام دوباره، گزارش پرداخت‌ها و تشخیص پرداخت تکراری | `d8b77ea` |
 | F | ۱۹، ۲۰، ۲۴ تا ۲۶ | کمپین‌ها و لینک رهگیری، قاعده انتساب، گزارش کمپین، بهبود صفحه فرود عمومی، پیام‌های خطای فارسی | `86e134f`، `5c5f29e` |
 | G | ۲۷ تا ۳۲ | لایه پیامک SMS.ir با قالب قابل تنظیم از پنل، مخاطب جدا از مدیر، ورود با OTP، حساب مخاطب، رضایت پیامک تبلیغاتی | `862bb0a` |
+| H | ۳۳ تا ۴۰ | فهرست و پرونده یکپارچه مخاطب، علاقه چندبه‌چند، منبع جذب، گروه دستی و پویا، تاریخچه تعاملات، خروجی CSV با ثبت و کنترل دسترسی | (این کامیت) |
 
-## آخرین قابلیت: گام G — فایل‌های تغییرکرده
+## آخرین قابلیت: گام H — فایل‌های تغییرکرده
 
 **جدید**
-- کنترلرها: `app/Http/Controllers/Account/AccountController.php`، `app/Http/Controllers/Account/AuthController.php`، `app/Http/Controllers/Admin/SmsTemplateController.php`
-- middleware: `app/Http/Middleware/EnsureContactSessionIsFresh.php`
-- مدل‌ها: `app/Models/Contact.php`، `OtpCode.php`، `SmsMessage.php`، `SmsTemplate.php`
-- سرویس‌ها: `app/Services/ContactResolver.php`، `app/Services/Otp/OtpService.php`، `OtpException.php`، `app/Services/Sms/SmsService.php`، `SmsProvider.php`، `SmsIrProvider.php`، `LogSmsProvider.php`، `SmsException.php`
-- پیکربندی: `config/otp.php`
-- migration: `2026_11_02_100000_create_sms_tables.php`، `2026_11_02_100100_create_contacts_table.php`، `2026_11_02_100200_create_otp_codes_table.php`
-- نما: `resources/views/layouts/public.blade.php`، `resources/views/account/{login,verify,dashboard}.blade.php`، `resources/views/admin/sms/{index,edit}.blade.php`، `public/css/public.css`
-- تست: `tests/Feature/ContactOtpTest.php`
+- کنترلرها: `app/Http/Controllers/Admin/ContactController.php`، `app/Http/Controllers/Admin/ContactGroupController.php`
+- مدل‌ها: `app/Models/ContactGroup.php`، `app/Models/DataExport.php`
+- سرویس‌ها: `app/Services/ContactActivity.php`، `ContactSegment.php`، `ContactTimeline.php`، `ContactExporter.php`
+- migration: `database/migrations/2026_11_03_100000_create_crm_tables.php`
+- نما: `resources/views/admin/contacts/{index,show,_rules}.blade.php`، `resources/views/admin/groups/{index,show,create,edit,_form}.blade.php`
+- تست: `tests/Feature/CrmTest.php`
 
 **تغییریافته**
-`.env.example`، `README.md`، `app/Enums/AdminRole.php`، `app/Http/Controllers/LeadController.php`، `app/Http/Controllers/PreorderController.php`، `app/Http/Middleware/EnsureUserIsAdmin.php`، `app/Models/Lead.php`، `app/Models/Preorder.php`، `app/Providers/AppServiceProvider.php`، `app/Support/PhoneNumber.php`، `bootstrap/app.php`، `config/{admin_menu,admin_permissions,auth,services,statuses}.php`، `resources/views/landing-pages/show.blade.php`، `resources/views/payments/receipt.blade.php`، `routes/web.php`
+`app/Enums/AdminRole.php` (مجوزهای `contacts.manage` و `contacts.export`)، `app/Models/Contact.php`، `app/Http/Controllers/LeadController.php`، `app/Http/Controllers/PreorderController.php`، `app/Http/Controllers/PublicLandingPageController.php` (رفع باگ شمارش بازدید)، `app/Http/Controllers/Account/AccountController.php`، `app/Http/Controllers/Admin/LeadManagementController.php`، `config/admin_menu.php`، `config/admin_permissions.php`، `resources/views/admin/leads/index.blade.php`، `resources/views/landing-pages/show.blade.php`، `routes/web.php`، `tests/Feature/PublicLandingFormsTest.php`، `agentic_brain/GAP_ANALYSIS.md`
 
 ## خطاها و محدودیت‌های باقی‌مانده
 
@@ -51,6 +50,9 @@
 | هزینه واقعی کمپین | هزینه هر سرنخ فعلاً از بودجه برنامه‌ریزی‌شده حساب می‌شود | مرحله ۵۶ |
 | داشبورد کلی | آمار پرداخت و کارهای نیازمند رسیدگی هنوز در داشبورد اصلی نیست | مرحله ۷۳ |
 | اجرای migration روی هاست | روش اجرای migration بدون SSH هنوز تعیین نشده | مرحله ۹۵ |
+| کارایی گروه پویا | تعداد اعضای هر گروه پویا هنگام نمایش فهرست گروه‌ها محاسبه می‌شود؛ برای ده‌ها هزار مخاطب ممکن است کند شود | بازبینی در مرحله ۸۵ در صورت نیاز |
+| حذف مخاطب | امکان حذف یا ناشناس‌سازی مخاطب (درخواست حذف داده) هنوز وجود ندارد | فاز ۱۲ (امنیت و حریم خصوصی) |
+| ارسال پیامک به گروه | گروه‌ها آماده‌اند ولی ارسال گروهی هنوز ساخته نشده | فاز ۷ (مراحل ۶۲ تا ۶۵) |
 
 ## اقدامات لازم روی هاست (تا این لحظه)
 
@@ -63,4 +65,4 @@
 
 ## قدم بعدی
 
-**گام H — باشگاه مشتریان (مراحل ۳۳ تا ۴۰):** فهرست و پرونده یکپارچه مخاطبان، علاقه چندبه‌چند مخاطب و ایده، گروه‌های دستی و خودکار، تاریخچه تعامل‌ها، و خروجی با کنترل دسترسی.
+**گام I — بازپرداخت و امور مالی (مراحل ۵۰ تا ۵۷):** فرم درخواست بازپرداخت برای مخاطب واجد شرایط (در حساب کاربری)، صف بررسی مدیر با تأیید/رد و دلیل، ثبت اجرای واقعی بازپرداخت (مبلغ، روش، مرجع، اپراتور)، جلوگیری از بازپرداخت بیش از مبلغ پرداخت‌شده، تاریخچه ممیزی مالی، ثبت هزینه‌ها و گزارش مالی عملیاتی.

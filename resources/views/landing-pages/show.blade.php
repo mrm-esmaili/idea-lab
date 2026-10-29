@@ -283,7 +283,7 @@
             <section id="lead-form" class="form-card container">
                 <h2>دریافت اطلاعات و ثبت علاقه‌مندی</h2>
 
-                @if (session('lead_success'))
+                @if (session('lead_success') === $landingPage->slug)
                     <div class="form-alert success" role="status">
                         اطلاعات شما با موفقیت ثبت شد.
                         در صورت نیاز به پیگیری، از طریق اطلاعات تماس ارائه‌شده با شما ارتباط خواهیم گرفت.

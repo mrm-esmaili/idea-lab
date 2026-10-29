@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\LandingPage;
+use App\Services\ContactActivity;
 use App\Services\ContactResolver;
 use App\Rules\IranianMobile;
 use App\Support\PhoneNumber;
@@ -119,11 +120,20 @@ class LeadController extends Controller
                 'occurred_at' => now(),
             ]);
 
+            app(ContactActivity::class)->recordSubmission(
+                $contact,
+                $landingPage,
+                'lead_form',
+                $lead->source,
+                $lead->medium,
+                $lead->campaign,
+            );
+
             return $lead;
         });
 
         return redirect()
             ->to(route('landing-pages.show', $landingPage->slug) . '#lead-form')
-            ->with('lead_success', true);
+            ->with('lead_success', $landingPage->slug);
     }
 }

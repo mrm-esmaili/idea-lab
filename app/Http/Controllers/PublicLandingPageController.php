@@ -19,9 +19,10 @@ class PublicLandingPageController extends Controller
             ->with('idea.currentRefundPolicy')
             ->firstOrFail();
 
-        // بازگشت پس از ارسال فرم (موفق یا با خطا) بازدید جدید نیست
+        // بازگشت به همین صفحه پس از ارسال فرم (موفق یا با خطا) بازدید جدید نیست؛
+        // بازدید صفحه دیگری بلافاصله پس از ارسال، بازدید عادی است
         $isFormReturn = $request->session()->has('errors')
-            || $request->session()->has('lead_success');
+            || $request->session()->get('lead_success') === $landingPage->slug;
 
         if (! $isFormReturn) {
             $tracker->trackPageView($request, $landingPage);

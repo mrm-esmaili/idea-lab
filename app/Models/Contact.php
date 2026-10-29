@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 
@@ -40,6 +42,23 @@ class Contact extends Authenticatable
     public function getRememberTokenName(): ?string
     {
         return null;
+    }
+
+    public function interests(): BelongsToMany
+    {
+        return $this->belongsToMany(Idea::class, 'contact_idea_interests')
+            ->withPivot(['source', 'landing_page_id', 'campaign', 'created_at']);
+    }
+
+    public function groups(): BelongsToMany
+    {
+        return $this->belongsToMany(ContactGroup::class, 'contact_group_members')
+            ->withPivot(['created_at']);
+    }
+
+    public function firstLandingPage(): BelongsTo
+    {
+        return $this->belongsTo(LandingPage::class, 'first_landing_page_id');
     }
 
     public function leads(): HasMany

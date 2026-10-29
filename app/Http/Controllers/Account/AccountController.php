@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Account;
 
 use App\Http\Controllers\Controller;
 use App\Models\Contact;
-use App\Models\Idea;
 use Illuminate\Http\Request;
 
 /**
@@ -23,14 +22,8 @@ class AccountController extends Controller
             ->latest()
             ->get();
 
-        // علاقه اعلام‌شده: ایده‌هایی که مخاطب برایشان فرم علاقه‌مندی یا پیش‌خرید ثبت کرده است
-        $ideaIds = $contact->leads()
-            ->join('landing_pages', 'landing_pages.id', '=', 'leads.landing_page_id')
-            ->pluck('landing_pages.idea_id')
-            ->merge($preorders->pluck('landingPage.idea_id'))
-            ->unique();
-
-        $ideas = Idea::whereIn('id', $ideaIds)->orderBy('name')->get(['id', 'name', 'status']);
+        // علاقه اعلام‌شده (فرم علاقه‌مندی، پیش‌خرید یا ثبت مدیر)
+        $ideas = $contact->interests()->orderBy('name')->get(['ideas.id', 'ideas.name', 'ideas.status']);
 
         return view('account.dashboard', compact('contact', 'preorders', 'ideas'));
     }

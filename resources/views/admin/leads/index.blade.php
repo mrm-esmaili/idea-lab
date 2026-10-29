@@ -17,6 +17,11 @@
                 class="row g-2 align-items-end"
             >
                 <div class="col-sm-6 col-lg-3">
+                    <label for="q" class="form-label">جست‌وجوی نام یا شماره</label>
+                    <input id="q" type="search" name="q" value="{{ request('q') }}" maxlength="100" class="form-control">
+                </div>
+
+                <div class="col-sm-6 col-lg-3">
                     <label for="idea" class="form-label">ایده</label>
                     <select id="idea" name="idea" class="form-select">
                         <option value="">همه ایده‌ها</option>
@@ -91,7 +96,13 @@
                     <tbody>
                         @forelse ($leads as $lead)
                             <tr>
-                                <td>{{ $lead->name }}</td>
+                                <td>
+                                    @if ($lead->contact && auth()->user()->can('contacts.manage'))
+                                        <a href="{{ route('admin.contacts.show', $lead->contact) }}">{{ $lead->name }}</a>
+                                    @else
+                                        {{ $lead->name }}
+                                    @endif
+                                </td>
                                 <td>
                                     <a href="tel:{{ $lead->phone }}" class="ltr">{{ $lead->phone }}</a>
                                 </td>

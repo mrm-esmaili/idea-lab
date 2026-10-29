@@ -19,14 +19,20 @@ class LeadManagementController extends Controller
             ],
             'campaign' => ['nullable', 'string', 'max:255'],
             'idea' => ['nullable', 'integer', 'exists:ideas,id'],
+            'q' => ['nullable', 'string', 'max:100'],
         ]);
 
         $query = Lead::query()
-            ->with('landingPage.idea')
+            ->with(['landingPage.idea', 'contact'])
             ->latest();
 
         if (! empty($filters['status'])) {
             $query->where('status', $filters['status']);
+        }
+
+        if (! empty($filters['q'])) {
+            $term = '%' . $filters['q'] . '%';
+            $query->where(fn ($q) => $q->where('name', 'like', $term)->orWhere('phone', 'like', $term));
         }
 
         if (! empty($filters['idea'])) {

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\LandingPage;
+use App\Services\ContactActivity;
 use App\Services\ContactResolver;
 use App\Rules\IranianMobile;
 use App\Support\PhoneNumber;
@@ -138,6 +139,15 @@ class PreorderController extends Controller
 
                 'occurred_at' => now(),
             ]);
+
+            app(ContactActivity::class)->recordSubmission(
+                $contact,
+                $landingPage,
+                'preorder',
+                $preorder->source,
+                $preorder->medium,
+                $preorder->campaign,
+            );
 
             return $preorder;
         });

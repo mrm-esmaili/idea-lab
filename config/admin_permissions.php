@@ -8,6 +8,8 @@ return [
     'leads.manage' => 'سرنخ‌ها',
     'preorders.manage' => 'پیش‌خریدها',
     'finance.manage' => 'امور مالی',
+    'contacts.manage' => 'مخاطبان و گروه‌ها',
+    'contacts.export' => 'خروجی مخاطبان',
     'users.manage' => 'کاربران',
     'settings.manage' => 'تنظیمات (پیامک)',
 ];

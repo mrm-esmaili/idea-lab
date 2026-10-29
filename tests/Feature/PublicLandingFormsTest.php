@@ -88,7 +88,22 @@ class PublicLandingFormsTest extends TestCase
 
         // بازدید بعدی عادی دوباره شمرده می‌شود
         $this->get('/l/clubyar');
-        $this->assertSame(2, LandingPageEvent::where('event_name', 'page_view')->count());
+        $this->assertSame(2, LandingPageEvent::where('event_name', 'page_view')->count());    }
+
+    public function test_visiting_another_page_right_after_submitting_is_tracked(): void
+    {
+        $other = $this->page->idea->landingPages()->create(['name' => 'دیگر', 'slug' => 'other', 'title' => 't', 'is_active' => true]);
+
+        $this->post(route('leads.store', 'clubyar'), [
+            'form' => 'lead',
+            'name' => 'مخاطب',
+            'phone' => '09121111111',
+            'consent' => '1',
+        ]);
+
+        $this->get('/l/other?utm_campaign=next')->assertDontSee('اطلاعات شما با موفقیت ثبت شد');
+
+        $this->assertSame(1, LandingPageEvent::where('landing_page_id', $other->id)->where('event_name', 'page_view')->count());
     }
 
     public function test_privacy_link_only_when_configured(): void

@@ -12,6 +12,8 @@ use App\Http\Controllers\PublicLandingPageController;
 use App\Http\Controllers\LeadController;
 use App\Http\Controllers\Admin\LeadManagementController;
 use App\Http\Controllers\Admin\CampaignController;
+use App\Http\Controllers\Admin\ContactController;
+use App\Http\Controllers\Admin\ContactGroupController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\LandingPageEventController;
 use App\Http\Controllers\PreorderController;
@@ -210,6 +212,28 @@ Route::middleware(['auth:web', 'admin'])->group(function () {
         Route::resource('/admin/users', UserController::class)
             ->only(['index', 'create', 'store', 'edit', 'update'])
             ->names('admin.users');
+    });
+
+    Route::middleware('can:contacts.manage')->group(function () {
+        Route::get('/admin/contacts', [ContactController::class, 'index'])->name('admin.contacts.index');
+
+        Route::get('/admin/contacts/export', [ContactController::class, 'export'])
+            ->middleware(['can:contacts.export', 'throttle:10,1'])
+            ->name('admin.contacts.export');
+
+        Route::get('/admin/contacts/{contact}', [ContactController::class, 'show'])->name('admin.contacts.show');
+        Route::post('/admin/contacts/{contact}/interests', [ContactController::class, 'addInterest'])->name('admin.contacts.interests.store');
+        Route::delete('/admin/contacts/{contact}/interests/{idea}', [ContactController::class, 'removeInterest'])->name('admin.contacts.interests.destroy');
+        Route::post('/admin/contacts/{contact}/groups', [ContactController::class, 'addToGroup'])->name('admin.contacts.groups.store');
+        Route::delete('/admin/contacts/{contact}/groups/{group}', [ContactController::class, 'removeFromGroup'])->name('admin.contacts.groups.destroy');
+
+        Route::resource('/admin/groups', ContactGroupController::class)
+            ->parameters(['groups' => 'group'])
+            ->names('admin.groups');
+
+        Route::get('/admin/groups/{group}/export', [ContactGroupController::class, 'export'])
+            ->middleware(['can:contacts.export', 'throttle:10,1'])
+            ->name('admin.groups.export');
     });
 
     Route::middleware('can:settings.manage')->group(function () {

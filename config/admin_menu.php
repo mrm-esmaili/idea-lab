@@ -58,6 +58,20 @@ return [
         'header' => 'مخاطبان و فروش',
         'items' => [
             [
+                'label' => 'مخاطبان',
+                'icon' => 'bi-person-vcard',
+                'route' => 'admin.contacts.index',
+                'permission' => 'contacts.manage',
+                'active' => ['admin.contacts.*'],
+            ],
+            [
+                'label' => 'گروه‌ها',
+                'icon' => 'bi-collection',
+                'route' => 'admin.groups.index',
+                'permission' => 'contacts.manage',
+                'active' => ['admin.groups.*'],
+            ],
+            [
                 'label' => 'سرنخ‌ها',
                 'icon' => 'bi-person-lines-fill',
                 'route' => 'admin.leads.index',
