@@ -42,6 +42,13 @@
 **تغییریافته**
 `routes/web.php` (پیشوند یکتای محدودیت نرخ هر مسیر)، `tests/Feature/SecurityTest.php` (تست رگرسیون)، `app/Services/ZarinpalService.php` و `config/services.php` (نشانی قابل جایگزینی برای آزمون)، `app/Services/SystemStatus.php`، `DEPLOYMENT.md`، `README.md`، `.gitignore`، `agentic_brain/GAP_ANALYSIS.md`
 
+## اصلاح پس از استقرار: 403 روی کل سایت
+
+- **مشکل:** آپاچی/لایت‌اسپید `.htaccess` پوشه‌های بالاتر از document root را هم اعمال می‌کند؛ `Require all denied` در `.htaccess` ریشه پروژه پوشه `public` را هم مسدود کرد و کل سایت 403 می‌داد.
+- **اصلاح:** `Require all granted` در ابتدای `public/.htaccess`. با آپاچی واقعی آزموده شد: `public` سرو می‌شود و اگر ریشه پروژه اشتباهاً document root باشد، `.env` و بقیه فایل‌ها همچنان 403 هستند.
+- **فایل‌ها:** `public/.htaccess`، `tests/Feature/SecurityTest.php` (آزمون بازگشت)، `PROJECT_STATUS.md`.
+- **روی هاست:** همین سه خط را به ابتدای `public/.htaccess` اضافه کنید (یا بسته جدید بسازید).
+
 ## خطاها و محدودیت‌های باقی‌مانده
 
 | مورد | توضیح | برنامه |
