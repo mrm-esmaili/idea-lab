@@ -40,6 +40,16 @@ return [
         'ended' => 'پایان‌یافته',
     ],
 
+    'sms_category' => [
+        'otp' => 'کد ورود',
+        'transactional' => 'تراکنشی',
+        'promotional' => 'تبلیغاتی',
+    ],
+
+    'sms_variable' => [
+        'code' => 'کد یک‌بارمصرف',
+    ],
+
     // وضعیت هر تراکنش درگاه
     'payment' => [
         'pending' => 'در انتظار',

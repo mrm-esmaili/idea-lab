@@ -350,6 +350,13 @@
                             </label>
                         </div>
 
+                        <div class="form-group">
+                            <label class="check">
+                                <input type="checkbox" name="marketing_consent" value="1" @checked($oldFor('lead', 'marketing_consent'))>
+                                <span>مایلم پیامک‌های معرفی محصولات و پیشنهادهای جدید را هم دریافت کنم (اختیاری، قابل لغو).</span>
+                            </label>
+                        </div>
+
                         <button type="submit">ثبت علاقه‌مندی</button>
                     </form>
                 @endif
@@ -438,6 +445,7 @@
     <footer class="footer">
         <div class="container">
             ساخته‌شده با سیستم اعتبارسنجی ایده
+            — <a href="{{ route('account.login') }}">ورود به حساب کاربری</a>
             @if ($privacyUrl)
                 — <a href="{{ $privacyUrl }}" target="_blank" rel="noopener">حریم خصوصی</a>
             @endif

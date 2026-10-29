@@ -16,6 +16,7 @@ enum AdminRole: string
         'preorders.manage',
         'finance.manage',
         'users.manage',
+        'settings.manage',
     ];
 
     public function label(): string

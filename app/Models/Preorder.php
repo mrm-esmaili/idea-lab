@@ -10,6 +10,7 @@ class Preorder extends Model
     protected $fillable = [
         'landing_page_id',
         'visitor_id',
+        'contact_id',
         'lead_id',
         'name',
         'phone',
@@ -67,5 +68,10 @@ class Preorder extends Model
     public function payments()
     {
         return $this->hasMany(\App\Models\Payment::class);
+    }
+
+    public function contact(): BelongsTo
+    {
+        return $this->belongsTo(Contact::class);
     }
 }

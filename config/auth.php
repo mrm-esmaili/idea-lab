@@ -42,6 +42,12 @@ return [
             'driver' => 'session',
             'provider' => 'users',
         ],
+
+        // مخاطب عمومی؛ جدا از مدیران و بدون هیچ دسترسی به پنل
+        'contact' => [
+            'driver' => 'session',
+            'provider' => 'contacts',
+        ],
     ],
 
     /*
@@ -65,6 +71,11 @@ return [
         'users' => [
             'driver' => 'eloquent',
             'model' => env('AUTH_MODEL', User::class),
+        ],
+
+        'contacts' => [
+            'driver' => 'eloquent',
+            'model' => App\Models\Contact::class,
         ],
 
         // 'users' => [

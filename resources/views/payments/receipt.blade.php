@@ -93,7 +93,10 @@
             @endif
         </dl>
 
-        <p class="muted">لطفاً کد پیگیری را برای پیگیری‌های بعدی نگه دارید.</p>
+        <p class="muted">
+            لطفاً کد پیگیری را برای پیگیری‌های بعدی نگه دارید.
+            سفارش‌های خود را با ورود به <a href="{{ route('account.login') }}">حساب کاربری</a> و همین شماره موبایل هم می‌بینید.
+        </p>
 
     @elseif ($payment?->status === \App\Models\Payment::STATUS_PENDING && $payment->authority)
         <h1>در حال بررسی پرداخت</h1>

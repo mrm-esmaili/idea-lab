@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\LandingPage;
+use App\Services\ContactResolver;
 use App\Rules\IranianMobile;
 use App\Support\PhoneNumber;
 use App\Models\LandingPageEvent;
@@ -84,7 +85,10 @@ class PreorderController extends Controller
             ->latest()
             ->first();
 
+        $contact = app(ContactResolver::class)->forMobile($data['phone'], trim($data['name']));
+
         $preorder = DB::transaction(function () use (
+            $contact,
             $idea,
             $policy,
             $landingPage,
@@ -96,6 +100,7 @@ class PreorderController extends Controller
             $preorder = Preorder::create([
                 'landing_page_id' => $landingPage->id,
                 'visitor_id' => $visitor?->id,
+                'contact_id' => $contact->id,
                 'lead_id' => $existingLead?->id,
 
                 'name' => $data['name'],

@@ -9,4 +9,5 @@ return [
     'preorders.manage' => 'پیش‌خریدها',
     'finance.manage' => 'امور مالی',
     'users.manage' => 'کاربران',
+    'settings.manage' => 'تنظیمات (پیامک)',
 ];

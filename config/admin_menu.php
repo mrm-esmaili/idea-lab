@@ -97,6 +97,13 @@ return [
                 'permission' => 'users.manage',
                 'active' => ['admin.users.*'],
             ],
+            [
+                'label' => 'پیامک',
+                'icon' => 'bi-chat-dots',
+                'route' => 'admin.sms.index',
+                'permission' => 'settings.manage',
+                'active' => ['admin.sms.*'],
+            ],
         ],
     ],
 ];

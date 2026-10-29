@@ -35,6 +35,17 @@ return [
         ],
     ],
 
+    'sms' => [
+        // smsir برای ارسال واقعی؛ log فقط برای توسعه محلی (در production مجاز نیست)
+        'driver' => env('SMS_DRIVER', 'log'),
+
+        'smsir' => [
+            'api_key' => env('SMSIR_API_KEY'),
+            'base_url' => env('SMSIR_BASE_URL', 'https://api.sms.ir/v1'),
+            'timeout' => (int) env('SMSIR_TIMEOUT', 10),
+        ],
+    ],
+
     'zarinpal' => [
         'merchant_id' => env('ZARINPAL_MERCHANT_ID'),
 

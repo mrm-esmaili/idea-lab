@@ -37,4 +37,16 @@ class PhoneNumber
 
         return preg_match('/^09\d{9}$/', $digits) ? $digits : null;
     }
+
+    /**
+     * نمایش بخشی از شماره در گزارش‌ها: 0912***6789
+     */
+    public static function mask(?string $mobile): string
+    {
+        if ($mobile === null || strlen($mobile) < 8) {
+            return (string) $mobile;
+        }
+
+        return substr($mobile, 0, 4) . '***' . substr($mobile, -4);
+    }
 }

@@ -1,6 +1,8 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Account\AccountController;
+use App\Http\Controllers\Account\AuthController as AccountAuthController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\IdeaController;
 use App\Http\Controllers\IdeaSettingsController;
@@ -15,6 +17,7 @@ use App\Http\Controllers\LandingPageEventController;
 use App\Http\Controllers\PreorderController;
 use App\Http\Controllers\Admin\PaymentReportController;
 use App\Http\Controllers\Admin\PreorderManagementController;
+use App\Http\Controllers\Admin\SmsTemplateController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\ZarinpalPaymentController;
 
@@ -32,7 +35,7 @@ Route::post('/login', [
 Route::post('/logout', [
     AuthController::class,
     'logout',
-])->middleware('auth')->name('logout');
+])->middleware('auth:web')->name('logout');
 
 // صفحات عمومی
 Route::get('/l/{slug}', [
@@ -89,8 +92,32 @@ Route::get(
     [ZarinpalPaymentController::class, 'result']
 )->name('payments.result');
 
+// حساب مخاطب (جدا از پنل مدیریت؛ guard: contact)
+Route::prefix('account')->name('account.')->group(function () {
+    Route::middleware('guest:contact')->group(function () {
+        Route::get('/login', [AccountAuthController::class, 'showLogin'])->name('login');
+
+        Route::post('/login', [AccountAuthController::class, 'sendCode'])
+            ->middleware('throttle:10,1')
+            ->name('login.send');
+
+        Route::get('/verify', [AccountAuthController::class, 'showVerify'])->name('verify');
+
+        Route::post('/verify', [AccountAuthController::class, 'verify'])
+            ->middleware('throttle:10,1')
+            ->name('verify.submit');
+    });
+
+    Route::middleware(['auth:contact', 'contact.fresh'])->group(function () {
+        Route::get('/', [AccountController::class, 'dashboard'])->name('dashboard');
+        Route::put('/profile', [AccountController::class, 'updateProfile'])->name('profile');
+        Route::put('/consent', [AccountController::class, 'updateConsent'])->name('consent');
+        Route::post('/logout', [AccountAuthController::class, 'logout'])->name('logout');
+    });
+});
+
 // پنل مدیریت
-Route::middleware(['auth', 'admin'])->group(function () {
+Route::middleware(['auth:web', 'admin'])->group(function () {
     Route::get('/', function () {
         return redirect()->route('admin.dashboard');
     });
@@ -183,6 +210,17 @@ Route::middleware(['auth', 'admin'])->group(function () {
         Route::resource('/admin/users', UserController::class)
             ->only(['index', 'create', 'store', 'edit', 'update'])
             ->names('admin.users');
+    });
+
+    Route::middleware('can:settings.manage')->group(function () {
+        Route::get('/admin/sms', [SmsTemplateController::class, 'index'])
+            ->name('admin.sms.index');
+
+        Route::get('/admin/sms/templates/{template}/edit', [SmsTemplateController::class, 'edit'])
+            ->name('admin.sms.templates.edit');
+
+        Route::put('/admin/sms/templates/{template}', [SmsTemplateController::class, 'update'])
+            ->name('admin.sms.templates.update');
     });
 
     Route::middleware('can:preorders.manage')->group(function () {

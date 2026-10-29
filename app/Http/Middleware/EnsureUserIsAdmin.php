@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\User;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -11,10 +12,11 @@ class EnsureUserIsAdmin
 {
     public function handle(Request $request, Closure $next): Response
     {
-        $user = $request->user();
+        // فقط کاربر جدول users با نقش مدیریتی؛ مخاطب (guard: contact) هرگز
+        $user = $request->user('web');
 
-        if (! $user || ! $user->isAdmin()) {
-            Auth::logout();
+        if (! $user instanceof User || ! $user->isAdmin()) {
+            Auth::guard('web')->logout();
 
             $request->session()->invalidate();
             $request->session()->regenerateToken();

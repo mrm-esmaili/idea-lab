@@ -13,7 +13,21 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias([
             'admin' => \App\Http\Middleware\EnsureUserIsAdmin::class,
+            'contact.fresh' => \App\Http\Middleware\EnsureContactSessionIsFresh::class,
         ]);
+
+        // مهمان بخش حساب مخاطب به ورود مخاطب می‌رود، نه ورود مدیران
+        $middleware->redirectGuestsTo(
+            fn (\Illuminate\Http\Request $request) => $request->is('account', 'account/*')
+                ? route('account.login')
+                : route('login')
+        );
+
+        $middleware->redirectUsersTo(
+            fn (\Illuminate\Http\Request $request) => $request->is('account', 'account/*')
+                ? route('account.dashboard')
+                : route('admin.dashboard')
+        );
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

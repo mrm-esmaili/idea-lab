@@ -1,0 +1,139 @@
+@font-face {
+    font-family: 'Vazirmatn';
+    src: url('../vendor/vazirmatn/Vazirmatn-Variable.woff2') format('woff2-variations'),
+         url('../vendor/vazirmatn/Vazirmatn-Variable.woff2') format('woff2');
+    font-weight: 100 900;
+    font-display: swap;
+}
+
+:root {
+    --primary: #4f46e5;
+    --primary-dark: #3730a3;
+    --text: #172033;
+    --muted: #5b6475;
+    --border: #dfe3ea;
+    --surface: #ffffff;
+    --background: #f5f7fb;
+    --success-bg: #e8f8ee;
+    --success-text: #176534;
+    --error-bg: #fff0f0;
+    --error-text: #a32020;
+    --notice-bg: #eef2ff;
+    --notice-text: #3730a3;
+    --radius: 14px;
+}
+
+* { box-sizing: border-box; }
+
+body {
+    margin: 0;
+    font-family: 'Vazirmatn', Tahoma, Arial, sans-serif;
+    background: var(--background);
+    color: var(--text);
+    line-height: 1.9;
+    -webkit-text-size-adjust: 100%;
+}
+
+.container { width: min(100% - 32px, 760px); margin-inline: auto; }
+
+.topbar { padding: 14px 0; background: var(--surface); border-bottom: 1px solid var(--border); }
+
+.topbar .container { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+
+.brand { font-weight: 700; color: var(--text); text-decoration: none; }
+
+main { padding: 28px 0 48px; }
+
+h1 { font-size: clamp(22px, 4vw, 28px); margin: 0 0 16px; }
+
+h2 { font-size: 19px; margin: 0 0 12px; }
+
+.card {
+    padding: clamp(18px, 4vw, 28px);
+    margin-bottom: 20px;
+    background: var(--surface);
+    border-radius: var(--radius);
+    box-shadow: 0 1px 3px rgba(23, 32, 51, .06);
+}
+
+.muted { color: var(--muted); }
+
+.small { font-size: 14px; }
+
+.form-group { margin-bottom: 16px; }
+
+.form-group > label:not(.check) { display: block; margin-bottom: 6px; font-weight: 500; }
+
+input[type="text"], input[type="tel"], input[type="email"] {
+    width: 100%;
+    padding: 11px 14px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    font: inherit;
+    background: #fff;
+}
+
+input[aria-invalid="true"] { border-color: var(--error-text); }
+
+.code-input { direction: ltr; text-align: center; font-size: 24px; letter-spacing: 8px; }
+
+.ltr { direction: ltr; unicode-bidi: isolate; }
+
+.ltr-input { direction: ltr; text-align: right; }
+
+.field-error { margin-top: 4px; color: var(--error-text); font-size: 14px; }
+
+.check { display: flex; gap: 10px; align-items: flex-start; cursor: pointer; }
+
+.check input { margin-top: 7px; flex-shrink: 0; width: 18px; height: 18px; }
+
+.button, button {
+    display: inline-block;
+    padding: 11px 26px;
+    border: 0;
+    border-radius: 10px;
+    background: var(--primary);
+    color: #fff;
+    font: inherit;
+    font-weight: 700;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.button:hover, button:hover { background: var(--primary-dark); }
+
+.button-link { padding: 0; background: none; color: var(--primary); font-weight: 500; }
+
+.button-link:hover { background: none; text-decoration: underline; }
+
+.button-secondary { background: #e8ebf2; color: var(--text); }
+
+.button-secondary:hover { background: #dce1ea; }
+
+button:disabled { opacity: .6; cursor: not-allowed; }
+
+a:focus-visible, button:focus-visible, input:focus-visible { outline: 3px solid #a5b4fc; outline-offset: 2px; }
+
+.alert { padding: 12px 16px; margin-bottom: 16px; border-radius: 10px; }
+
+.alert-success { background: var(--success-bg); color: var(--success-text); }
+
+.alert-error { background: var(--error-bg); color: var(--error-text); }
+
+.alert-notice { background: var(--notice-bg); color: var(--notice-text); }
+
+.list { margin: 0; padding: 0; list-style: none; }
+
+.list > li { padding: 14px 0; border-bottom: 1px solid var(--border); }
+
+.list > li:last-child { border-bottom: 0; }
+
+.row { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; }
+
+.badge { display: inline-block; padding: 0 10px; border-radius: 20px; font-size: 13px; background: #e8ebf2; }
+
+.badge-success { background: var(--success-bg); color: var(--success-text); }
+
+.badge-warning { background: #fff8e6; color: #7a5200; }
+
+.footer { padding: 20px 0; text-align: center; color: var(--muted); font-size: 13px; }

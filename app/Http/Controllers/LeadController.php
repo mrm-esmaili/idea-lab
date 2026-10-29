@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\LandingPage;
+use App\Services\ContactResolver;
 use App\Rules\IranianMobile;
 use App\Support\PhoneNumber;
 use App\Models\Visitor;
@@ -35,6 +36,7 @@ class LeadController extends Controller
             ],
             'email' => ['nullable', 'email', 'max:255'],
             'consent' => ['accepted'],
+            'marketing_consent' => ['nullable', 'boolean'],
         ]);
 
         $data['phone'] = PhoneNumber::normalizeMobile($data['phone']);
@@ -63,7 +65,15 @@ class LeadController extends Controller
                 ->first();
         }
 
+        $contact = app(ContactResolver::class)->forMobile($data['phone'], trim($data['name']));
+
+        // رضایت پیامک تبلیغاتی فقط با تیک صریح ثبت می‌شود؛ تیک‌نزدن رضایت قبلی را لغو نمی‌کند
+        if ($request->boolean('marketing_consent')) {
+            $contact->setMarketingConsent(true, 'lead_form:' . $landingPage->slug);
+        }
+
         $lead = DB::transaction(function () use (
+            $contact,
             $data,
             $landingPage,
             $visitor,
@@ -71,6 +81,7 @@ class LeadController extends Controller
         ) {
             $lead = $landingPage->leads()->create([
                 'visitor_id' => $visitor?->id,
+                'contact_id' => $contact->id,
                 'name' => trim($data['name']),
                 'phone' => $data['phone'],
                 'email' => $data['email'] ?? null,
