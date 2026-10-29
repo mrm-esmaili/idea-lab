@@ -76,6 +76,37 @@ class SecurityTest extends TestCase
         }
     }
 
+    /**
+     * بدون پیشوند، Laravel شمارنده محدودیت نرخ همه مسیرها را برای یک IP مشترک
+     * می‌کند و مشتری پس از پرداخت هنگام ورود به حساب خطای 429 می‌گرفت.
+     */
+    public function test_each_rate_limited_route_has_its_own_counter(): void
+    {
+        $prefixes = [];
+
+        foreach (Route::getRoutes() as $route) {
+            foreach ($route->gatherMiddleware() as $middleware) {
+                if (is_string($middleware) && str_starts_with($middleware, 'throttle:')) {
+                    $parts = explode(',', substr($middleware, 9));
+                    $this->assertCount(3, $parts, "{$route->uri()} throttle needs its own prefix");
+                    $prefixes[] = $parts[2];
+                }
+            }
+        }
+
+        $this->assertSame(count($prefixes), count(array_unique($prefixes)), 'throttle prefixes must be unique');
+
+        // پر شدن سقف فرم علاقه‌مندی، ورود به حساب را مسدود نمی‌کند
+        $idea = Idea::create(['name' => 'a', 'slug' => 'a', 'status' => 'testing']);
+        $idea->landingPages()->create(['name' => 'p', 'slug' => 'p', 'title' => 't', 'is_active' => true]);
+        foreach (range(1, 6) as $i) {
+            $this->post(route('leads.store', 'p'), ['form' => 'lead', 'name' => 'x', 'phone' => '0912000000' . $i]);
+        }
+        $this->post(route('leads.store', 'p'), ['form' => 'lead'])->assertStatus(429);
+        $this->get(route('account.login'))->assertOk();
+        $this->post(route('account.login.send'), ['mobile' => 'invalid'])->assertSessionHasErrors();
+    }
+
     public function test_security_headers_are_sent(): void
     {
         $this->get(route('login'))

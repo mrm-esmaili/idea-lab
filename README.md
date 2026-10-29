@@ -1,53 +1,47 @@
-# Idea Lab
+# Idea Lab — ایده‌لب
 
-سامانه اعتبارسنجی ایده: صفحه فرود، رهگیری بازدید و UTM، ثبت سرنخ، پیش‌خرید و پرداخت زرین‌پال.
+سامانه اعتبارسنجی ایده: صفحه فرود و کمپین با رهگیری UTM، ثبت مخاطب و باشگاه مشتریان، پیش‌خرید و پرداخت زرین‌پال، بازپرداخت سه‌مرحله‌ای، پیامک SMS.ir، آزمایش و ثبت تصمیم، و گزارش‌های مالی و قیف تبدیل.
 
-- Laravel 12 — PHP 8.2+ (هاست: PHP 8.4)
-- پایگاه داده هدف: MariaDB 11.4 / utf8mb4
-- نقشه راه و gap analysis: `agentic_brain/GAP_ANALYSIS.md`
+- Laravel 12، PHP 8.2+ (هاست: PHP 8.4)
+- MariaDB 10.11+/11.4 یا MySQL 8 (utf8mb4)
+- پنل AdminLTE 4 راست‌چین، تاریخ شمسی، مبالغ به تومان؛ بدون npm/CDN (فایل‌ها در `public/vendor`)
 
-## راه‌اندازی محلی
+## مستندات
+
+| سند | محتوا |
+|---|---|
+| [`ADMIN_GUIDE.md`](ADMIN_GUIDE.md) | راهنمای مدیر: نقش‌ها و کار روزمره با هر بخش پنل |
+| [`DEPLOYMENT.md`](DEPLOYMENT.md) | استقرار روی cPanel بدون SSH، متغیرهای محیط، به‌روزرسانی و بازیابی |
+| [`OPERATIONS_CHECKLIST.md`](OPERATIONS_CHECKLIST.md) | چک‌لیست پیش از راه‌اندازی، روزانه، هفتگی و ماهانه |
+| [`PROJECT_STATUS.md`](PROJECT_STATUS.md) | وضعیت پروژه، قابلیت‌های تکمیل‌شده و محدودیت‌های باقی‌مانده |
+| [`agentic_brain/ARCHITECTURE.md`](agentic_brain/ARCHITECTURE.md) | معماری، قراردادهای ثابت و مرز قابلیت‌های تحلیلی آینده |
+| [`agentic_brain/GAP_ANALYSIS.md`](agentic_brain/GAP_ANALYSIS.md) | گزارش فنی هر گام نقشه راه |
+
+## توسعه محلی
 
 ```bash
 composer install
-cp .env.example .env
+cp .env.example .env        # SMS_DRIVER=log: کد ورود در storage/logs نوشته می‌شود
 php artisan key:generate
 php artisan migrate
 php artisan serve
 ```
 
-## نقش‌های مدیریتی
+اولین مدیر کل: `INSTALL_TOKEN` را در `.env` بگذارید و `/install?token=...` را باز کنید.
 
-دسترسی پنل فقط برای کاربرانی است که ستون `role` آن‌ها مقدار دارد. کاربر بدون نقش (مثلاً مخاطب در آینده) وارد پنل نمی‌شود.
+## آزمون‌ها
 
-| نقش | مقدار | دسترسی |
-|---|---|---|
-| مدیر کل | `super_admin` | همه بخش‌ها |
-| مدیر محصول | `manager` | داشبورد، ایده‌ها و صفحات فرود، سرنخ‌ها، پیش‌خریدها |
-| کارشناس مالی | `finance` | داشبورد، پیش‌خریدها، امور مالی |
-| پشتیبانی | `support` | داشبورد، سرنخ‌ها، پیش‌خریدها |
+```bash
+php artisan test                                   # SQLite در حافظه
+DB_CONNECTION=mariadb DB_DATABASE=idealab_test DB_USERNAME=... DB_PASSWORD=... php artisan test
+```
 
-تعریف نقش‌ها و مجوزها: `app/Enums/AdminRole.php`.
-هنگام اجرای migration نقش، همه کاربران موجود `super_admin` می‌شوند.
+آزمون عملیاتی انتها‌به‌انتها در مرورگر (نصب، ایده تا پرداخت، بازپرداخت، SMS.ir) با درگاه و SMS.ir شبیه‌سازی‌شده — نیازمند Node و Playwright:
 
-## قالب مدیریتی
-
-AdminLTE 4 (RTL) با Bootstrap 5، Bootstrap Icons و فونت Vazirmatn. فایل‌های build‌شده در `public/vendor` قرار دارند و به npm یا CDN نیازی نیست.
-
-- layout مشترک: `resources/views/layouts/admin.blade.php`
-- منو: `config/admin_menu.php` (هر آیتم با مجوز نقش نمایش داده می‌شود)
-- برچسب وضعیت‌ها: `config/statuses.php`
-
-## پیامک (SMS.ir) و ورود مخاطب
-
-مخاطبان با شماره موبایل و کد یک‌بارمصرف در `/account` وارد می‌شوند. برای فعال‌سازی ارسال واقعی:
-
-1. در پنل SMS.ir یک قالب «ارسال سریع» برای کد ورود بسازید، مثلاً: `کد ورود شما: #CODE#`
-2. پس از تأیید قالب، در پنل مدیریت ← تنظیمات ← پیامک، شناسه قالب و نام پارامتر (`CODE`) را وارد کنید.
-3. در `.env` سرور: `SMS_DRIVER=smsir` و `SMSIR_API_KEY=...` (کلید هرگز در Git قرار نگیرد).
-
-تا انجام این مراحل، `SMS_DRIVER=log` فقط برای توسعه محلی است: کد در `storage/logs/laravel.log` نوشته می‌شود و در محیط production خطا می‌دهد.
+```bash
+E2E_DB_DATABASE=idealab_e2e E2E_DB_USERNAME=... E2E_DB_PASSWORD=... tests/e2e/run.sh
+```
 
 ## امنیت
 
-فایل `.env`، کلیدهای API، رمزها و داده شخصی واقعی هرگز در Git قرار نمی‌گیرند.
+فایل `.env`، کلیدهای API، رمزها، پشتیبان‌ها و داده شخصی واقعی هرگز در Git قرار نمی‌گیرند.

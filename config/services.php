@@ -53,6 +53,10 @@ return [
 
         'sandbox' => env('ZARINPAL_SANDBOX', true),
 
+        // فقط برای آزمون انتها‌به‌انتها با درگاه شبیه‌سازی‌شده؛ روی سرور خالی بماند
+        'api_url' => env('ZARINPAL_API_URL'),
+        'start_pay_url' => env('ZARINPAL_START_PAY_URL'),
+
         // منسوخ: فقط migration افزودن تنظیمات ایده از آن استفاده می‌کند
         'preorder_amount_toman' => env(
             'ZARINPAL_PREORDER_AMOUNT_TOMAN',

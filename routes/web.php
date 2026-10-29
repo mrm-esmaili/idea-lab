@@ -54,7 +54,7 @@ Route::get('/login', [
 Route::post('/login', [
     AuthController::class,
     'login',
-])->middleware(['guest', 'throttle:5,1'])
+])->middleware(['guest', 'throttle:5,1,login.submit'])
     ->name('login.submit');
 
 Route::post('/logout', [
@@ -71,45 +71,45 @@ Route::get('/l/{slug}', [
 Route::post('/l/{slug}/leads', [
     LeadController::class,
     'store',
-])->middleware(['throttle:5,1', 'public.form'])->name('leads.store');
+])->middleware(['throttle:5,1,leads.store', 'public.form'])->name('leads.store');
 
 Route::post(
     '/l/{slug}/events',
     [LandingPageEventController::class, 'store']
 )
-    ->middleware('throttle:30,1')
+    ->middleware('throttle:30,1,landing-pages.events.store')
     ->name('landing-pages.events.store');
 
 Route::post(
     '/l/{slug}/preorders',
     [PreorderController::class, 'store']
 )
-    ->middleware(['throttle:5,1', 'public.form'])
+    ->middleware(['throttle:5,1,preorders.store', 'public.form'])
     ->name('preorders.store');
 
 Route::get(
     '/preorder/{token}/checkout',
     [ZarinpalPaymentController::class, 'checkout']
-)->middleware('throttle:30,1')
+)->middleware('throttle:30,1,preorders.checkout')
     ->name('preorders.checkout');
 
 Route::post(
     '/preorder/{token}/pay',
     [ZarinpalPaymentController::class, 'pay']
 )
-    ->middleware('throttle:5,1')
+    ->middleware('throttle:5,1,preorders.pay')
     ->name('preorders.pay');
 
 Route::get(
     '/preorder/{token}/receipt',
     [ZarinpalPaymentController::class, 'receipt']
-)->middleware('throttle:30,1')
+)->middleware('throttle:30,1,preorders.receipt')
     ->name('preorders.receipt');
 
 Route::get(
     '/payments/zarinpal/callback',
     [ZarinpalPaymentController::class, 'callback']
-)->middleware('throttle:30,1')
+)->middleware('throttle:30,1,payments.zarinpal.callback')
     ->name('payments.zarinpal.callback');
 
 Route::get(
@@ -123,13 +123,13 @@ Route::prefix('account')->name('account.')->group(function () {
         Route::get('/login', [AccountAuthController::class, 'showLogin'])->name('login');
 
         Route::post('/login', [AccountAuthController::class, 'sendCode'])
-            ->middleware('throttle:10,1')
+            ->middleware('throttle:10,1,login.send')
             ->name('login.send');
 
         Route::get('/verify', [AccountAuthController::class, 'showVerify'])->name('verify');
 
         Route::post('/verify', [AccountAuthController::class, 'verify'])
-            ->middleware('throttle:10,1')
+            ->middleware('throttle:10,1,verify.submit')
             ->name('verify.submit');
     });
 
@@ -138,7 +138,7 @@ Route::prefix('account')->name('account.')->group(function () {
         Route::put('/profile', [AccountController::class, 'updateProfile'])->name('profile');
         Route::put('/consent', [AccountController::class, 'updateConsent'])->name('consent');
         Route::post('/preorders/{preorder}/refund', [AccountController::class, 'requestRefund'])
-            ->middleware('throttle:5,1')
+            ->middleware('throttle:5,1,refund')
             ->whereNumber('preorder')
             ->name('refund');
         Route::post('/logout', [AccountAuthController::class, 'logout'])->name('logout');
@@ -156,7 +156,7 @@ Route::middleware(['auth:web', 'admin'])->group(function () {
         ->name('admin.dashboard');
 
     Route::get('/admin/search', SearchController::class)
-        ->middleware(['can:dashboard.view', 'throttle:60,1'])
+        ->middleware(['can:dashboard.view', 'throttle:60,1,admin.search'])
         ->name('admin.search');
 
     Route::middleware('can:ideas.manage')->group(function () {
@@ -262,7 +262,7 @@ Route::middleware(['auth:web', 'admin'])->group(function () {
         Route::get('/admin/contacts', [ContactController::class, 'index'])->name('admin.contacts.index');
 
         Route::get('/admin/contacts/export', [ContactController::class, 'export'])
-            ->middleware(['can:contacts.export', 'throttle:10,1'])
+            ->middleware(['can:contacts.export', 'throttle:10,1,admin.contacts.export'])
             ->name('admin.contacts.export');
 
         Route::get('/admin/contacts/{contact}', [ContactController::class, 'show'])->name('admin.contacts.show');
@@ -276,7 +276,7 @@ Route::middleware(['auth:web', 'admin'])->group(function () {
             ->names('admin.groups');
 
         Route::get('/admin/groups/{group}/export', [ContactGroupController::class, 'export'])
-            ->middleware(['can:contacts.export', 'throttle:10,1'])
+            ->middleware(['can:contacts.export', 'throttle:10,1,admin.groups.export'])
             ->name('admin.groups.export');
     });
 
@@ -293,9 +293,9 @@ Route::middleware(['auth:web', 'admin'])->group(function () {
         Route::get('/admin/sms/broadcasts/create', [SmsBroadcastController::class, 'create'])->name('admin.sms.broadcasts.create');
         Route::post('/admin/sms/broadcasts', [SmsBroadcastController::class, 'store'])->name('admin.sms.broadcasts.store');
         Route::get('/admin/sms/broadcasts/{broadcast}', [SmsBroadcastController::class, 'show'])->whereNumber('broadcast')->name('admin.sms.broadcasts.show');
-        Route::post('/admin/sms/broadcasts/{broadcast}/confirm', [SmsBroadcastController::class, 'confirm'])->whereNumber('broadcast')->middleware('throttle:10,1')->name('admin.sms.broadcasts.confirm');
+        Route::post('/admin/sms/broadcasts/{broadcast}/confirm', [SmsBroadcastController::class, 'confirm'])->whereNumber('broadcast')->middleware('throttle:10,1,admin.sms.broadcasts.confirm')->name('admin.sms.broadcasts.confirm');
         Route::post('/admin/sms/broadcasts/{broadcast}/cancel', [SmsBroadcastController::class, 'cancel'])->whereNumber('broadcast')->name('admin.sms.broadcasts.cancel');
-        Route::post('/admin/sms/broadcasts/{broadcast}/dispatch', [SmsBroadcastController::class, 'dispatchBatch'])->whereNumber('broadcast')->middleware('throttle:30,1')->name('admin.sms.broadcasts.dispatch');
+        Route::post('/admin/sms/broadcasts/{broadcast}/dispatch', [SmsBroadcastController::class, 'dispatchBatch'])->whereNumber('broadcast')->middleware('throttle:30,1,admin.sms.broadcasts.dispatch')->name('admin.sms.broadcasts.dispatch');
         Route::delete('/admin/sms/broadcasts/{broadcast}', [SmsBroadcastController::class, 'destroy'])->whereNumber('broadcast')->name('admin.sms.broadcasts.destroy');
     });
 
@@ -304,17 +304,17 @@ Route::middleware(['auth:web', 'admin'])->group(function () {
         Route::post('/admin/sms/messages/{message}/retry', [SmsMessageController::class, 'retry'])->whereNumber('message')->name('admin.sms.messages.retry');
         Route::post('/admin/contacts/{contact}/sms', [SmsMessageController::class, 'sendToContact'])
             ->whereNumber('contact')
-            ->middleware('throttle:10,1')
+            ->middleware('throttle:10,1,admin.contacts.sms')
             ->name('admin.contacts.sms');
     });
 
     Route::middleware('can:settings.manage')->group(function () {
         Route::get('/admin/system', SystemStatusController::class)->name('admin.system');
-        Route::post('/admin/system/migrate', [SystemStatusController::class, 'migrate'])->middleware('throttle:3,1')->name('admin.system.migrate');
-        Route::post('/admin/system/optimize', [SystemStatusController::class, 'optimize'])->middleware('throttle:5,1')->name('admin.system.optimize');
+        Route::post('/admin/system/migrate', [SystemStatusController::class, 'migrate'])->middleware('throttle:3,1,admin.system.migrate')->name('admin.system.migrate');
+        Route::post('/admin/system/optimize', [SystemStatusController::class, 'optimize'])->middleware('throttle:5,1,admin.system.optimize')->name('admin.system.optimize');
 
         Route::get('/admin/backups', [BackupController::class, 'index'])->name('admin.backups.index');
-        Route::post('/admin/backups', [BackupController::class, 'store'])->middleware('throttle:3,10')->name('admin.backups.store');
+        Route::post('/admin/backups', [BackupController::class, 'store'])->middleware('throttle:3,10,admin.backups.store')->name('admin.backups.store');
         Route::get('/admin/backups/{name}', [BackupController::class, 'download'])->where('name', 'idealab-\d{8}-\d{6}\.sql\.gz')->name('admin.backups.download');
 
         Route::get('/admin/sms', [SmsTemplateController::class, 'index'])
@@ -346,7 +346,7 @@ Route::middleware(['auth:web', 'admin'])->group(function () {
         Route::post(
             '/admin/payments/{payment}/verify',
             [PreorderManagementController::class, 'verifyPayment']
-        )->middleware('throttle:10,1')
+        )->middleware('throttle:10,1,admin.payments.verify')
             ->name('admin.payments.verify');
     });
 

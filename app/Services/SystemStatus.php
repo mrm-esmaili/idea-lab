@@ -88,6 +88,10 @@ class SystemStatus
         $merchant = filled(config('services.zarinpal.merchant_id'));
         $sandbox = filter_var(config('services.zarinpal.sandbox'), FILTER_VALIDATE_BOOL);
         $add('درگاه پرداخت', 'شناسه پذیرنده زرین‌پال', $merchant ? 'ok' : 'error', $merchant ? 'تنظیم شده' : 'تنظیم نشده', $merchant ? null : 'ZARINPAL_MERCHANT_ID در .env');
+        $override = filled(config('services.zarinpal.api_url')) || filled(config('services.zarinpal.start_pay_url'));
+        if ($override) {
+            $add('درگاه پرداخت', 'نشانی درگاه', $production ? 'error' : 'warn', 'نشانی آزمایشی جایگزین تنظیم شده', 'ZARINPAL_API_URL و ZARINPAL_START_PAY_URL فقط برای آزمون‌اند؛ روی سرور خالی باشند.');
+        }
         $add('درگاه پرداخت', 'حالت آزمایشی (sandbox)', $sandbox ? ($production ? 'error' : 'warn') : 'ok', $sandbox ? 'روشن — پرداخت واقعی انجام نمی‌شود' : 'خاموش', $sandbox ? 'برای پرداخت واقعی: ZARINPAL_SANDBOX=false' : null);
 
         return $checks;

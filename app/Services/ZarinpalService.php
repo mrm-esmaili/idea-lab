@@ -15,16 +15,16 @@ class ZarinpalService
 
     private function apiBaseUrl(): string
     {
-        return config('services.zarinpal.sandbox')
+        return config('services.zarinpal.api_url') ?: (config('services.zarinpal.sandbox')
             ? 'https://sandbox.zarinpal.com'
-            : 'https://api.zarinpal.com';
+            : 'https://api.zarinpal.com');
     }
 
     public function startPayUrl(string $authority): string
     {
-        $baseUrl = config('services.zarinpal.sandbox')
+        $baseUrl = config('services.zarinpal.start_pay_url') ?: (config('services.zarinpal.sandbox')
             ? 'https://sandbox.zarinpal.com/pg/StartPay/'
-            : 'https://www.zarinpal.com/pg/StartPay/';
+            : 'https://www.zarinpal.com/pg/StartPay/');
 
         return $baseUrl . $authority;
     }
