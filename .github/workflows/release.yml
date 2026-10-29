@@ -1,0 +1,66 @@
+# ساخت بسته نصب برای cPanel بدون SSH/Composer (مرحله ۹۵).
+# فقط دستی اجرا می‌شود: GitHub ← Actions ← Build release package ← Run workflow.
+# خروجی: فایل zip در بخش Artifacts همان اجرا (شامل vendor، بدون .env و تست).
+name: Build release package
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    services:
+      mariadb:
+        image: mariadb:11.4
+        env:
+          MARIADB_DATABASE: idealab_test
+          MARIADB_USER: idealab
+          MARIADB_PASSWORD: localtest
+          MARIADB_ROOT_PASSWORD: root
+        ports: ['3306:3306']
+        options: --health-cmd="healthcheck.sh --connect --innodb_initialized" --health-interval=5s --health-timeout=5s --health-retries=20
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: pdo_mysql, mbstring, openssl, curl, fileinfo, intl
+          tools: composer:v2
+
+      - name: Install dependencies (with dev, for tests)
+        run: composer install --no-interaction --prefer-dist
+
+      - name: Run tests on MariaDB 11.4
+        env:
+          DB_CONNECTION: mariadb
+          DB_HOST: 127.0.0.1
+          DB_PORT: 3306
+          DB_DATABASE: idealab_test
+          DB_USERNAME: idealab
+          DB_PASSWORD: localtest
+        run: |
+          cp .env.example .env
+          php artisan key:generate
+          php artisan test
+
+      - name: Build production package
+        run: |
+          rm .env
+          composer install --no-dev --no-interaction --prefer-dist --optimize-autoloader
+          mkdir -p dist
+          zip -rq dist/idea-lab-${GITHUB_SHA::7}.zip . \
+            -x '.git/*' '.github/*' 'tests/*' 'dist/*' 'node_modules/*' \
+               '.env' 'storage/logs/*.log' 'storage/framework/sessions/*' \
+               'storage/framework/views/*.php' 'storage/framework/cache/data/*' \
+               'storage/app/backups/*' 'public/uploads/landing-pages/*' 'phpunit.xml'
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: idea-lab-release-${{ github.sha }}
+          path: dist/*.zip
+          retention-days: 30

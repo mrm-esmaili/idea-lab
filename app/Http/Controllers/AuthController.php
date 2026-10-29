@@ -11,7 +11,7 @@ class AuthController extends Controller
     public function showLogin()
     {
         if (Auth::check()) {
-            return redirect()->route('admin.leads.index');
+            return redirect()->route('admin.dashboard');
         }
 
         return view('auth.login');
@@ -30,10 +30,18 @@ class AuthController extends Controller
             ]);
         }
 
+        if (! Auth::user()->isAdmin()) {
+            Auth::logout();
+
+            throw ValidationException::withMessages([
+                'email' => 'این حساب دسترسی مدیریتی ندارد.',
+            ]);
+        }
+
         $request->session()->regenerate();
 
         return redirect()->intended(
-            route('admin.leads.index')
+            route('admin.dashboard')
         );
     }
 

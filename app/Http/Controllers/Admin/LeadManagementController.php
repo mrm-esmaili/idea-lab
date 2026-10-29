@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Idea;
 use App\Models\Lead;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -14,24 +15,31 @@ class LeadManagementController extends Controller
         $filters = $request->validate([
             'status' => [
                 'nullable',
-                Rule::in([
-                    'new',
-                    'contacted',
-                    'interested',
-                    'prepaid',
-                    'customer',
-                    'rejected',
-                ]),
+                Rule::in(array_keys(config('statuses.lead'))),
             ],
             'campaign' => ['nullable', 'string', 'max:255'],
+            'idea' => ['nullable', 'integer', 'exists:ideas,id'],
+            'q' => ['nullable', 'string', 'max:100'],
         ]);
 
         $query = Lead::query()
-            ->with('landingPage.idea')
+            ->with(['landingPage.idea', 'contact'])
             ->latest();
 
         if (! empty($filters['status'])) {
             $query->where('status', $filters['status']);
+        }
+
+        if (! empty($filters['q'])) {
+            $term = '%' . $filters['q'] . '%';
+            $query->where(fn ($q) => $q->where('name', 'like', $term)->orWhere('phone', 'like', $term));
+        }
+
+        if (! empty($filters['idea'])) {
+            $query->whereHas(
+                'landingPage',
+                fn ($page) => $page->where('idea_id', $filters['idea'])
+            );
         }
 
         if (! empty($filters['campaign'])) {
@@ -43,7 +51,9 @@ class LeadManagementController extends Controller
 
         $leads = $query->paginate(20)->withQueryString();
 
-        return view('admin.leads.index', compact('leads'));
+        $ideas = Idea::orderBy('name')->get(['id', 'name']);
+
+        return view('admin.leads.index', compact('leads', 'ideas'));
     }
 
     public function update(Request $request, Lead $lead)
@@ -51,14 +61,7 @@ class LeadManagementController extends Controller
         $data = $request->validate([
             'status' => [
                 'required',
-                Rule::in([
-                    'new',
-                    'contacted',
-                    'interested',
-                    'prepaid',
-                    'customer',
-                    'rejected',
-                ]),
+                Rule::in(array_keys(config('statuses.lead'))),
             ],
             'notes' => ['nullable', 'string', 'max:5000'],
         ]);

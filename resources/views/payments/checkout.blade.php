@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
+    <meta name="robots" content="noindex, nofollow">
+    <meta name="referrer" content="no-referrer">
+
     <title>پرداخت پیش‌خرید</title>
 
     <style>
@@ -29,6 +32,33 @@
             margin: 20px 0;
         }
 
+        .alert {
+            padding: 12px;
+            margin-bottom: 16px;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        .alert-error {
+            background: #fff0f0;
+            color: #a32020;
+        }
+
+        .alert-notice {
+            background: #fff8e6;
+            color: #7a5200;
+        }
+
+        .terms {
+            margin-bottom: 20px;
+            font-size: 14px;
+            color: #475569;
+        }
+
+        .terms summary {
+            cursor: pointer;
+        }
+
         button {
             width: 100%;
             padding: 14px;
@@ -46,6 +76,14 @@
 <div class="box">
     <h1>تکمیل پیش‌خرید</h1>
 
+    @if (session('payment_error'))
+        <div class="alert alert-error" role="alert">{{ session('payment_error') }}</div>
+    @endif
+
+    @if (session('payment_notice'))
+        <div class="alert alert-notice" role="status">{{ session('payment_notice') }}</div>
+    @endif
+
     <p>
         متقاضی:
         {{ $preorder->name }}
@@ -56,9 +94,18 @@
     </p>
 
     <div class="amount">
-        {{ number_format($preorder->amount) }}
-        تومان
+        {{ \App\Support\Money::formatRialAsToman($preorder->amount_rial) }}
     </div>
+
+    @if ($preorder->refundPolicy)
+        <details class="terms">
+            <summary>
+                شرایط بازپرداخت پذیرفته‌شده:
+                {{ $preorder->refundPolicy->summary() }}
+            </summary>
+            <p>{!! nl2br(e($preorder->refundPolicy->terms)) !!}</p>
+        </details>
+    @endif
 
     <form
         method="POST"

@@ -27,7 +27,7 @@ class LandingPageEventController extends Controller
         ]);
 
         $landingPage = LandingPage::where('slug', $slug)
-            ->where('is_active', true)
+            ->publiclyVisible()
             ->firstOrFail();
 
         $tracker->trackEvent(

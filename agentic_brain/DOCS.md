@@ -275,21 +275,16 @@ php artisan make:controller Admin/LeadManagementController
 php artisan tinker
 
 \App\Models\User::create([
-    'name' => 'mrm_esmaili',
-    'email' => 'rret.rocket@gmail.com',
+    'name' => 'admin',
+    'email' => 'admin@example.com',
     'password' => \Illuminate\Support\Facades\Hash::make(
-        '54s2dlotSSSr?'
+        'CHANGE_ME'
     ),
+    'role' => 'super_admin',
 ]);
-
-\App\Models\User::where('email', 'admin@example.com')->delete();
 ```
 
-```
-mrm_esmaili
-rret.rocket@gmail.com
-54s2dlotSSSr?
-```
+> رمز عبور واقعی هرگز در این فایل یا هر فایل دیگری در Git نوشته نشود.
 
 ### Test Addresses
 - /login

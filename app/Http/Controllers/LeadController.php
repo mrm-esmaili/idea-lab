@@ -3,6 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\LandingPage;
+use App\Services\ContactActivity;
+use App\Services\ContactResolver;
+use App\Rules\IranianMobile;
+use App\Support\PhoneNumber;
 use App\Models\Visitor;
 use App\Models\LandingPageEvent;
 use Illuminate\Http\Request;
@@ -16,20 +20,27 @@ class LeadController extends Controller
     {
         $landingPage = LandingPage::query()
             ->where('slug', $slug)
-            ->where('is_active', true)
+            ->publiclyVisible()
             ->firstOrFail();
 
-        $data = $request->validate([
+        // فرم غیرفعال‌شده توسط مدیر نباید از مسیر مستقیم هم قابل ارسال باشد
+        abort_unless($landingPage->contentData()['show_lead_form'], 404);
+
+        // کیسه خطای جدا تا خطای این فرم روی فرم پیش‌خرید همان صفحه نمایش داده نشود
+        $data = $request->validateWithBag('lead', [
             'name' => ['required', 'string', 'max:120'],
             'phone' => [
                 'required',
                 'string',
                 'max:30',
-                'regex:/^[0-9۰-۹٠-٩+\s().-]+$/u',
+                new IranianMobile(),
             ],
             'email' => ['nullable', 'email', 'max:255'],
             'consent' => ['accepted'],
+            'marketing_consent' => ['nullable', 'boolean'],
         ]);
+
+        $data['phone'] = PhoneNumber::normalizeMobile($data['phone']);
 
         $visitorUuid = $request->cookie('visitor_uuid');
 
@@ -55,7 +66,15 @@ class LeadController extends Controller
                 ->first();
         }
 
+        $contact = app(ContactResolver::class)->forMobile($data['phone'], trim($data['name']));
+
+        // رضایت پیامک تبلیغاتی فقط با تیک صریح ثبت می‌شود؛ تیک‌نزدن رضایت قبلی را لغو نمی‌کند
+        if ($request->boolean('marketing_consent')) {
+            $contact->setMarketingConsent(true, 'lead_form:' . $landingPage->slug);
+        }
+
         $lead = DB::transaction(function () use (
+            $contact,
             $data,
             $landingPage,
             $visitor,
@@ -63,8 +82,9 @@ class LeadController extends Controller
         ) {
             $lead = $landingPage->leads()->create([
                 'visitor_id' => $visitor?->id,
+                'contact_id' => $contact->id,
                 'name' => trim($data['name']),
-                'phone' => trim($data['phone']),
+                'phone' => $data['phone'],
                 'email' => $data['email'] ?? null,
                 'status' => 'new',
 
@@ -100,11 +120,20 @@ class LeadController extends Controller
                 'occurred_at' => now(),
             ]);
 
+            app(ContactActivity::class)->recordSubmission(
+                $contact,
+                $landingPage,
+                'lead_form',
+                $lead->source,
+                $lead->medium,
+                $lead->campaign,
+            );
+
             return $lead;
         });
 
         return redirect()
-            ->route('landing-pages.show', $landingPage->slug)
-            ->with('lead_success', true);
+            ->to(route('landing-pages.show', $landingPage->slug) . '#lead-form')
+            ->with('lead_success', $landingPage->slug);
     }
 }

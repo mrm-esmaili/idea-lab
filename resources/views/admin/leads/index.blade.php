@@ -1,153 +1,172 @@
-<!DOCTYPE html>
-<html lang="fa" dir="rtl">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>مدیریت لیدها</title>
-</head>
-<body>
+@extends('layouts.admin')
 
-    <h1>مدیریت مشتریان بالقوه</h1>
+@section('title', 'سرنخ‌ها')
 
-    <p>
-        <a href="{{ route('ideas.index') }}">مدیریت ایده‌ها</a>
-    </p>
+@section('breadcrumbs')
+    <li class="breadcrumb-item active" aria-current="page">سرنخ‌ها</li>
+@endsection
 
-    <form method="GET" action="{{ route('admin.leads.index') }}">
-        <label for="status">وضعیت</label>
+@section('content')
+    @php($statuses = config('statuses.lead'))
 
-        <select name="status" id="status">
-            <option value="">همه وضعیت‌ها</option>
+    <div class="card mb-3">
+        <div class="card-body">
+            <form
+                method="GET"
+                action="{{ route('admin.leads.index') }}"
+                class="row g-2 align-items-end"
+            >
+                <div class="col-sm-6 col-lg-3">
+                    <label for="q" class="form-label">جست‌وجوی نام یا شماره</label>
+                    <input id="q" type="search" name="q" value="{{ request('q') }}" maxlength="100" class="form-control">
+                </div>
 
-            @foreach ([
-                'new' => 'جدید',
-                'contacted' => 'تماس گرفته شد',
-                'interested' => 'علاقه‌مند',
-                'prepaid' => 'پیش‌پرداخت',
-                'customer' => 'مشتری',
-                'rejected' => 'رد شده',
-            ] as $value => $label)
-                <option
-                    value="{{ $value }}"
-                    @selected(request('status') === $value)
-                >
-                    {{ $label }}
-                </option>
-            @endforeach
-        </select>
+                <div class="col-sm-6 col-lg-3">
+                    <label for="idea" class="form-label">ایده</label>
+                    <select id="idea" name="idea" class="form-select">
+                        <option value="">همه ایده‌ها</option>
+                        @foreach ($ideas as $ideaOption)
+                            <option value="{{ $ideaOption->id }}" @selected((string) request('idea') === (string) $ideaOption->id)>
+                                {{ $ideaOption->name }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
 
-        <label for="campaign">کمپین</label>
+                <div class="col-sm-6 col-lg-3">
+                    <label for="status" class="form-label">وضعیت</label>
+                    <select name="status" id="status" class="form-select">
+                        <option value="">همه وضعیت‌ها</option>
+                        @foreach ($statuses as $value => $label)
+                            <option value="{{ $value }}" @selected(request('status') === $value)>
+                                {{ $label }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
 
-        <input
-            id="campaign"
-            type="text"
-            name="campaign"
-            value="{{ request('campaign') }}"
-            placeholder="مثلاً clubyar01"
-        >
+                <div class="col-sm-6 col-lg-3">
+                    <label for="campaign" class="form-label">کمپین</label>
+                    <input
+                        id="campaign"
+                        type="text"
+                        name="campaign"
+                        value="{{ request('campaign') }}"
+                        placeholder="مثلاً clubyar01"
+                        class="form-control"
+                    >
+                </div>
 
-        <button type="submit">فیلتر</button>
+                <div class="col-auto">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-funnel"></i>
+                        فیلتر
+                    </button>
+                    <a href="{{ route('admin.leads.index') }}" class="btn btn-outline-secondary">
+                        پاک‌کردن فیلتر
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
 
-        <a href="{{ route('admin.leads.index') }}">پاک‌کردن فیلتر</a>
-    </form>
+    <div class="card">
+        <div class="card-header">
+            <h2 class="card-title h6 mb-0">
+                تعداد نتایج: {{ number_format($leads->total()) }}
+            </h2>
+        </div>
 
-    @if (session('success'))
-        <p role="status">{{ session('success') }}</p>
-    @endif
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <th>نام</th>
+                            <th>شماره تماس</th>
+                            <th>ایده / صفحه</th>
+                            <th>منبع</th>
+                            <th>کمپین</th>
+                            <th>زمان ثبت</th>
+                            <th>وضعیت</th>
+                            <th class="table-actions">پیگیری</th>
+                        </tr>
+                    </thead>
 
-    <p>تعداد نتایج این صفحه: {{ $leads->count() }}</p>
-
-    <table border="1" cellpadding="8" cellspacing="0">
-        <thead>
-            <tr>
-                <th>نام</th>
-                <th>شماره تماس</th>
-                <th>ایده / صفحه</th>
-                <th>منبع</th>
-                <th>کمپین</th>
-                <th>زمان ثبت</th>
-                <th>وضعیت و یادداشت</th>
-            </tr>
-        </thead>
-
-        <tbody>
-            @forelse ($leads as $lead)
-                <tr>
-                    <td>{{ $lead->name }}</td>
-
-                    <td>
-                        <a href="tel:{{ $lead->phone }}">
-                            {{ $lead->phone }}
-                        </a>
-                    </td>
-
-                    <td>
-                        {{ $lead->landingPage->idea->name ?? '—' }}
-                        /
-                        {{ $lead->landingPage->name ?? '—' }}
-                    </td>
-
-                    <td>{{ $lead->source ?? '—' }}</td>
-
-                    <td>{{ $lead->campaign ?? '—' }}</td>
-
-                    <td>
-                        {{ $lead->created_at->format('Y-m-d H:i') }}
-                    </td>
-
-                    <td>
-                        <form
-                            method="POST"
-                            action="{{ route('admin.leads.update', $lead) }}"
-                        >
-                            @csrf
-                            @method('PATCH')
-
-                            <select name="status" required>
-                                @foreach ([
-                                    'new' => 'جدید',
-                                    'contacted' => 'تماس گرفته شد',
-                                    'interested' => 'علاقه‌مند',
-                                    'prepaid' => 'پیش‌پرداخت',
-                                    'customer' => 'مشتری',
-                                    'rejected' => 'رد شده',
-                                ] as $value => $label)
-                                    <option
-                                        value="{{ $value }}"
-                                        @selected($lead->status === $value)
+                    <tbody>
+                        @forelse ($leads as $lead)
+                            <tr>
+                                <td>
+                                    @if ($lead->contact && auth()->user()->can('contacts.manage'))
+                                        <a href="{{ route('admin.contacts.show', $lead->contact) }}">{{ $lead->name }}</a>
+                                    @else
+                                        {{ $lead->name }}
+                                    @endif
+                                </td>
+                                <td>
+                                    <a href="tel:{{ $lead->phone }}" class="ltr">{{ $lead->phone }}</a>
+                                </td>
+                                <td>
+                                    {{ $lead->landingPage->idea->name ?? '—' }}
+                                    <div class="small text-body-secondary">
+                                        {{ $lead->landingPage->name ?? '—' }}
+                                    </div>
+                                </td>
+                                <td class="ltr">{{ $lead->source ?? '—' }}</td>
+                                <td class="ltr">{{ $lead->campaign ?? '—' }}</td>
+                                <td class="ltr text-nowrap">{{ \App\Support\Format::datetime($lead->created_at) }}</td>
+                                <td><x-admin.status-badge group="lead" :value="$lead->status" /></td>
+                                <td>
+                                    <form
+                                        method="POST"
+                                        action="{{ route('admin.leads.update', $lead) }}"
+                                        class="d-flex flex-column gap-1"
                                     >
-                                        {{ $label }}
-                                    </option>
-                                @endforeach
-                            </select>
+                                        @csrf
+                                        @method('PATCH')
 
-                            <textarea
-                                name="notes"
-                                rows="2"
-                                maxlength="5000"
-                                placeholder="یادداشت پیگیری"
-                            >{{ $lead->notes }}</textarea>
+                                        <select
+                                            name="status"
+                                            required
+                                            class="form-select form-select-sm"
+                                            aria-label="وضعیت سرنخ {{ $lead->name }}"
+                                        >
+                                            @foreach ($statuses as $value => $label)
+                                                <option value="{{ $value }}" @selected($lead->status === $value)>
+                                                    {{ $label }}
+                                                </option>
+                                            @endforeach
+                                        </select>
 
-                            <button type="submit">ذخیره</button>
-                        </form>
-                    </td>
-                </tr>
-            @empty
-                <tr>
-                    <td colspan="7">
-                        هنوز لید ثبت نشده است.
-                    </td>
-                </tr>
-            @endforelse
-        </tbody>
-    </table>
+                                        <textarea
+                                            name="notes"
+                                            rows="2"
+                                            maxlength="5000"
+                                            placeholder="یادداشت پیگیری"
+                                            class="form-control form-control-sm"
+                                            aria-label="یادداشت سرنخ {{ $lead->name }}"
+                                        >{{ $lead->notes }}</textarea>
 
-    {{ $leads->links() }}
+                                        <button type="submit" class="btn btn-sm btn-primary align-self-start">
+                                            ذخیره
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                        @empty
+                            <x-admin.empty-row colspan="8">
+                                سرنخی با این شرایط پیدا نشد.
+                            </x-admin.empty-row>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+        </div>
 
-    <form method="POST" action="{{ route('logout') }}">
-        @csrf
-        <button type="submit">خروج از پنل</button>
-    </form>
-
-</body>
-</html>
+        @if ($leads->hasPages())
+            <div class="card-footer">
+                {{ $leads->links() }}
+            </div>
+        @endif
+    </div>
+@endsection

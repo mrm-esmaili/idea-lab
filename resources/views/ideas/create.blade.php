@@ -1,61 +1,53 @@
-<!DOCTYPE html>
-<html lang="fa" dir="rtl">
-<head>
-    <meta charset="UTF-8">
-    <title>ایده جدید</title>
-</head>
+@extends('layouts.admin')
 
-<body>
+@section('title', 'ایجاد ایده جدید')
 
-    <h1>ایجاد ایده جدید</h1>
+@section('breadcrumbs')
+    <li class="breadcrumb-item"><a href="{{ route('ideas.index') }}">ایده‌ها</a></li>
+    <li class="breadcrumb-item active" aria-current="page">ایده جدید</li>
+@endsection
 
-    @if ($errors->any())
-        <ul>
-            @foreach ($errors->all() as $error)
-                <li>{{ $error }}</li>
-            @endforeach
-        </ul>
-    @endif
+@section('content')
+    <div class="card" style="max-width: 760px">
+        <form action="{{ route('ideas.store') }}" method="POST">
+            @csrf
 
-    <form
-        action="{{ route('ideas.store') }}"
-        method="POST"
-    >
+            <div class="card-body">
+                <div class="mb-3">
+                    <label for="name" class="form-label">نام ایده <span class="text-danger">*</span></label>
+                    <input
+                        id="name"
+                        type="text"
+                        name="name"
+                        value="{{ old('name') }}"
+                        maxlength="255"
+                        required
+                        @class(['form-control', 'is-invalid' => $errors->has('name')])
+                    >
+                    @error('name')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
+                </div>
 
-        @csrf
+                <div class="mb-0">
+                    <label for="description" class="form-label">توضیحات</label>
+                    <textarea
+                        id="description"
+                        name="description"
+                        rows="4"
+                        maxlength="5000"
+                        @class(['form-control', 'is-invalid' => $errors->has('description')])
+                    >{{ old('description') }}</textarea>
+                    @error('description')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
+                </div>
+            </div>
 
-        <div>
-            <label>
-                نام ایده
-            </label>
-
-            <input
-                type="text"
-                name="name"
-                value="{{ old('name') }}"
-                required
-            >
-        </div>
-
-        <br>
-
-        <div>
-            <label>
-                توضیحات
-            </label>
-
-            <textarea
-                name="description"
-            >{{ old('description') }}</textarea>
-        </div>
-
-        <br>
-
-        <button type="submit">
-            ایجاد ایده
-        </button>
-
-    </form>
-
-</body>
-</html>
+            <div class="card-footer d-flex gap-2">
+                <button type="submit" class="btn btn-primary">ایجاد ایده</button>
+                <a href="{{ route('ideas.index') }}" class="btn btn-outline-secondary">انصراف</a>
+            </div>
+        </form>
+    </div>
+@endsection

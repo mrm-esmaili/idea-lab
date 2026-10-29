@@ -35,11 +35,29 @@ return [
         ],
     ],
 
+    'sms' => [
+        // smsir برای ارسال واقعی؛ log فقط برای توسعه محلی (در production مجاز نیست)
+        'driver' => env('SMS_DRIVER', 'log'),
+
+        'smsir' => [
+            'api_key' => env('SMSIR_API_KEY'),
+            'base_url' => env('SMSIR_BASE_URL', 'https://api.sms.ir/v1'),
+            'timeout' => (int) env('SMSIR_TIMEOUT', 10),
+            // خط اختصاصی برای ارسال متن آزاد (ارسال گروهی و دستی)
+            'line_number' => env('SMSIR_LINE_NUMBER'),
+        ],
+    ],
+
     'zarinpal' => [
         'merchant_id' => env('ZARINPAL_MERCHANT_ID'),
 
         'sandbox' => env('ZARINPAL_SANDBOX', true),
 
+        // فقط برای آزمون انتها‌به‌انتها با درگاه شبیه‌سازی‌شده؛ روی سرور خالی بماند
+        'api_url' => env('ZARINPAL_API_URL'),
+        'start_pay_url' => env('ZARINPAL_START_PAY_URL'),
+
+        // منسوخ: فقط migration افزودن تنظیمات ایده از آن استفاده می‌کند
         'preorder_amount_toman' => env(
             'ZARINPAL_PREORDER_AMOUNT_TOMAN',
             10000

@@ -10,6 +10,7 @@ class Lead extends Model
     protected $fillable = [
         'landing_page_id',
         'visitor_id',
+        'contact_id',
         'name',
         'phone',
         'email',
@@ -38,5 +39,10 @@ class Lead extends Model
     public function visitor(): BelongsTo
     {
         return $this->belongsTo(Visitor::class);
+    }
+
+    public function contact(): BelongsTo
+    {
+        return $this->belongsTo(Contact::class);
     }
 }

@@ -15,11 +15,18 @@ class PublicLandingPageController extends Controller
     ) {
         $landingPage = LandingPage::query()
             ->where('slug', $slug)
-            ->where('is_active', true)
-            ->with('idea')
+            ->publiclyVisible()
+            ->with('idea.currentRefundPolicy')
             ->firstOrFail();
 
-        $tracker->trackPageView($request, $landingPage);
+        // بازگشت به همین صفحه پس از ارسال فرم (موفق یا با خطا) بازدید جدید نیست؛
+        // بازدید صفحه دیگری بلافاصله پس از ارسال، بازدید عادی است
+        $isFormReturn = $request->session()->has('errors')
+            || $request->session()->get('lead_success') === $landingPage->slug;
+
+        if (! $isFormReturn) {
+            $tracker->trackPageView($request, $landingPage);
+        }
 
         return response()
             ->view('landing-pages.show', compact('landingPage'));

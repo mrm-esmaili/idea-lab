@@ -1,102 +1,24 @@
-<!DOCTYPE html>
-<html lang="fa" dir="rtl">
-<head>
-    <meta charset="UTF-8">
-    <title>Landing Page جدید</title>
-</head>
+@extends('layouts.admin')
 
-<body>
+@section('title', 'ساخت صفحه فرود')
 
-    <h1>
-        ساخت Landing Page
-    </h1>
+@section('breadcrumbs')
+    <li class="breadcrumb-item"><a href="{{ route('ideas.index') }}">ایده‌ها</a></li>
+    <li class="breadcrumb-item"><a href="{{ route('ideas.show', $idea) }}">{{ $idea->name }}</a></li>
+    <li class="breadcrumb-item active" aria-current="page">صفحه فرود جدید</li>
+@endsection
 
-    <p>
-        ایده:
-        {{ $idea->name }}
-    </p>
-
-    @if ($errors->any())
-
-        <ul>
-            @foreach ($errors->all() as $error)
-                <li>{{ $error }}</li>
-            @endforeach
-        </ul>
-
-    @endif
-
+@section('content')
     <form
         action="{{ route('landing-pages.store', $idea) }}"
         method="POST"
+        enctype="multipart/form-data"
     >
+        @include('landing-pages._form')
 
-        @csrf
-
-        <div>
-            <label>
-                نام Landing Page
-            </label>
-
-            <input
-                type="text"
-                name="name"
-                value="{{ old('name') }}"
-                placeholder="مثلاً صفحه معرفی باشگاه‌یار"
-                required
-            >
+        <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-primary">ساخت و انتشار صفحه فرود</button>
+            <a href="{{ route('ideas.show', $idea) }}" class="btn btn-outline-secondary">انصراف</a>
         </div>
-
-        <br>
-
-        <div>
-            <label>
-                عنوان اصلی
-            </label>
-
-            <input
-                type="text"
-                name="title"
-                value="{{ old('title') }}"
-                placeholder="مثلاً باشگاهت را هوشمند مدیریت کن"
-                required
-            >
-        </div>
-
-        <br>
-
-        <div>
-            <label>
-                توضیحات
-            </label>
-
-            <textarea
-                name="description"
-            >{{ old('description') }}</textarea>
-        </div>
-
-        <br>
-
-        <div>
-            <label>
-                متن دکمه
-            </label>
-
-            <input
-                type="text"
-                name="cta_text"
-                value="{{ old('cta_text') }}"
-                placeholder="ثبت‌نام در لیست انتظار"
-            >
-        </div>
-
-        <br>
-
-        <button type="submit">
-            ساخت Landing Page
-        </button>
-
     </form>
-
-</body>
-</html>
+@endsection

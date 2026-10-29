@@ -1,266 +1,160 @@
-<!DOCTYPE html>
-<html lang="fa" dir="rtl">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>داشبورد اعتبارسنجی ایده‌ها</title>
+@extends('layouts.admin')
 
-    <style>
-        * { box-sizing: border-box; }
+@section('title', 'داشبورد')
 
-        body {
-            margin: 0;
-            padding: 24px;
-            background: #f4f6fa;
-            color: #202938;
-            font-family: Tahoma, Arial, sans-serif;
-        }
+@section('content')
+    <div class="card mb-3">
+        <div class="card-header"><h2 class="card-title h6 mb-0"><i class="bi bi-bell"></i> نیازمند رسیدگی</h2></div>
+        @if ($attention === [])
+            <div class="card-body text-body-secondary small"><i class="bi bi-check2-circle text-success"></i> مورد معوقی نیست.</div>
+        @else
+            <div class="list-group list-group-flush">
+                @foreach ($attention as $item)
+                    <a href="{{ $item['url'] }}" class="list-group-item list-group-item-action d-flex align-items-center gap-2">
+                        <i class="bi {{ $item['icon'] }} text-{{ $item['color'] }}"></i>
+                        <span class="flex-grow-1">{{ $item['label'] }}</span>
+                        <span class="badge text-bg-{{ $item['color'] }}">{{ number_format($item['count']) }}</span>
+                    </a>
+                @endforeach
+            </div>
+        @endif
+    </div>
 
-        .container {
-            max-width: 1200px;
-            margin: auto;
-        }
+    @php($current = $activity['current'])
+    @php($previous = $activity['previous'])
+    <h2 class="h6 text-body-secondary mb-2">۷ روز اخیر <span class="small">(در مقایسه با ۷ روز قبل از آن)</span></h2>
+    <div class="row row-cols-1 row-cols-sm-2 row-cols-xl-5 g-3 mb-3">
+        @foreach ([
+            ['key' => 'unique_visitors', 'label' => 'بازدیدکننده یکتا', 'icon' => 'bi-people', 'color' => 'primary'],
+            ['key' => 'leads', 'label' => 'سرنخ', 'icon' => 'bi-person-lines-fill', 'color' => 'success', 'hint' => 'نرخ سرنخ: ' . number_format($current['lead_rate'], 2) . '%'],
+            ['key' => 'preorders', 'label' => 'درخواست پیش‌خرید', 'icon' => 'bi-bag', 'color' => 'info'],
+            ['key' => 'paid_count', 'label' => 'پیش‌پرداخت موفق', 'icon' => 'bi-credit-card', 'color' => 'warning'],
+            ['key' => 'paid_rial', 'label' => 'وجه دریافت‌شده', 'icon' => 'bi-cash-stack', 'color' => 'secondary', 'money' => true],
+        ] as $stat)
+            @php($change = \App\Services\Reports\DashboardService::change($current[$stat['key']], $previous[$stat['key']]))
+            <div class="col">
+                <div class="info-box h-100">
+                    <span class="info-box-icon text-bg-{{ $stat['color'] }} shadow-sm"><i class="bi {{ $stat['icon'] }}"></i></span>
+                    <div class="info-box-content">
+                        <span class="info-box-text">{{ $stat['label'] }}</span>
+                        <span class="info-box-number">
+                            {{ ($stat['money'] ?? false) ? \App\Support\Money::formatRialAsToman($current[$stat['key']]) : number_format($current[$stat['key']]) }}
+                        </span>
+                        <span class="small text-body-secondary">
+                            @if ($change === null)
+                                قبلی: {{ ($stat['money'] ?? false) ? \App\Support\Money::formatRialAsToman($previous[$stat['key']]) : number_format($previous[$stat['key']]) }}
+                            @else
+                                <span @class(['text-success' => $change > 0, 'text-danger' => $change < 0])>{{ $change > 0 ? '+' : '' }}{{ number_format($change, 1) }}%</span>
+                            @endif
+                            @isset($stat['hint']) — {{ $stat['hint'] }} @endisset
+                        </span>
+                    </div>
+                </div>
+            </div>
+        @endforeach
+    </div>
 
-        .header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 12px;
-            flex-wrap: wrap;
-            margin-bottom: 24px;
-        }
-
-        .actions {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-
-        .button {
-            display: inline-block;
-            padding: 10px 14px;
-            border: 0;
-            border-radius: 8px;
-            background: #26364d;
-            color: white;
-            text-decoration: none;
-            cursor: pointer;
-            font-size: 13px;
-        }
-
-        .stats {
-            display: grid;
-            grid-template-columns: repeat(3, minmax(0, 1fr));
-            gap: 16px;
-            margin-bottom: 24px;
-        }
-
-        .card, .panel {
-            background: white;
-            padding: 20px;
-            border-radius: 12px;
-            box-shadow: 0 3px 14px #1720330a;
-        }
-
-        .stat-label {
-            color: #667085;
-            font-size: 13px;
-        }
-
-        .stat-value {
-            margin-top: 12px;
-            font-size: 28px;
-            font-weight: bold;
-            direction: ltr;
-            text-align: right;
-        }
-
-        .panel {
-            overflow-x: auto;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            min-width: 650px;
-        }
-
-        th, td {
-            padding: 13px 10px;
-            text-align: right;
-            border-bottom: 1px solid #edf0f4;
-            font-size: 13px;
-        }
-
-        th {
-            color: #667085;
-            background: #fafbfc;
-        }
-
-        .muted {
-            color: #667085;
-            font-size: 12px;
-        }
-
-        @media (max-width: 800px) {
-            body { padding: 14px; }
-            .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-        }
-
-        @media (max-width: 420px) {
-            .stats { grid-template-columns: 1fr 1fr; gap: 8px; }
-            .card { padding: 14px; }
-            .stat-value { font-size: 22px; }
-        }
-    </style>
-</head>
-
-<body>
-<div class="container">
-
-    <header class="header">
-        <div>
-            <h1>داشبورد اعتبارسنجی</h1>
-            <p class="muted">عملکرد ایده‌ها و صفحات فرود</p>
+    <div class="card mb-3">
+        <div class="card-header"><h2 class="card-title h6 mb-0">روند روزانه ۳۰ روز اخیر</h2></div>
+        <div class="card-body">
+            <x-admin.trend-chart :series="$daily" key="unique_visitors" label="بازدیدکننده یکتا" color="primary" />
+            <x-admin.trend-chart :series="$daily" key="leads" label="سرنخ" color="success" />
+            <x-admin.trend-chart :series="$daily" key="paid_count" label="پیش‌پرداخت موفق" color="warning" class="mb-1" />
+            <div class="d-flex justify-content-between small text-body-secondary">
+                <span>{{ \App\Support\Format::date(\Illuminate\Support\Carbon::parse($daily[0]['date'])) }}</span>
+                <span>امروز</span>
+            </div>
+            <details class="small mt-2">
+                <summary>جدول داده</summary>
+                <div class="table-responsive">
+                    <table class="table table-sm mb-0">
+                        <thead><tr><th>روز</th><th>بازدیدکننده</th><th>سرنخ</th><th>پیش‌پرداخت</th></tr></thead>
+                        <tbody>
+                            @foreach (array_reverse($daily) as $point)
+                                <tr>
+                                    <td>{{ \App\Support\Format::date(\Illuminate\Support\Carbon::parse($point['date'])) }}</td>
+                                    <td>{{ number_format($point['unique_visitors']) }}</td>
+                                    <td>{{ number_format($point['leads']) }}</td>
+                                    <td>{{ number_format($point['paid_count']) }}</td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            </details>
         </div>
+    </div>
 
-        <div class="actions">
-            <a class="button" href="{{ route('ideas.index') }}">
-                مدیریت ایده‌ها
-            </a>
-
-            <a class="button" href="{{ route('admin.leads.index') }}">
-                مدیریت سرنخ‌ها
-            </a>
-
-            <form method="POST" action="{{ route('logout') }}">
-                @csrf
-                <button class="button" type="submit">خروج</button>
-            </form>
-        </div>
-    </header>
-
-    <section class="stats">
-        <div class="card">
-            <div class="stat-label">کل بازدید صفحات</div>
-            <div class="stat-value">
-                {{ number_format($pageViews) }}
+    <div class="row g-3">
+        <div class="col-lg-4">
+            <div class="card mb-3">
+                <div class="card-header"><h2 class="card-title h6 mb-0">ایده‌ها بر اساس وضعیت</h2></div>
+                <ul class="list-group list-group-flush">
+                    @forelse (config('statuses.idea') as $status => $label)
+                        @continue(! isset($ideasByStatus[$status]))
+                        <li class="list-group-item d-flex justify-content-between">
+                            <x-admin.status-badge group="idea" :value="$status" />
+                            <span>{{ number_format($ideasByStatus[$status]) }}</span>
+                        </li>
+                    @empty
+                    @endforelse
+                    @if ($ideasByStatus === [])
+                        <li class="list-group-item small text-body-secondary">ایده فعالی ثبت نشده است.</li>
+                    @endif
+                </ul>
+                @can('reports.view')
+                    <div class="card-footer small"><a href="{{ route('admin.reports.ideas') }}">اقتصاد ایده‌ها</a> — <a href="{{ route('admin.reports.funnel') }}">قیف تبدیل</a></div>
+                @endcan
             </div>
         </div>
 
-        <div class="card">
-            <div class="stat-label">کل بازدیدکنندگان ثبت‌شده</div>
-            <div class="stat-value">
-                {{ number_format($visitors) }}
+        <div class="col-lg-8">
+            <div class="card mb-3">
+                <div class="card-header"><h2 class="card-title h6 mb-0">صفحات فرود (کل دوره)</h2></div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-sm table-hover mb-0 align-middle">
+                            <thead>
+                                <tr>
+                                    <th>صفحه</th>
+                                    <th>بازدیدکننده</th>
+                                    <th>سرنخ</th>
+                                    <th>نرخ سرنخ</th>
+                                    <th>پیش‌پرداخت</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @forelse ($landingPages as $page)
+                                    @php($s = $pageStats[(string) $page->id] ?? null)
+                                    <tr>
+                                        <td>
+                                            {{ $page->name }}
+                                            @if (! $page->is_active)<span class="badge text-bg-secondary">غیرفعال</span>@endif
+                                            <div class="small text-body-secondary">{{ $page->idea?->name ?? 'بدون ایده' }}</div>
+                                        </td>
+                                        <td>{{ number_format($s['unique_visitors'] ?? 0) }}</td>
+                                        <td>{{ number_format($s['leads'] ?? 0) }}</td>
+                                        <td>{{ number_format($s['lead_rate'] ?? 0, 2) }}%</td>
+                                        <td>{{ number_format($s['paid_count'] ?? 0) }}</td>
+                                        <td class="text-end">
+                                            <a href="{{ route('landing-pages.show', ['slug' => $page->slug]) }}" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-outline-primary" aria-label="مشاهده {{ $page->name }}">
+                                                <i class="bi bi-box-arrow-up-left"></i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                @empty
+                                    <x-admin.empty-row colspan="6">هنوز صفحه فرودی ثبت نشده است.</x-admin.empty-row>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                @if ($landingPages->hasPages())
+                    <div class="card-footer">{{ $landingPages->links() }}</div>
+                @endif
+                <div class="card-footer small text-body-secondary">نرخ سرنخ = سرنخ ÷ بازدیدکننده یکتا (کوکی مرورگر)؛ همان تعریف همه گزارش‌ها.</div>
             </div>
         </div>
-
-        <div class="card">
-            <div class="stat-label">کل سرنخ‌ها</div>
-            <div class="stat-value">
-                {{ number_format($leads) }}
-            </div>
-        </div>
-
-        <div class="card">
-            <div class="stat-label">نرخ تبدیل تقریبی</div>
-            <div class="stat-value">
-                {{ number_format($conversionRate, 2) }}%
-            </div>
-        </div>
-
-        <div class="card">
-            <div class="stat-label">کلیک روی CTA</div>
-
-            <div class="stat-value">
-                {{ number_format($ctaClicks) }}
-            </div>
-
-            <div class="muted">
-                نرخ کلیک:
-                {{ number_format($ctaClickRate, 2) }}%
-            </div>
-        </div>
-    </section>
-
-    <section class="panel">
-        <h2>عملکرد لندینگ‌پیج‌ها</h2>
-
-        <table>
-            <thead>
-                <tr>
-                    <th>ایده</th>
-                    <th>صفحه فرود</th>
-                    <th>وضعیت</th>
-                    <th>بازدید</th>
-                    <th>سرنخ</th>
-                    <th>نرخ تبدیل</th>
-                    <th>لینک</th>
-                </tr>
-            </thead>
-
-            <tbody>
-                @forelse ($landingPages as $page)
-                    @php
-                        $rate = $page->page_views_count > 0
-                            ? round(
-                                ($page->leads_count / $page->page_views_count) * 100,
-                                2
-                            )
-                            : 0;
-                    @endphp
-
-                    <tr>
-                        <td>
-                            {{ $page->idea?->name ?? 'بدون ایده' }}
-                        </td>
-
-                        <td>{{ $page->name }}</td>
-
-                        <td>
-                            {{ $page->is_active ? 'فعال' : 'غیرفعال' }}
-                        </td>
-
-                        <td>
-                            {{ number_format($page->page_views_count) }}
-                        </td>
-
-                        <td>
-                            {{ number_format($page->leads_count) }}
-                        </td>
-
-                        <td>{{ number_format($rate, 2) }}%</td>
-
-                        <td>
-                            <a
-                                href="{{ route('landing-pages.show', ['slug' => $page->slug]) }}"
-                                target="_blank"
-                                rel="noopener noreferrer"
-                            >
-                                مشاهده صفحه
-                            </a>
-                        </td>
-                    </tr>
-                @empty
-                    <tr>
-                        <td colspan="7">
-                            هنوز لندینگ‌پیجی ثبت نشده است.
-                        </td>
-                    </tr>
-                @endforelse
-            </tbody>
-        </table>
-
-        <div style="margin-top: 20px">
-            {{ $landingPages->links() }}
-        </div>
-    </section>
-
-    <p class="muted" style="margin-top: 18px">
-        نرخ تبدیل بر اساس تعداد سرنخ‌ها تقسیم بر تعداد بازدیدها محاسبه می‌شود.
-        بازدید تکراری و سرنخ‌های نامعتبر ممکن است روی این عدد تأثیر بگذارند.
-    </p>
-
-</div>
-</body>
-</html>
+    </div>
+@endsection

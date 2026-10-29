@@ -67,6 +67,15 @@ return [
 
     'timezone' => 'UTC',
 
+    // داده‌ها به UTC ذخیره و فقط در نمایش به این منطقه زمانی تبدیل می‌شوند
+    'display_timezone' => env('APP_DISPLAY_TIMEZONE', 'Asia/Tehran'),
+
+    // نصب اولیه از مرورگر (/install?token=...)؛ پس از نصب خالی شود
+    'install_token' => env('INSTALL_TOKEN'),
+
+    // نشانی صفحه سیاست حریم خصوصی؛ خالی باشد پیوند نمایش داده نمی‌شود
+    'privacy_url' => env('APP_PRIVACY_URL'),
+
     /*
     |--------------------------------------------------------------------------
     | Application Locale Configuration
