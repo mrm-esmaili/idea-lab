@@ -31,6 +31,15 @@ return [
     'preorder_payment' => [
         'unpaid' => 'پرداخت‌نشده',
         'paid' => 'پرداخت‌شده',
+        'partially_refunded' => 'بخشی بازپرداخت‌شده',
+        'refunded' => 'بازپرداخت‌شده',
+    ],
+
+    'refund_request' => [
+        'pending' => 'در انتظار بررسی',
+        'approved' => 'تأییدشده، در انتظار اجرا',
+        'rejected' => 'ردشده',
+        'completed' => 'بازپرداخت‌شده',
     ],
 
     'campaign' => [
@@ -48,6 +57,16 @@ return [
 
     'sms_variable' => [
         'code' => 'کد یک‌بارمصرف',
+    ],
+
+    'audit_action' => [
+        'refund.requested' => 'ثبت درخواست بازپرداخت',
+        'refund.approved' => 'تأیید درخواست',
+        'refund.rejected' => 'رد درخواست',
+        'refund.executed' => 'ثبت اجرای بازپرداخت',
+        'expense.created' => 'ثبت هزینه',
+        'expense.updated' => 'ویرایش هزینه',
+        'expense.deleted' => 'حذف هزینه',
     ],
 
     // وضعیت هر تراکنش درگاه

@@ -71,6 +71,12 @@
             پرداخت شما با موفقیت تأیید شد.
         </div>
 
+        @if (in_array($preorder->payment_status, ['refunded', 'partially_refunded'], true))
+            <div class="status status-pending" role="status">
+                {{ $preorder->payment_status === 'refunded' ? 'مبلغ این سفارش به شما بازپرداخت شده است.' : 'بخشی از مبلغ این سفارش به شما بازپرداخت شده است.' }}
+            </div>
+        @endif
+
         <dl>
             <dt>متقاضی</dt>
             <dd>{{ $preorder->name }}</dd>

@@ -27,7 +27,7 @@
         <label for="{{ $fieldId('payment') }}" class="form-label">پیش‌خرید</label>
         <select id="{{ $fieldId('payment') }}" name="{{ $field('payment') }}" class="form-select">
             <option value="">همه</option>
-            @foreach (['paid' => 'پرداخت‌شده', 'unpaid' => 'پرداخت‌نشده', 'none' => 'ندارد'] as $key => $label)
+            @foreach (['paid' => 'پرداخت‌شده', 'refunded' => 'کامل بازپرداخت‌شده', 'unpaid' => 'پرداخت‌نشده', 'none' => 'ندارد'] as $key => $label)
                 <option value="{{ $key }}" @selected($value('payment') === $key)>{{ $label }}</option>
             @endforeach
         </select>

@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Account;
 
 use App\Http\Controllers\Controller;
 use App\Models\Contact;
+use App\Services\Refunds\RefundException;
+use App\Services\Refunds\RefundService;
 use Illuminate\Http\Request;
 
 /**
@@ -12,20 +14,50 @@ use Illuminate\Http\Request;
  */
 class AccountController extends Controller
 {
-    public function dashboard(Request $request)
+    public function dashboard(Request $request, RefundService $refunds)
     {
         /** @var Contact $contact */
         $contact = $request->user('contact');
 
         $preorders = $contact->preorders()
-            ->with(['landingPage.idea', 'refundPolicy'])
+            ->with(['landingPage.idea', 'refundPolicy', 'refundRequests' => fn ($q) => $q->latest('id')])
             ->latest()
-            ->get();
+            ->get()
+            ->each(fn ($preorder) => $preorder->setAttribute('refund_eligibility', $refunds->customerEligibility($preorder)));
 
         // علاقه اعلام‌شده (فرم علاقه‌مندی، پیش‌خرید یا ثبت مدیر)
         $ideas = $contact->interests()->orderBy('name')->get(['ideas.id', 'ideas.name', 'ideas.status']);
 
         return view('account.dashboard', compact('contact', 'preorders', 'ideas'));
+    }
+
+    /**
+     * درخواست بازپرداخت مشتری (مرحله ۵۰)؛ سفارش فقط از میان سفارش‌های خود مخاطب.
+     */
+    public function requestRefund(Request $request, int $preorder, RefundService $refunds)
+    {
+        $contact = $request->user('contact');
+        $preorder = $contact->preorders()->with('refundPolicy')->findOrFail($preorder);
+
+        $data = $request->validate([
+            'reason' => ['required', 'string', 'min:5', 'max:2000'],
+        ], [], ['reason' => 'دلیل درخواست']);
+
+        $eligibility = $refunds->customerEligibility($preorder);
+
+        if (! $eligibility['eligible']) {
+            return back()->withErrors(['refund_' . $preorder->id => $eligibility['reason'] ?? 'این سفارش قابل بازپرداخت نیست.']);
+        }
+
+        try {
+            $refunds->request($preorder, $eligibility['payment'], $eligibility['max_rial'], $data['reason'], $contact);
+        } catch (RefundException $e) {
+            return back()->withErrors(['refund_' . $preorder->id => $e->getMessage()]);
+        }
+
+        return redirect()
+            ->route('account.dashboard')
+            ->with('success', 'درخواست بازپرداخت ثبت شد و پس از بررسی نتیجه اعلام می‌شود.');
     }
 
     public function updateProfile(Request $request)

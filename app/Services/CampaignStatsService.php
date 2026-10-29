@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Campaign;
+use App\Models\Expense;
 use Illuminate\Support\Collection;
 
 /**
@@ -30,12 +31,22 @@ class CampaignStatsService
             ->map(fn (Campaign $campaign) => FunnelStats::key($campaign->landing_page_id, $campaign->slug))
             ->flip();
 
-        $byCampaign = $campaigns->mapWithKeys(function (Campaign $campaign) use ($grouped) {
+        $spent = Expense::whereIn('campaign_id', $campaigns->pluck('id'))
+            ->groupBy('campaign_id')
+            ->selectRaw('campaign_id, SUM(amount_rial) AS total')
+            ->pluck('total', 'campaign_id');
+
+        $byCampaign = $campaigns->mapWithKeys(function (Campaign $campaign) use ($grouped, $spent) {
             $key = FunnelStats::key($campaign->landing_page_id, $campaign->slug);
             $stats = $grouped->get($key) ?? $this->empty($campaign->landing_page_id, $campaign->slug);
 
-            $stats['cost_per_lead_rial'] = $campaign->budget_rial && $stats['leads'] > 0
-                ? intdiv($campaign->budget_rial, $stats['leads'])
+            // هزینه واقعی (هزینه‌های ثبت‌شده برای کمپین) و در نبود آن بودجه برنامه‌ریزی‌شده
+            $stats['spent_rial'] = (int) ($spent[$campaign->id] ?? 0);
+            $stats['cost_basis'] = $stats['spent_rial'] > 0 ? 'actual' : ($campaign->budget_rial ? 'budget' : null);
+            $cost = $stats['spent_rial'] > 0 ? $stats['spent_rial'] : $campaign->budget_rial;
+
+            $stats['cost_per_lead_rial'] = $cost && $stats['leads'] > 0
+                ? intdiv($cost, $stats['leads'])
                 : null;
 
             return [$campaign->id => $stats];

@@ -16,11 +16,9 @@
                     <li>
                         <div class="row">
                             <strong>{{ $preorder->landingPage?->idea?->name }}</strong>
-                            @if ($preorder->isPaid())
-                                <span class="badge badge-success">پرداخت‌شده</span>
-                            @else
-                                <span class="badge badge-warning">پرداخت‌نشده</span>
-                            @endif
+                            <span @class(['badge', 'badge-success' => $preorder->payment_status === 'paid', 'badge-warning' => $preorder->payment_status === 'unpaid'])>
+                                {{ \App\Support\Format::status('preorder_payment', $preorder->payment_status) }}
+                            </span>
                         </div>
 
                         <div class="row small muted">
@@ -40,6 +38,46 @@
                                 @endif
                             @endif
                         </div>
+
+                        @foreach ($preorder->refundRequests as $refundRequest)
+                            <div class="small" style="margin-top: 8px">
+                                درخواست بازپرداخت
+                                ({{ \App\Support\Money::formatRialAsToman($refundRequest->requested_amount_rial) }}):
+                                <strong>{{ \App\Support\Format::status('refund_request', $refundRequest->status) }}</strong>
+                                @if ($refundRequest->status === 'rejected' && $refundRequest->decision_note)
+                                    <div class="muted">دلیل: {{ $refundRequest->decision_note }}</div>
+                                @endif
+                            </div>
+                        @endforeach
+
+                        @php($eligibility = $preorder->refund_eligibility)
+                        @error('refund_' . $preorder->id)
+                            <div class="alert alert-error small" style="margin-top: 8px">{{ $message }}</div>
+                        @enderror
+
+                        @if ($eligibility['eligible'])
+                            <details style="margin-top: 8px">
+                                <summary class="small" style="cursor: pointer">درخواست بازپرداخت</summary>
+                                <form method="POST" action="{{ route('account.refund', $preorder->id) }}" style="margin-top: 8px">
+                                    @csrf
+                                    <p class="small muted">
+                                        مبلغ قابل بازپرداخت: {{ \App\Support\Money::formatRialAsToman($eligibility['max_rial']) }}
+                                        @if ($eligibility['deadline'])
+                                            — مهلت درخواست تا <span class="ltr">{{ \App\Support\Format::datetime($eligibility['deadline'], 'Y-m-d') }}</span>
+                                        @endif
+                                    </p>
+                                    <div class="form-group">
+                                        <label for="reason-{{ $preorder->id }}">دلیل درخواست</label>
+                                        <textarea id="reason-{{ $preorder->id }}" name="reason" rows="3" maxlength="2000" required
+                                            style="width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 10px; font: inherit">{{ old('reason') }}</textarea>
+                                        @error('reason')<div class="field-error">{{ $message }}</div>@enderror
+                                    </div>
+                                    <button type="submit" class="button-secondary">ثبت درخواست بازپرداخت</button>
+                                </form>
+                            </details>
+                        @elseif ($eligibility['reason'] && ! $preorder->refundRequests->contains(fn ($r) => $r->isOpen()))
+                            <div class="small muted" style="margin-top: 8px">{{ $eligibility['reason'] }}</div>
+                        @endif
                     </li>
                 @endforeach
             </ul>

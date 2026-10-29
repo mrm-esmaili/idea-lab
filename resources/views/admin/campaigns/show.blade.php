@@ -53,7 +53,7 @@
             ['label' => 'سرنخ', 'value' => number_format($s['leads']), 'hint' => 'نرخ ثبت: ' . number_format($s['lead_rate'], 2) . '%'],
             ['label' => 'پیش‌خرید', 'value' => number_format($s['preorders']), 'hint' => null],
             ['label' => 'پرداخت موفق', 'value' => number_format($s['paid_count']), 'hint' => \App\Support\Money::formatRialAsToman($s['paid_rial'])],
-            ['label' => 'بودجه', 'value' => \App\Support\Money::formatRialAsToman($campaign->budget_rial), 'hint' => $s['cost_per_lead_rial'] !== null ? 'هر سرنخ: ' . \App\Support\Money::formatRialAsToman($s['cost_per_lead_rial']) : null],
+            ['label' => $s['cost_basis'] === 'actual' ? 'هزینه واقعی' : 'بودجه', 'value' => \App\Support\Money::formatRialAsToman($s['cost_basis'] === 'actual' ? $s['spent_rial'] : $campaign->budget_rial), 'hint' => $s['cost_per_lead_rial'] !== null ? 'هر سرنخ: ' . \App\Support\Money::formatRialAsToman($s['cost_per_lead_rial']) . ($s['cost_basis'] === 'actual' ? '' : ' (بر اساس بودجه)') : null],
         ] as $stat)
             <div class="col">
                 <div class="card h-100">
@@ -103,7 +103,7 @@
     @endif
 
     <p class="small text-body-secondary mt-3 mb-0">
-        هزینه هر سرنخ بر اساس بودجه برنامه‌ریزی‌شده است؛ هزینه واقعی پس از ثبت هزینه‌ها (مرحله ۵۶) محاسبه می‌شود.
+        هزینه هر سرنخ از جمع هزینه‌های ثبت‌شده برای این کمپین (امور مالی ← هزینه‌ها) محاسبه می‌شود؛ تا ثبت هزینه، بودجه برنامه‌ریزی‌شده مبنا است.
     </p>
     @include('admin.campaigns._rule')
 @endsection

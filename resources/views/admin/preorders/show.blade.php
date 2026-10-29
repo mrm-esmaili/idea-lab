@@ -77,7 +77,11 @@
         </div>
 
         <div class="col-xl-8">
-            <div class="card">
+            @error('refund')
+                <div class="alert alert-danger">{{ $message }}</div>
+            @enderror
+
+            <div class="card mb-3">
                 <div class="card-header"><h2 class="card-title h6 mb-0">تراکنش‌ها</h2></div>
                 <div class="card-body p-0">
                     <div class="table-responsive">
@@ -137,6 +141,57 @@
                         این سفارش بیش از یک پرداخت موفق دارد؛ مبلغ اضافه باید بازپرداخت شود.
                     </div>
                 @endif
+            </div>
+            <div class="card mt-3">
+                <div class="card-header"><h2 class="card-title h6 mb-0">بازپرداخت</h2></div>
+                <ul class="list-group list-group-flush">
+                    @forelse ($preorder->refundRequests as $refundRequest)
+                        <li class="list-group-item d-flex align-items-center gap-2 small">
+                            @can('finance.manage')
+                                <a href="{{ route('admin.refunds.show', $refundRequest) }}" class="ltr">#{{ $refundRequest->id }}</a>
+                            @else
+                                <span class="ltr">#{{ $refundRequest->id }}</span>
+                            @endcan
+                            <span>{{ \App\Support\Money::formatRialAsToman($refundRequest->requested_amount_rial) }}</span>
+                            <span class="text-body-secondary">{{ $refundRequest->requested_by_type === 'admin' ? 'ثبت مدیر' : 'درخواست مشتری' }}</span>
+                            <x-admin.status-badge group="refund_request" :value="$refundRequest->status" class="ms-auto" />
+                        </li>
+                    @empty
+                        <li class="list-group-item small text-body-secondary">درخواست بازپرداختی ثبت نشده است.</li>
+                    @endforelse
+                </ul>
+
+                @can('finance.manage')
+                    @if ($refundable->isNotEmpty())
+                        <div class="card-footer">
+                            <form method="POST" action="{{ route('admin.refunds.store', $preorder) }}" class="row g-2 align-items-end">
+                                @csrf
+                                <div class="col-sm-4">
+                                    <label for="refund-payment" class="form-label small">پرداخت</label>
+                                    <select id="refund-payment" name="payment_id" class="form-select form-select-sm" required>
+                                        @foreach ($refundable as $paymentId => $remaining)
+                                            <option value="{{ $paymentId }}">#{{ $paymentId }} — قابل بازپرداخت {{ \App\Support\Money::formatRialAsToman($remaining) }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                                <div class="col-sm-3">
+                                    <label for="refund-amount" class="form-label small">مبلغ (تومان)</label>
+                                    <input id="refund-amount" type="text" inputmode="numeric" name="amount_toman" required
+                                        value="{{ number_format(\App\Support\Money::rialToToman($refundable->first())) }}" class="form-control form-control-sm ltr">
+                                </div>
+                                <div class="col-sm-5">
+                                    <label for="refund-reason" class="form-label small">دلیل</label>
+                                    <input id="refund-reason" type="text" name="reason" maxlength="2000" required class="form-control form-control-sm"
+                                        placeholder="مثلاً پرداخت تکراری یا درخواست تلفنی مشتری">
+                                </div>
+                                <div class="col-12">
+                                    <button type="submit" class="btn btn-sm btn-outline-primary">ثبت درخواست بازپرداخت از طرف مدیر</button>
+                                    <span class="form-text">پس از ثبت، مانند درخواست مشتری نیاز به تأیید و ثبت اجرا دارد.</span>
+                                </div>
+                            </form>
+                        </div>
+                    @endif
+                @endcan
             </div>
         </div>
     </div>

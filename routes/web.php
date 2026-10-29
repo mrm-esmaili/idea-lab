@@ -17,7 +17,10 @@ use App\Http\Controllers\Admin\ContactGroupController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\LandingPageEventController;
 use App\Http\Controllers\PreorderController;
+use App\Http\Controllers\Admin\ExpenseController;
+use App\Http\Controllers\Admin\FinanceReportController;
 use App\Http\Controllers\Admin\PaymentReportController;
+use App\Http\Controllers\Admin\RefundRequestController;
 use App\Http\Controllers\Admin\PreorderManagementController;
 use App\Http\Controllers\Admin\SmsTemplateController;
 use App\Http\Controllers\Admin\UserController;
@@ -114,6 +117,10 @@ Route::prefix('account')->name('account.')->group(function () {
         Route::get('/', [AccountController::class, 'dashboard'])->name('dashboard');
         Route::put('/profile', [AccountController::class, 'updateProfile'])->name('profile');
         Route::put('/consent', [AccountController::class, 'updateConsent'])->name('consent');
+        Route::post('/preorders/{preorder}/refund', [AccountController::class, 'requestRefund'])
+            ->middleware('throttle:5,1')
+            ->whereNumber('preorder')
+            ->name('refund');
         Route::post('/logout', [AccountAuthController::class, 'logout'])->name('logout');
     });
 });
@@ -275,5 +282,19 @@ Route::middleware(['auth:web', 'admin'])->group(function () {
             '/admin/payments',
             [PaymentReportController::class, 'index']
         )->name('admin.payments.index');
+
+        Route::get('/admin/refunds', [RefundRequestController::class, 'index'])->name('admin.refunds.index');
+        Route::get('/admin/refunds/{refundRequest}', [RefundRequestController::class, 'show'])->name('admin.refunds.show');
+        Route::post('/admin/preorders/{preorder}/refunds', [RefundRequestController::class, 'store'])->name('admin.refunds.store');
+        Route::post('/admin/refunds/{refundRequest}/approve', [RefundRequestController::class, 'approve'])->name('admin.refunds.approve');
+        Route::post('/admin/refunds/{refundRequest}/reject', [RefundRequestController::class, 'reject'])->name('admin.refunds.reject');
+        Route::post('/admin/refunds/{refundRequest}/execute', [RefundRequestController::class, 'execute'])->name('admin.refunds.execute');
+
+        Route::resource('/admin/expenses', ExpenseController::class)
+            ->except(['show'])
+            ->parameters(['expenses' => 'expense'])
+            ->names('admin.expenses');
+
+        Route::get('/admin/finance', [FinanceReportController::class, 'index'])->name('admin.finance.index');
     });
 });

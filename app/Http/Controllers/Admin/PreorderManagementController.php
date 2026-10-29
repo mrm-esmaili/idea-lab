@@ -7,6 +7,7 @@ use App\Models\Idea;
 use App\Models\Payment;
 use App\Models\Preorder;
 use App\Services\Payments\PreorderPaymentService;
+use App\Services\Refunds\RefundService;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
@@ -58,16 +59,23 @@ class PreorderManagementController extends Controller
         );
     }
 
-    public function show(Preorder $preorder)
+    public function show(Preorder $preorder, RefundService $refunds)
     {
         $preorder->load([
             'landingPage.idea',
             'refundPolicy',
             'lead',
             'payments' => fn ($query) => $query->latest('id'),
+            'refundRequests' => fn ($query) => $query->latest('id'),
         ]);
 
-        return view('admin.preorders.show', compact('preorder'));
+        // مبلغ قابل بازپرداخت هر پرداخت موفق
+        $refundable = $preorder->payments
+            ->where('status', Payment::STATUS_PAID)
+            ->mapWithKeys(fn (Payment $payment) => [$payment->id => $refunds->remaining($payment)])
+            ->filter();
+
+        return view('admin.preorders.show', compact('preorder', 'refundable'));
     }
 
     /**

@@ -12,7 +12,8 @@ use Illuminate\Validation\Rule;
  *
  * - ideas: علاقه‌مند به دست‌کم یکی از ایده‌ها
  * - campaign: جذب‌شده یا علاقه‌مندشده از طریق این کد کمپین
- * - payment: paid (دست‌کم یک پیش‌خرید پرداخت‌شده)، unpaid (پیش‌خرید دارد ولی
+ * - payment: paid (دست‌کم یک پیش‌خرید پرداخت‌شده یا بخشی بازپرداخت‌شده)،
+ *   refunded (فقط پیش‌خریدهای کامل بازپرداخت‌شده)، unpaid (پیش‌خرید دارد ولی
  *   هیچ‌کدام پرداخت نشده)، none (بدون پیش‌خرید)
  * - consent: yes/no — رضایت پیامک تبلیغاتی
  * - source: منبع اولین تماس (utm_source)
@@ -31,7 +32,7 @@ class ContactSegment
             'ideas' => ['nullable', 'array', 'max:50'],
             'ideas.*' => ['integer', 'exists:ideas,id'],
             'campaign' => ['nullable', 'string', 'max:100'],
-            'payment' => ['nullable', Rule::in(['paid', 'unpaid', 'none'])],
+            'payment' => ['nullable', Rule::in(['paid', 'refunded', 'unpaid', 'none'])],
             'consent' => ['nullable', Rule::in(['yes', 'no'])],
             'source' => ['nullable', 'string', 'max:100'],
             'lead_status' => ['nullable', Rule::in(array_keys(config('statuses.lead')))],
@@ -80,11 +81,14 @@ class ContactSegment
 
         if (isset($rules['payment'])) {
             $hasPreorder = fn ($q) => $q->selectRaw('1')->from('preorders')->whereColumn('preorders.contact_id', 'contacts.id');
-            $hasPaid = fn ($q) => $hasPreorder($q)->where('preorders.payment_status', Preorder::PAYMENT_PAID);
+            $withStatus = fn (array $statuses) => fn ($q) => $hasPreorder($q)->whereIn('preorders.payment_status', $statuses);
 
             match ($rules['payment']) {
-                'paid' => $query->whereExists($hasPaid),
-                'unpaid' => $query->whereExists($hasPreorder)->whereNotExists($hasPaid),
+                // خریدار فعلی: پرداخت‌شده یا بخشی بازپرداخت‌شده
+                'paid' => $query->whereExists($withStatus([Preorder::PAYMENT_PAID, Preorder::PAYMENT_PARTIALLY_REFUNDED])),
+                'refunded' => $query->whereExists($withStatus([Preorder::PAYMENT_REFUNDED]))
+                    ->whereNotExists($withStatus([Preorder::PAYMENT_PAID, Preorder::PAYMENT_PARTIALLY_REFUNDED])),
+                'unpaid' => $query->whereExists($hasPreorder)->whereNotExists($withStatus(Preorder::PAID_STATUSES)),
                 'none' => $query->whereNotExists($hasPreorder),
             };
         }
@@ -135,7 +139,7 @@ class ContactSegment
         }
 
         if (isset($rules['payment'])) {
-            $lines[] = 'پیش‌خرید: ' . ['paid' => 'پرداخت‌شده', 'unpaid' => 'پرداخت‌نشده', 'none' => 'ندارد'][$rules['payment']];
+            $lines[] = 'پیش‌خرید: ' . ['paid' => 'پرداخت‌شده', 'refunded' => 'کامل بازپرداخت‌شده', 'unpaid' => 'پرداخت‌نشده', 'none' => 'ندارد'][$rules['payment']];
         }
 
         if (isset($rules['consent'])) {

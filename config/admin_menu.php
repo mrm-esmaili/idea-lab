@@ -98,6 +98,27 @@ return [
                 'permission' => 'finance.manage',
                 'active' => ['admin.payments.*'],
             ],
+            [
+                'label' => 'بازپرداخت‌ها',
+                'icon' => 'bi-arrow-counterclockwise',
+                'route' => 'admin.refunds.index',
+                'permission' => 'finance.manage',
+                'active' => ['admin.refunds.*'],
+            ],
+            [
+                'label' => 'هزینه‌ها',
+                'icon' => 'bi-receipt',
+                'route' => 'admin.expenses.index',
+                'permission' => 'finance.manage',
+                'active' => ['admin.expenses.*'],
+            ],
+            [
+                'label' => 'گزارش مالی',
+                'icon' => 'bi-graph-up',
+                'route' => 'admin.finance.index',
+                'permission' => 'finance.manage',
+                'active' => ['admin.finance.*'],
+            ],
         ],
     ],
 

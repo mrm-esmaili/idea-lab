@@ -6,8 +6,8 @@
 |---|---|
 | آخرین به‌روزرسانی | ۱۴۰۵/۰۸/۰۷ |
 | شاخه | `claude/new-session-ebbvr0` |
-| آخرین قابلیت تکمیل‌شده | گام H — باشگاه مشتریان (مراحل ۳۳ تا ۴۰) |
-| تست‌ها | ۱۱۹ تست، همه پاس روی SQLite و MariaDB 10.11 (strict) |
+| آخرین قابلیت تکمیل‌شده | گام I — بازپرداخت و امور مالی (مراحل ۵۰ تا ۵۷) |
+| تست‌ها | ۱۲۹ تست، همه پاس روی SQLite و MariaDB 10.11 (strict) |
 | محیط هدف | MariaDB 11.4، PHP 8.4، cPanel بدون SSH و npm |
 
 ## قابلیت‌های تکمیل‌شده
@@ -24,19 +24,20 @@
 | F | ۱۹، ۲۰، ۲۴ تا ۲۶ | کمپین‌ها و لینک رهگیری، قاعده انتساب، گزارش کمپین، بهبود صفحه فرود عمومی، پیام‌های خطای فارسی | `86e134f`، `5c5f29e` |
 | G | ۲۷ تا ۳۲ | لایه پیامک SMS.ir با قالب قابل تنظیم از پنل، مخاطب جدا از مدیر، ورود با OTP، حساب مخاطب، رضایت پیامک تبلیغاتی | `862bb0a` |
 | H | ۳۳ تا ۴۰ | فهرست و پرونده یکپارچه مخاطب، علاقه چندبه‌چند، منبع جذب، گروه دستی و پویا، تاریخچه تعاملات، خروجی CSV با ثبت و کنترل دسترسی | `abeeee1` |
+| I | ۵۰ تا ۵۷ | درخواست بازپرداخت مشتری، صف بررسی و تأیید/رد، ثبت اجرای واقعی با مرجع، جلوگیری از بازپرداخت اضافه، سابقه ممیزی فقط‌افزودنی، هزینه‌ها، هزینه واقعی کمپین، گزارش مالی | (همین کامیت) |
 
-## آخرین قابلیت: گام H — فایل‌های تغییرکرده
+## آخرین قابلیت: گام I — فایل‌های تغییرکرده
 
 **جدید**
-- کنترلرها: `app/Http/Controllers/Admin/ContactController.php`، `app/Http/Controllers/Admin/ContactGroupController.php`
-- مدل‌ها: `app/Models/ContactGroup.php`، `app/Models/DataExport.php`
-- سرویس‌ها: `app/Services/ContactActivity.php`، `ContactSegment.php`، `ContactTimeline.php`، `ContactExporter.php`
-- migration: `database/migrations/2026_11_03_100000_create_crm_tables.php`
-- نما: `resources/views/admin/contacts/{index,show,_rules}.blade.php`، `resources/views/admin/groups/{index,show,create,edit,_form}.blade.php`
-- تست: `tests/Feature/CrmTest.php`
+- migration: `database/migrations/2026_11_04_100000_create_refund_and_finance_tables.php` (`refund_requests`، `refunds`، `expenses`، `audit_logs`)
+- مدل‌ها: `app/Models/RefundRequest.php`، `Refund.php`، `Expense.php`، `AuditLog.php`
+- سرویس‌ها: `app/Services/Refunds/RefundService.php`، `RefundException.php`، `app/Services/AuditLogger.php`، `app/Services/FinanceReportService.php`
+- کنترلرها: `app/Http/Controllers/Admin/RefundRequestController.php`، `ExpenseController.php`، `FinanceReportController.php`
+- نما: `resources/views/admin/refunds/{index,show}.blade.php`، `resources/views/admin/expenses/{index,_form,create,edit}.blade.php`، `resources/views/admin/finance/index.blade.php`
+- تست: `tests/Feature/RefundAndFinanceTest.php`
 
 **تغییریافته**
-`app/Enums/AdminRole.php` (مجوزهای `contacts.manage` و `contacts.export`)، `app/Models/Contact.php`، `app/Http/Controllers/LeadController.php`، `app/Http/Controllers/PreorderController.php`، `app/Http/Controllers/PublicLandingPageController.php` (رفع باگ شمارش بازدید)، `app/Http/Controllers/Account/AccountController.php`، `app/Http/Controllers/Admin/LeadManagementController.php`، `config/admin_menu.php`، `config/admin_permissions.php`، `resources/views/admin/leads/index.blade.php`، `resources/views/landing-pages/show.blade.php`، `routes/web.php`، `tests/Feature/PublicLandingFormsTest.php`، `agentic_brain/GAP_ANALYSIS.md`
+`app/Models/Preorder.php` (وضعیت‌های بازپرداخت)، `app/Services/ContactSegment.php`، `app/Services/CampaignStatsService.php`، `app/Http/Controllers/Account/AccountController.php`، `app/Http/Controllers/Admin/PreorderManagementController.php`، `config/statuses.php`، `config/admin_menu.php`، `routes/web.php`، `resources/views/account/dashboard.blade.php`، `resources/views/admin/preorders/show.blade.php`، `resources/views/admin/campaigns/show.blade.php`، `resources/views/admin/contacts/_rules.blade.php`، `resources/views/components/admin/status-badge.blade.php`، `resources/views/payments/receipt.blade.php`، `agentic_brain/GAP_ANALYSIS.md`
 
 ## خطاها و محدودیت‌های باقی‌مانده
 
@@ -47,7 +48,8 @@
 | هم‌زمانی پرداخت | قفل ردیف در شروع پرداخت زیر بار هم‌زمان واقعی MariaDB آزمایش نشده | مرحله ۹۷ |
 | تاریخ شمسی | همه تاریخ‌ها میلادی (به وقت تهران) نمایش داده می‌شوند | گام L |
 | ستون قدیمی `preorders.amount` | دیگر خوانده یا نوشته نمی‌شود ولی هنوز حذف نشده | مرحله ۸۵ |
-| هزینه واقعی کمپین | هزینه هر سرنخ فعلاً از بودجه برنامه‌ریزی‌شده حساب می‌شود | مرحله ۵۶ |
+| بازپرداخت خودکار درگاه | اجرای بازپرداخت دستی ثبت می‌شود (مرجع بانکی)؛ فراخوانی API بازپرداخت زرین‌پال ساخته نشده | در صورت فعال بودن این سرویس برای حساب پذیرنده |
+| اطلاع‌رسانی بازپرداخت | پیامک تأیید/رد/اجرای بازپرداخت هنوز ارسال نمی‌شود | گام J (مرحله ۶۰) |
 | داشبورد کلی | آمار پرداخت و کارهای نیازمند رسیدگی هنوز در داشبورد اصلی نیست | مرحله ۷۳ |
 | اجرای migration روی هاست | روش اجرای migration بدون SSH هنوز تعیین نشده | مرحله ۹۵ |
 | کارایی گروه پویا | تعداد اعضای هر گروه پویا هنگام نمایش فهرست گروه‌ها محاسبه می‌شود؛ برای ده‌ها هزار مخاطب ممکن است کند شود | بازبینی در مرحله ۸۵ در صورت نیاز |
@@ -65,4 +67,4 @@
 
 ## قدم بعدی
 
-**گام I — بازپرداخت و امور مالی (مراحل ۵۰ تا ۵۷):** فرم درخواست بازپرداخت برای مخاطب واجد شرایط (در حساب کاربری)، صف بررسی مدیر با تأیید/رد و دلیل، ثبت اجرای واقعی بازپرداخت (مبلغ، روش، مرجع، اپراتور)، جلوگیری از بازپرداخت بیش از مبلغ پرداخت‌شده، تاریخچه ممیزی مالی، ثبت هزینه‌ها و گزارش مالی عملیاتی.
+**گام J — پیامک و اطلاع‌رسانی (مراحل ۵۸ تا ۶۵):** مدیریت کامل قالب‌های پیامک، پیامک پرداخت موفق و وضعیت بازپرداخت، پیامک تغییر وضعیت ایده به علاقه‌مندان، ارسال گروهی به گروه‌ها با پیش‌نمایش، تأیید، محدودیت نرخ، حذف تکراری و رعایت رضایت تبلیغاتی، و گزارش ارسال‌ها.
