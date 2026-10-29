@@ -6,8 +6,8 @@
 |---|---|
 | آخرین به‌روزرسانی | ۱۴۰۵/۰۸/۰۷ |
 | شاخه | `claude/new-session-ebbvr0` |
-| آخرین قابلیت تکمیل‌شده | گام J — پیامک و اطلاع‌رسانی (مراحل ۵۸ تا ۶۵) |
-| تست‌ها | ۱۳۸ تست، همه پاس روی SQLite و MariaDB 10.11 (strict) |
+| آخرین قابلیت تکمیل‌شده | گام K — آزمایش‌ها و تصمیم‌گیری (مراحل ۶۶ تا ۷۲) |
+| تست‌ها | ۱۴۴ تست، همه پاس روی SQLite و MariaDB 10.11 (strict) |
 | محیط هدف | MariaDB 11.4، PHP 8.4، cPanel بدون SSH و npm |
 
 ## قابلیت‌های تکمیل‌شده
@@ -26,20 +26,20 @@
 | H | ۳۳ تا ۴۰ | فهرست و پرونده یکپارچه مخاطب، علاقه چندبه‌چند، منبع جذب، گروه دستی و پویا، تاریخچه تعاملات، خروجی CSV با ثبت و کنترل دسترسی | `abeeee1` |
 | I | ۵۰ تا ۵۷ | درخواست بازپرداخت مشتری، صف بررسی و تأیید/رد، ثبت اجرای واقعی با مرجع، جلوگیری از بازپرداخت اضافه، سابقه ممیزی فقط‌افزودنی، هزینه‌ها، هزینه واقعی کمپین، گزارش مالی | `ec98580` |
 | J | ۵۸ تا ۶۵ | مدیریت قالب با پیش‌نمایش و فعال‌سازی، پیامک پرداخت/بازپرداخت/وضعیت ایده، ارسال گروهی با پیش‌نمایش و تأیید و رعایت رضایت، ارسال دستی، سابقه پیامک، صف با ضدتکرار و محدودیت نرخ و تلاش دوباره محدود | `d1a4cfa` |
+| K | ۶۶ تا ۷۲ | تعریف آزمایش با فرضیه و معیار موفقیت/توقف، نتایج فقط از داده بازه، مقایسه کمپین‌ها با تعاریف یکسان، تصمیم مدیر با دلیل و snapshot، ارزیابی پس از تصمیم | (همین کامیت) |
 
-## آخرین قابلیت: گام J — فایل‌های تغییرکرده
+## آخرین قابلیت: گام K — فایل‌های تغییرکرده
 
 **جدید**
-- migration: `database/migrations/2026_11_05_100000_create_sms_outbox_and_broadcasts.php` (ستون‌های صف در `sms_messages`، `sms_broadcasts`، متن و فعال بودن قالب، ۸ قالب اطلاع‌رسانی)
-- مدل: `app/Models/SmsBroadcast.php`
-- سرویس‌ها: `app/Services/Sms/SmsDispatcher.php`، `BroadcastService.php`، `app/Services/Notifications/CustomerNotifier.php`، `app/Support/SmsText.php`
-- کنترلرها: `app/Http/Controllers/Admin/SmsBroadcastController.php`، `SmsMessageController.php`
-- تنظیمات: `config/sms.php`
-- نما: `resources/views/admin/sms/broadcasts/{index,create,show}.blade.php`، `resources/views/admin/sms/messages/index.blade.php`
-- تست: `tests/Feature/SmsNotificationTest.php`
+- migration: `database/migrations/2026_11_06_100000_create_experiments_tables.php` (`experiments`، `experiment_campaign`، `experiment_decisions`)
+- مدل‌ها: `app/Models/Experiment.php`، `app/Models/ExperimentDecision.php`
+- سرویس: `app/Services/ExperimentMetrics.php`
+- کنترلرها: `app/Http/Controllers/Admin/ExperimentController.php`، `CampaignComparisonController.php`
+- نما: `resources/views/admin/experiments/{index,_form,create,edit,show}.blade.php`، `resources/views/admin/campaigns/compare.blade.php`
+- تست: `tests/Feature/ExperimentTest.php`
 
 **تغییریافته**
-`app/Services/Sms/{SmsService,SmsIrProvider,LogSmsProvider,SmsProvider,SmsException}.php`، `app/Models/{SmsMessage,SmsTemplate}.php`، `app/Services/Payments/PreorderPaymentService.php`، `app/Services/Refunds/RefundService.php`، `app/Services/ContactTimeline.php`، `app/Http/Controllers/IdeaController.php`، `app/Http/Controllers/Admin/SmsTemplateController.php`، `app/Enums/AdminRole.php` (مجوزهای `sms.send` و `sms.broadcast`)، `app/Providers/AppServiceProvider.php`، `config/{services,statuses,admin_menu,admin_permissions}.php`، `.env.example`، `routes/{web,console}.php`، `resources/views/admin/sms/{index,edit}.blade.php`، `resources/views/ideas/show.blade.php`، `resources/views/admin/contacts/show.blade.php`، `resources/views/components/admin/status-badge.blade.php`، `agentic_brain/GAP_ANALYSIS.md`
+`app/Services/FunnelStats.php` (بازه زمانی اختیاری)، `app/Support/Format.php` (`metric`)، `app/Enums/AdminRole.php` (مجوز `experiments.decide`)، `config/{statuses,admin_menu,admin_permissions}.php`، `routes/web.php`، `resources/views/admin/campaigns/index.blade.php`، `resources/views/ideas/show.blade.php`، `resources/views/components/admin/status-badge.blade.php`، `agentic_brain/GAP_ANALYSIS.md`
 
 ## خطاها و محدودیت‌های باقی‌مانده
 
@@ -48,10 +48,11 @@
 | قالب OTP در SMS.ir | شناسه قالب هنوز تنظیم نشده؛ تا تنظیم آن ورود مخاطب روی سرور ممکن نیست | اقدام مالک (پنل ← تنظیمات ← پیامک) |
 | آزمون واقعی درگاه‌ها | اتصال به sandbox زرین‌پال و SMS.ir از محیط توسعه ممکن نبود؛ همه مسیرها با شبیه‌سازی آزموده شده‌اند | مراحل ۹۷ و ۹۹ |
 | هم‌زمانی پرداخت | قفل ردیف در شروع پرداخت زیر بار هم‌زمان واقعی MariaDB آزمایش نشده | مرحله ۹۷ |
-| تاریخ شمسی | همه تاریخ‌ها میلادی (به وقت تهران) نمایش داده می‌شوند | گام L |
+| تاریخ شمسی | همه تاریخ‌ها میلادی (به وقت تهران) نمایش داده و وارد می‌شوند (از جمله بازه آزمایش‌ها) | گام L |
 | ستون قدیمی `preorders.amount` | دیگر خوانده یا نوشته نمی‌شود ولی هنوز حذف نشده | مرحله ۸۵ |
 | بازپرداخت خودکار درگاه | اجرای بازپرداخت دستی ثبت می‌شود (مرجع بانکی)؛ فراخوانی API بازپرداخت زرین‌پال ساخته نشده | در صورت فعال بودن این سرویس برای حساب پذیرنده |
-| داشبورد کلی | آمار پرداخت و کارهای نیازمند رسیدگی هنوز در داشبورد اصلی نیست | مرحله ۷۳ |
+| داشبورد کلی | آمار پرداخت و کارهای نیازمند رسیدگی (بازپرداخت در انتظار، بازبینی آزمایش سررسیده) هنوز در داشبورد اصلی نیست | مرحله ۷۳ |
+| هزینه در ارزیابی پس از تصمیم | هزینه‌ها تاریخ روزانه دارند؛ عملکرد پس از تصمیم از ابتدای روز تصمیم شمرده می‌شود | پذیرفته‌شده |
 | اجرای migration روی هاست | روش اجرای migration بدون SSH هنوز تعیین نشده | مرحله ۹۵ |
 | کارایی گروه پویا | تعداد اعضای هر گروه پویا هنگام نمایش فهرست گروه‌ها محاسبه می‌شود؛ برای ده‌ها هزار مخاطب ممکن است کند شود | بازبینی در مرحله ۸۵ در صورت نیاز |
 | حذف مخاطب | امکان حذف یا ناشناس‌سازی مخاطب (درخواست حذف داده) هنوز وجود ندارد | فاز ۱۲ (امنیت و حریم خصوصی) |
@@ -72,4 +73,4 @@
 
 ## قدم بعدی
 
-**گام K — آزمایش‌ها و تصمیم‌گیری (مراحل ۶۶ تا ۷۲):** تعریف آزمایش (فرضیه، هدف، بازه، ایده/کمپین)، معیار موفقیت و توقف، اتصال نتایج معتبر بازه آزمایش، مقایسه کمپین‌ها با تعاریف یکسان، ثبت تصمیم (ادامه/اصلاح/توقف/اجرا) با دلیل و snapshot شاخص‌ها، و ارزیابی پس از تصمیم.
+**گام L — داشبورد و گزارش‌ها (مراحل ۷۳ تا ۷۸):** داشبورد کلی با کارهای نیازمند رسیدگی (بازپرداخت در انتظار، پرداخت معلق، بازبینی سررسیده، پیامک ناموفق)، قیف تبدیل با تعاریف مشخص، اقتصاد ایده (هزینه، دریافتی، بازپرداخت، درآمد، CAC)، عملکرد منابع جذب، گزارش باشگاه مشتریان با تفکیک رضایت، و گزارش پیامک و هزینه؛ همراه با نمایش تاریخ شمسی.

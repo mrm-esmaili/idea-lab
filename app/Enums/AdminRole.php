@@ -12,6 +12,7 @@ enum AdminRole: string
     public const PERMISSIONS = [
         'dashboard.view',
         'ideas.manage',
+        'experiments.decide',
         'leads.manage',
         'preorders.manage',
         'finance.manage',
@@ -44,6 +45,7 @@ enum AdminRole: string
             self::Manager => [
                 'dashboard.view',
                 'ideas.manage',
+                'experiments.decide',
                 'leads.manage',
                 'preorders.manage',
                 'contacts.manage',

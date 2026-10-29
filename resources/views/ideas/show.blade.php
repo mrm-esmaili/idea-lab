@@ -13,6 +13,10 @@
             <i class="bi bi-pencil"></i> ویرایش
         </a>
 
+        <a href="{{ route('admin.experiments.index', ['idea' => $idea->id]) }}" class="btn btn-outline-secondary">
+            <i class="bi bi-clipboard-data"></i> آزمایش‌ها
+        </a>
+
         <a href="{{ route('ideas.settings', $idea) }}" class="btn btn-outline-secondary">
             <i class="bi bi-sliders"></i> تنظیمات
         </a>

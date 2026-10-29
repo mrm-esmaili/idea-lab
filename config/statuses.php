@@ -73,6 +73,21 @@ return [
         'cancelled' => 'لغو شد',
     ],
 
+    'experiment' => [
+        'planned' => 'برنامه‌ریزی‌شده',
+        'running' => 'در حال اجرا',
+        'ended' => 'منتظر تصمیم',
+        'decided' => 'تصمیم‌گرفته',
+        'cancelled' => 'لغو شد',
+    ],
+
+    'experiment_decision' => [
+        'continue' => 'ادامه',
+        'modify' => 'اصلاح',
+        'stop' => 'توقف',
+        'execute' => 'اجرا',
+    ],
+
     'sms_broadcast' => [
         'draft' => 'پیش‌نویس',
         'sending' => 'در حال ارسال',
@@ -91,6 +106,11 @@ return [
         'sms.broadcast_confirmed' => 'تأیید ارسال گروهی',
         'sms.broadcast_cancelled' => 'لغو ارسال گروهی',
         'sms.manual_sent' => 'ارسال پیامک دستی',
+        'experiment.created' => 'تعریف آزمایش',
+        'experiment.updated' => 'ویرایش آزمایش',
+        'experiment.cancelled' => 'لغو آزمایش',
+        'experiment.decided' => 'ثبت تصمیم',
+        'experiment.reviewed' => 'ارزیابی پس از تصمیم',
     ],
 
     // وضعیت هر تراکنش درگاه

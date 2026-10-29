@@ -7,9 +7,14 @@
 @endsection
 
 @section('page-actions')
-    <a href="{{ route('admin.campaigns.create') }}" class="btn btn-primary">
-        <i class="bi bi-plus-lg"></i> کمپین جدید
-    </a>
+    <div class="d-flex gap-2">
+        <a href="{{ route('admin.campaigns.compare') }}" class="btn btn-outline-secondary">
+            <i class="bi bi-bar-chart"></i> مقایسه
+        </a>
+        <a href="{{ route('admin.campaigns.create') }}" class="btn btn-primary">
+            <i class="bi bi-plus-lg"></i> کمپین جدید
+        </a>
+    </div>
 @endsection
 
 @section('content')

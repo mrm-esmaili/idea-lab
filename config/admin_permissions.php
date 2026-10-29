@@ -4,7 +4,8 @@
 
 return [
     'dashboard.view' => 'داشبورد',
-    'ideas.manage' => 'ایده‌ها و صفحات فرود',
+    'ideas.manage' => 'ایده‌ها، صفحات فرود، کمپین‌ها و آزمایش‌ها',
+    'experiments.decide' => 'ثبت تصمیم و ارزیابی آزمایش',
     'leads.manage' => 'سرنخ‌ها',
     'preorders.manage' => 'پیش‌خریدها',
     'finance.manage' => 'امور مالی',

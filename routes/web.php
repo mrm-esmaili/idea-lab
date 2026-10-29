@@ -11,7 +11,9 @@ use App\Http\Controllers\LandingPageController;
 use App\Http\Controllers\PublicLandingPageController;
 use App\Http\Controllers\LeadController;
 use App\Http\Controllers\Admin\LeadManagementController;
+use App\Http\Controllers\Admin\CampaignComparisonController;
 use App\Http\Controllers\Admin\CampaignController;
+use App\Http\Controllers\Admin\ExperimentController;
 use App\Http\Controllers\Admin\ContactController;
 use App\Http\Controllers\Admin\ContactGroupController;
 use App\Http\Controllers\Admin\DashboardController;
@@ -184,6 +186,19 @@ Route::middleware(['auth:web', 'admin'])->group(function () {
             LandingPageController::class,
             'store',
         ])->name('landing-pages.store');
+
+        Route::get('/admin/campaigns/compare', [CampaignComparisonController::class, 'index'])
+            ->name('admin.campaigns.compare');
+
+        Route::get('/admin/experiments', [ExperimentController::class, 'index'])->name('admin.experiments.index');
+        Route::get('/admin/experiments/create', [ExperimentController::class, 'create'])->name('admin.experiments.create');
+        Route::post('/admin/experiments', [ExperimentController::class, 'store'])->name('admin.experiments.store');
+        Route::get('/admin/experiments/{experiment}', [ExperimentController::class, 'show'])->whereNumber('experiment')->name('admin.experiments.show');
+        Route::get('/admin/experiments/{experiment}/edit', [ExperimentController::class, 'edit'])->whereNumber('experiment')->name('admin.experiments.edit');
+        Route::put('/admin/experiments/{experiment}', [ExperimentController::class, 'update'])->whereNumber('experiment')->name('admin.experiments.update');
+        Route::post('/admin/experiments/{experiment}/cancel', [ExperimentController::class, 'cancel'])->whereNumber('experiment')->name('admin.experiments.cancel');
+        Route::post('/admin/experiments/{experiment}/decisions', [ExperimentController::class, 'decide'])->whereNumber('experiment')->name('admin.experiments.decide');
+        Route::post('/admin/experiment-decisions/{decision}/review', [ExperimentController::class, 'review'])->whereNumber('decision')->name('admin.experiments.review');
 
         Route::resource('/admin/campaigns', CampaignController::class)
             ->parameters(['campaigns' => 'campaign'])

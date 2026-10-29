@@ -6,6 +6,7 @@ use App\Models\LandingPageEvent;
 use App\Models\Lead;
 use App\Models\Payment;
 use App\Models\Preorder;
+use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 
@@ -23,6 +24,9 @@ use Illuminate\Support\Collection;
  *
  * گروه‌بندی بر اساس صفحه فرود، یا صفحه فرود و کد utm_campaign (بدون حساسیت
  * به بزرگی حروف؛ کلید با حروف کوچک).
+ *
+ * بازه زمانی اختیاری (UTC): رویداد بر اساس occurred_at، سرنخ و پیش‌خرید بر
+ * اساس زمان ثبت، و پرداخت بر اساس زمان تأیید درگاه (verified_at).
  */
 class FunnelStats
 {
@@ -40,8 +44,12 @@ class FunnelStats
      * @return Collection<string, array<string, int|float|string|null>>
      *         کلید: «شناسه صفحه» یا «شناسه صفحه|کد کمپین» (کد خالی برای بدون کمپین)
      */
-    public function grouped(Collection $pageIds, bool $byCampaign): Collection
+    public function grouped(Collection $pageIds, bool $byCampaign, ?CarbonInterface $from = null, ?CarbonInterface $to = null): Collection
     {
+        $within = fn (Builder $query, string $column) => $query
+            ->when($from, fn ($q) => $q->where($column, '>=', $from))
+            ->when($to, fn ($q) => $q->where($column, '<=', $to));
+
         if ($pageIds->isEmpty()) {
             return collect();
         }
@@ -49,7 +57,7 @@ class FunnelStats
         $group = $byCampaign ? ['landing_page_id', 'campaign'] : ['landing_page_id'];
 
         $events = $this->rows(
-            LandingPageEvent::query()
+            $within(LandingPageEvent::query(), 'occurred_at')
                 ->whereIn('landing_page_id', $pageIds)
                 ->whereIn('event_name', ['page_view', 'cta_click'])
                 ->selectRaw("SUM(CASE WHEN event_name = 'page_view' THEN 1 ELSE 0 END) AS page_views")
@@ -59,21 +67,21 @@ class FunnelStats
         );
 
         $leads = $this->rows(
-            Lead::query()
+            $within(Lead::query(), 'created_at')
                 ->whereIn('landing_page_id', $pageIds)
                 ->selectRaw('COUNT(*) AS leads'),
             $group
         );
 
         $preorders = $this->rows(
-            Preorder::query()
+            $within(Preorder::query(), 'created_at')
                 ->whereIn('landing_page_id', $pageIds)
                 ->selectRaw('COUNT(*) AS preorders'),
             $group
         );
 
         $payments = $this->rows(
-            Payment::query()
+            $within(Payment::query(), 'payments.verified_at')
                 ->join('preorders', 'preorders.id', '=', 'payments.preorder_id')
                 ->whereIn('preorders.landing_page_id', $pageIds)
                 ->where('payments.status', Payment::STATUS_PAID)

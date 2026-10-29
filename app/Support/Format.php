@@ -28,4 +28,20 @@ class Format
 
         return config("statuses.{$group}.{$value}", $value);
     }
+
+    /**
+     * نمایش مقدار شاخص بر اساس واحد آن در App\Services\ExperimentMetrics::METRICS.
+     */
+    public static function metric(string $key, int|float|null $value): string
+    {
+        if ($value === null) {
+            return '—';
+        }
+
+        return match (\App\Services\ExperimentMetrics::METRICS[$key][1] ?? 'count') {
+            'rial' => Money::formatRialAsToman((int) $value),
+            'percent' => number_format((float) $value, 2) . '%',
+            default => number_format((float) $value, floor((float) $value) == $value ? 0 : 2),
+        };
+    }
 }
