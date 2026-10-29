@@ -20,6 +20,7 @@ class DashboardController extends Controller
         return view('admin.dashboard.index', [
             'attention' => $dashboard->attention($request->user()),
             'activity' => $dashboard->activity(),
+            'daily' => $dashboard->daily(30),
             'ideasByStatus' => $dashboard->ideasByStatus(),
             'landingPages' => $landingPages,
             'pageStats' => $pageStats,

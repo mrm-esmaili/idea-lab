@@ -11,6 +11,7 @@
     <link rel="stylesheet" href="{{ asset('vendor/adminlte/css/adminlte.rtl.min.css') }}">
     <link rel="stylesheet" href="{{ asset('vendor/bootstrap-icons/bootstrap-icons.min.css') }}">
     <link rel="stylesheet" href="{{ asset('css/admin.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/jalali-datepicker.css') }}">
 </head>
 
 <body class="layout-fixed sidebar-expand-lg bg-body-tertiary">
@@ -31,6 +32,16 @@
                     </a>
                 </li>
             </ul>
+
+            @can('dashboard.view')
+                <form method="GET" action="{{ route('admin.search') }}" class="d-none d-md-flex ms-2 flex-grow-1" role="search" style="max-width: 360px">
+                    <div class="input-group input-group-sm">
+                        <input type="search" name="q" value="{{ request()->routeIs('admin.search') ? request('q') : '' }}" maxlength="100" class="form-control" placeholder="جست‌وجو: نام، موبایل، #سفارش، کد پیگیری…" aria-label="جست‌وجوی سریع" accesskey="k">
+                        <button type="submit" class="btn btn-outline-secondary" aria-label="جست‌وجو"><i class="bi bi-search"></i></button>
+                    </div>
+                </form>
+                <a href="{{ route('admin.search') }}" class="nav-link d-md-none" aria-label="جست‌وجو"><i class="bi bi-search"></i></a>
+            @endcan
 
             <ul class="navbar-nav ms-auto">
                 <li class="nav-item dropdown">
@@ -114,7 +125,8 @@
 
 <script src="{{ asset('vendor/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
 <script src="{{ asset('vendor/adminlte/js/adminlte.min.js') }}"></script>
-<script src="{{ asset('js/jalali-hint.js') }}" defer></script>
+<script src="{{ asset('js/jalali-datepicker.js') }}" defer></script>
+<script src="{{ asset('js/admin.js') }}" defer></script>
 @stack('scripts')
 </body>
 </html>

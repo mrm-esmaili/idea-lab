@@ -21,7 +21,7 @@
             </div>
         @endcan
         <a href="{{ route('admin.groups.edit', $group) }}" class="btn btn-outline-secondary"><i class="bi bi-pencil"></i> ویرایش</a>
-        <form method="POST" action="{{ route('admin.groups.destroy', $group) }}" onsubmit="return confirm('گروه حذف شود؟ مخاطبان حذف نمی‌شوند.')">
+        <form method="POST" action="{{ route('admin.groups.destroy', $group) }}" data-confirm="گروه حذف شود؟ مخاطبان حذف نمی‌شوند." data-confirm-variant="danger">
             @csrf
             @method('DELETE')
             <button type="submit" class="btn btn-outline-danger"><i class="bi bi-trash"></i> حذف</button>

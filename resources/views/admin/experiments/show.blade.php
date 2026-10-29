@@ -14,7 +14,7 @@
         @endif
         <a href="{{ route('admin.experiments.create', ['from' => $experiment->id]) }}" class="btn btn-sm btn-outline-secondary"><i class="bi bi-copy"></i> آزمایش بعدی بر این اساس</a>
         @unless (in_array($status, ['decided', 'cancelled'], true))
-            <form method="POST" action="{{ route('admin.experiments.cancel', $experiment) }}" onsubmit="return confirm('آزمایش لغو شود؟')">
+            <form method="POST" action="{{ route('admin.experiments.cancel', $experiment) }}" data-confirm="آزمایش لغو شود؟" data-confirm-variant="danger">
                 @csrf
                 <button type="submit" class="btn btn-sm btn-outline-danger">لغو</button>
             </form>
@@ -161,7 +161,7 @@
                 @unless (in_array($status, ['planned', 'cancelled'], true))
                     <div class="card mb-3 border-primary">
                         <div class="card-header"><h2 class="card-title h6 mb-0">ثبت تصمیم</h2></div>
-                        <form method="POST" action="{{ route('admin.experiments.decide', $experiment) }}">
+                        <form method="POST" action="{{ route('admin.experiments.decide', $experiment) }}" data-confirm="تصمیم «{decision}» ثبت شود؟&#10;شاخص‌های همین لحظه همراه تصمیم ذخیره می‌شود و تصمیم قابل ویرایش نیست.">
                             @csrf
                             <div class="card-body">
                                 <div class="mb-3">
@@ -181,7 +181,7 @@
                                 </div>
                                 <div style="max-width: 240px">
                                     <label for="review_on" class="form-label">تاریخ بازبینی نتیجه</label>
-                                    <input id="review_on" type="date" name="review_on" value="{{ old('review_on') }}" @class(['form-control', 'is-invalid' => $errors->has('review_on')])>
+                                    <input id="review_on" type="date" name="review_on" min="{{ now(config('app.display_timezone'))->addDay()->toDateString() }}" value="{{ old('review_on') }}" @class(['form-control', 'is-invalid' => $errors->has('review_on')])>
                                     @error('review_on')<div class="invalid-feedback">{{ $message }}</div>@enderror
                                 </div>
                             </div>

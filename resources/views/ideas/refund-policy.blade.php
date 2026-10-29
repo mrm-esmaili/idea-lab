@@ -24,7 +24,7 @@
                     </h2>
                 </div>
 
-                <form method="POST" action="{{ route('ideas.refund-policy.store', $idea) }}">
+                <form method="POST" action="{{ route('ideas.refund-policy.store', $idea) }}" data-confirm="نسخه جدید شرایط بازپرداخت ثبت شود؟&#10;نسخه‌ها تغییرناپذیرند و سفارش‌های جدید با این نسخه ثبت می‌شوند؛ سفارش‌های قبلی شرایط خودشان را حفظ می‌کنند.">
                     @csrf
 
                     <div class="card-body">

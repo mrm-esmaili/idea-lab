@@ -46,7 +46,7 @@
 
         <div class="col-md-4">
             <label for="incurred_on" class="form-label">تاریخ</label>
-            <input id="incurred_on" type="date" name="incurred_on" required value="{{ old('incurred_on', $expense->incurred_on?->format('Y-m-d')) }}"
+            <input id="incurred_on" type="date" name="incurred_on" required max="{{ now(config('app.display_timezone'))->toDateString() }}" value="{{ old('incurred_on', $expense->incurred_on?->format('Y-m-d')) }}"
                 @class(['form-control', 'is-invalid' => $errors->has('incurred_on')])>
             @error('incurred_on')<div class="invalid-feedback">{{ $message }}</div>@enderror
         </div>

@@ -126,7 +126,7 @@
                                 </td>
                                 <td class="text-end">
                                     @if ($message->status === 'failed' && $message->category === 'transactional')
-                                        <form method="POST" action="{{ route('admin.sms.messages.retry', $message) }}" onsubmit="return confirm('اگر نتیجه ارسال قبلی نامعلوم است، ممکن است پیام تکراری برسد. ادامه می‌دهید؟')">
+                                        <form method="POST" action="{{ route('admin.sms.messages.retry', $message) }}" data-confirm="اگر نتیجه ارسال قبلی نامعلوم است، ممکن است پیام تکراری برسد. ادامه می‌دهید؟">
                                             @csrf
                                             <button type="submit" class="btn btn-sm btn-outline-secondary text-nowrap"><i class="bi bi-arrow-repeat"></i> ارسال دوباره</button>
                                         </form>

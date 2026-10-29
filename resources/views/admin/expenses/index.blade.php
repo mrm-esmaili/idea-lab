@@ -82,7 +82,7 @@
                                 <td class="text-nowrap">{{ \App\Support\Money::formatRialAsToman($expense->amount_rial) }}</td>
                                 <td class="text-nowrap text-end">
                                     <a href="{{ route('admin.expenses.edit', $expense) }}" class="btn btn-sm btn-outline-secondary" aria-label="ویرایش"><i class="bi bi-pencil"></i></a>
-                                    <form method="POST" action="{{ route('admin.expenses.destroy', $expense) }}" class="d-inline" onsubmit="return confirm('هزینه حذف شود؟')">
+                                    <form method="POST" action="{{ route('admin.expenses.destroy', $expense) }}" class="d-inline" data-confirm="هزینه حذف شود؟" data-confirm-variant="danger">
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit" class="btn btn-sm btn-outline-danger" aria-label="حذف"><i class="bi bi-trash"></i></button>

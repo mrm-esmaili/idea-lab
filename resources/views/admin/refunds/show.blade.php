@@ -115,7 +115,7 @@
                 <div class="card mb-3 border-warning">
                     <div class="card-header"><h2 class="card-title h6 mb-0">تصمیم</h2></div>
                     <div class="card-body">
-                        <form method="POST" action="{{ route('admin.refunds.approve', $refundRequest) }}" class="mb-3">
+                        <form method="POST" action="{{ route('admin.refunds.approve', $refundRequest) }}" class="mb-3" data-confirm="بازپرداخت {amount_toman} تومان تأیید شود؟&#10;با تأیید، هنوز وجهی واریز نمی‌شود و مشتری پیامک تأیید می‌گیرد." data-confirm-variant="success">
                             @csrf
                             <div class="row g-2 align-items-end">
                                 <div class="col-sm-4">
@@ -129,12 +129,12 @@
                                     <input id="approve-note" type="text" name="note" maxlength="2000" class="form-control">
                                 </div>
                                 <div class="col-sm-3">
-                                    <button type="submit" class="btn btn-success w-100" onclick="return confirm('درخواست تأیید شود؟')">تأیید</button>
+                                    <button type="submit" class="btn btn-success w-100">تأیید</button>
                                 </div>
                             </div>
                         </form>
 
-                        <form method="POST" action="{{ route('admin.refunds.reject', $refundRequest) }}">
+                        <form method="POST" action="{{ route('admin.refunds.reject', $refundRequest) }}" data-confirm="درخواست با دلیل «{note}» رد شود؟&#10;این تصمیم قابل بازگشت نیست." data-confirm-variant="danger">
                             @csrf
                             <div class="row g-2 align-items-end">
                                 <div class="col-sm-9">
@@ -144,7 +144,7 @@
                                     @error('note')<div class="invalid-feedback">{{ $message }}</div>@enderror
                                 </div>
                                 <div class="col-sm-3">
-                                    <button type="submit" class="btn btn-outline-danger w-100" onclick="return confirm('درخواست رد شود؟')">رد</button>
+                                    <button type="submit" class="btn btn-outline-danger w-100">رد</button>
                                 </div>
                             </div>
                         </form>
@@ -155,7 +155,7 @@
             @if ($refundRequest->status === 'approved')
                 <div class="card mb-3 border-primary">
                     <div class="card-header"><h2 class="card-title h6 mb-0">ثبت اجرای بازپرداخت</h2></div>
-                    <form method="POST" action="{{ route('admin.refunds.execute', $refundRequest) }}">
+                    <form method="POST" action="{{ route('admin.refunds.execute', $refundRequest) }}" data-confirm="مبلغ {amount_toman} تومان با روش «{method}»، مرجع {reference} و تاریخ {refunded_on} به‌عنوان واریزشده ثبت شود؟&#10;این عملیات قابل حذف نیست.">
                         @csrf
                         <div class="card-body">
                             <p class="small text-body-secondary">
@@ -180,7 +180,7 @@
                                 </div>
                                 <div class="col-sm-4">
                                     <label for="exec-date" class="form-label">تاریخ واریز</label>
-                                    <input id="exec-date" type="date" name="refunded_on" required value="{{ old('refunded_on', now()->format('Y-m-d')) }}"
+                                    <input id="exec-date" type="date" name="refunded_on" required max="{{ now(config('app.display_timezone'))->toDateString() }}" value="{{ old('refunded_on', now()->format('Y-m-d')) }}"
                                         @class(['form-control', 'is-invalid' => $errors->has('refunded_on')])>
                                     @error('refunded_on')<div class="invalid-feedback">{{ $message }}</div>@enderror
                                 </div>
@@ -197,7 +197,7 @@
                             </div>
                         </div>
                         <div class="card-footer">
-                            <button type="submit" class="btn btn-primary" onclick="return confirm('اجرای بازپرداخت ثبت شود؟ این عملیات قابل حذف نیست.')">ثبت اجرای بازپرداخت</button>
+                            <button type="submit" class="btn btn-primary">ثبت اجرای بازپرداخت</button>
                         </div>
                     </form>
                 </div>

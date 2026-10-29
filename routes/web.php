@@ -25,6 +25,7 @@ use App\Http\Controllers\Admin\PaymentReportController;
 use App\Http\Controllers\Admin\RefundRequestController;
 use App\Http\Controllers\Admin\PreorderManagementController;
 use App\Http\Controllers\Admin\ReportController;
+use App\Http\Controllers\Admin\SearchController;
 use App\Http\Controllers\Admin\SmsBroadcastController;
 use App\Http\Controllers\Admin\SmsMessageController;
 use App\Http\Controllers\Admin\SmsTemplateController;
@@ -139,6 +140,10 @@ Route::middleware(['auth:web', 'admin'])->group(function () {
     Route::get('/admin', [DashboardController::class, 'index'])
         ->middleware('can:dashboard.view')
         ->name('admin.dashboard');
+
+    Route::get('/admin/search', SearchController::class)
+        ->middleware(['can:dashboard.view', 'throttle:60,1'])
+        ->name('admin.search');
 
     Route::middleware('can:ideas.manage')->group(function () {
         Route::resource('ideas', IdeaController::class);

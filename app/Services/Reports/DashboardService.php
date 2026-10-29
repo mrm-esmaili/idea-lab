@@ -6,6 +6,7 @@ use App\Models\Experiment;
 use App\Models\ExperimentDecision;
 use App\Models\Idea;
 use App\Models\LandingPage;
+use App\Models\LandingPageEvent;
 use App\Models\Lead;
 use App\Models\Payment;
 use App\Models\RefundRequest;
@@ -95,6 +96,54 @@ class DashboardService
         };
 
         return ['current' => $period(6, 0), 'previous' => $period(13, 7)];
+    }
+
+    /**
+     * روند روزانه N روز اخیر (روز به وقت نمایش): بازدیدکننده یکتا، سرنخ، پیش‌پرداخت.
+     *
+     * @return list<array{date: string, unique_visitors: int, leads: int, paid_count: int}>
+     */
+    public function daily(int $days = 30): array
+    {
+        $tz = config('app.display_timezone');
+        $from = now($tz)->subDays($days - 1)->startOfDay();
+        $fromUtc = $from->copy()->utc();
+        $day = fn ($value) => Carbon::parse($value, 'UTC')->timezone($tz)->toDateString();
+
+        $series = [];
+        for ($i = 0; $i < $days; $i++) {
+            $series[$from->copy()->addDays($i)->toDateString()] = ['unique_visitors' => [], 'leads' => 0, 'paid_count' => 0];
+        }
+
+        LandingPageEvent::where('event_name', 'page_view')->where('occurred_at', '>=', $fromUtc)
+            ->toBase()->select('occurred_at', 'visitor_id')->orderBy('id')
+            ->chunk(5000, function ($rows) use (&$series, $day) {
+                foreach ($rows as $row) {
+                    $date = $day($row->occurred_at);
+                    if (isset($series[$date])) {
+                        $series[$date]['unique_visitors'][$row->visitor_id] = true;
+                    }
+                }
+            });
+
+        foreach (Lead::where('created_at', '>=', $fromUtc)->toBase()->pluck('created_at') as $at) {
+            if (isset($series[$date = $day($at)])) {
+                $series[$date]['leads']++;
+            }
+        }
+
+        foreach (Payment::where('status', Payment::STATUS_PAID)->where('verified_at', '>=', $fromUtc)->toBase()->select('verified_at', 'preorder_id')->get()->unique('preorder_id') as $row) {
+            if (isset($series[$date = $day($row->verified_at)])) {
+                $series[$date]['paid_count']++;
+            }
+        }
+
+        return collect($series)->map(fn ($v, $date) => [
+            'date' => $date,
+            'unique_visitors' => count($v['unique_visitors']),
+            'leads' => $v['leads'],
+            'paid_count' => $v['paid_count'],
+        ])->values()->all();
     }
 
     /**

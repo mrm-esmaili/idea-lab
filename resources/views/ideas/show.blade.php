@@ -32,7 +32,7 @@
             <form
                 method="POST"
                 action="{{ route('ideas.archive', $idea) }}"
-                onsubmit="return confirm('با بایگانی، صفحات فرود این ایده برای عموم غیرقابل‌دسترس می‌شوند. ادامه می‌دهید؟')"
+                data-confirm="با بایگانی، صفحات فرود این ایده برای عموم غیرقابل‌دسترس می‌شوند. ادامه می‌دهید؟" data-confirm-variant="danger"
             >
                 @csrf
                 <button type="submit" class="btn btn-outline-warning">
@@ -45,7 +45,7 @@
             <form
                 method="POST"
                 action="{{ route('ideas.destroy', $idea) }}"
-                onsubmit="return confirm('این ایده برای همیشه حذف می‌شود. مطمئن هستید؟')"
+                data-confirm="این ایده برای همیشه حذف می‌شود. مطمئن هستید؟" data-confirm-variant="danger"
             >
                 @csrf
                 @method('DELETE')
@@ -147,7 +147,7 @@
                                                 action="{{ route('landing-pages.toggle', $landingPage) }}"
                                                 class="d-inline"
                                                 @if ($landingPage->is_active)
-                                                    onsubmit="return confirm('صفحه غیرفعال شود؟ لینک‌های تبلیغاتی این صفحه از کار می‌افتند.')"
+                                                    data-confirm="صفحه غیرفعال شود؟ لینک‌های تبلیغاتی این صفحه از کار می‌افتند." data-confirm-variant="danger"
                                                 @endif
                                             >
                                                 @csrf
@@ -366,7 +366,7 @@
 
                     @php($transitions = $idea->statusEnum()->allowedTransitions())
 
-                    <form method="POST" action="{{ route('ideas.status', $idea) }}">
+                    <form method="POST" action="{{ route('ideas.status', $idea) }}" data-confirm="وضعیت ایده به «{status}» تغییر کند؟">
                         @csrf
                         @method('PATCH')
 

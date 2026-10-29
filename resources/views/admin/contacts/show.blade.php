@@ -74,7 +74,7 @@
                                 </div>
                             </div>
                             <form method="POST" action="{{ route('admin.contacts.interests.destroy', [$contact, $idea]) }}"
-                                onsubmit="return confirm('علاقه به این ایده حذف شود؟')">
+                                data-confirm="علاقه به این ایده حذف شود؟" data-confirm-variant="danger">
                                 @csrf
                                 @method('DELETE')
                                 <button type="submit" class="btn btn-sm btn-link text-danger p-0" aria-label="حذف علاقه به {{ $idea->name }}"><i class="bi bi-x-lg"></i></button>
@@ -146,7 +146,7 @@
                         <h2 class="card-title h6 mb-0">ارسال پیامک</h2>
                         <a href="{{ route('admin.sms.messages.index', ['mobile' => $contact->mobile]) }}" class="small">سابقه پیامک</a>
                     </div>
-                    <form method="POST" action="{{ route('admin.contacts.sms', $contact) }}">
+                    <form method="POST" action="{{ route('admin.contacts.sms', $contact) }}" data-confirm="این پیامک به {{ $contact->mobile }} ارسال شود؟&#10;&#10;{body}">
                         @csrf
                         <div class="card-body">
                             <label for="sms-body" class="form-label small">پیام خدماتی به این مخاطب (پیگیری سفارش، پاسخ پشتیبانی)</label>
@@ -156,7 +156,7 @@
                             <div class="form-text">پیام تبلیغاتی فقط از «ارسال گروهی» و به دارندگان رضایت ارسال می‌شود.</div>
                         </div>
                         <div class="card-footer">
-                            <button type="submit" class="btn btn-sm btn-primary" onclick="return confirm('پیامک ارسال شود؟')"><i class="bi bi-send"></i> ارسال</button>
+                            <button type="submit" class="btn btn-sm btn-primary"><i class="bi bi-send"></i> ارسال</button>
                         </div>
                     </form>
                 </div>

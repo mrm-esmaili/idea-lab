@@ -54,6 +54,37 @@
         @endforeach
     </div>
 
+    <div class="card mb-3">
+        <div class="card-header"><h2 class="card-title h6 mb-0">روند روزانه ۳۰ روز اخیر</h2></div>
+        <div class="card-body">
+            <x-admin.trend-chart :series="$daily" key="unique_visitors" label="بازدیدکننده یکتا" color="primary" />
+            <x-admin.trend-chart :series="$daily" key="leads" label="سرنخ" color="success" />
+            <x-admin.trend-chart :series="$daily" key="paid_count" label="پیش‌پرداخت موفق" color="warning" class="mb-1" />
+            <div class="d-flex justify-content-between small text-body-secondary">
+                <span>{{ \App\Support\Format::date(\Illuminate\Support\Carbon::parse($daily[0]['date'])) }}</span>
+                <span>امروز</span>
+            </div>
+            <details class="small mt-2">
+                <summary>جدول داده</summary>
+                <div class="table-responsive">
+                    <table class="table table-sm mb-0">
+                        <thead><tr><th>روز</th><th>بازدیدکننده</th><th>سرنخ</th><th>پیش‌پرداخت</th></tr></thead>
+                        <tbody>
+                            @foreach (array_reverse($daily) as $point)
+                                <tr>
+                                    <td>{{ \App\Support\Format::date(\Illuminate\Support\Carbon::parse($point['date'])) }}</td>
+                                    <td>{{ number_format($point['unique_visitors']) }}</td>
+                                    <td>{{ number_format($point['leads']) }}</td>
+                                    <td>{{ number_format($point['paid_count']) }}</td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            </details>
+        </div>
+    </div>
+
     <div class="row g-3">
         <div class="col-lg-4">
             <div class="card mb-3">

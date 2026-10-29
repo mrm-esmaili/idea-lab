@@ -15,7 +15,7 @@
         <form
             method="POST"
             action="{{ route('admin.campaigns.destroy', $campaign) }}"
-            onsubmit="return confirm('کمپین حذف شود؟ بازدیدها و سرنخ‌ها حذف نمی‌شوند.')"
+            data-confirm="کمپین حذف شود؟ بازدیدها و سرنخ‌ها حذف نمی‌شوند." data-confirm-variant="danger"
         >
             @csrf
             @method('DELETE')

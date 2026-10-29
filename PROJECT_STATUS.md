@@ -6,8 +6,8 @@
 |---|---|
 | آخرین به‌روزرسانی | ۱۴۰۵/۰۸/۰۷ |
 | شاخه | `claude/new-session-ebbvr0` |
-| آخرین قابلیت تکمیل‌شده | گام L — داشبورد و گزارش‌ها (مراحل ۷۳ تا ۷۸) |
-| تست‌ها | ۱۴۹ تست، همه پاس روی SQLite و MariaDB 10.11 (strict) |
+| آخرین قابلیت تکمیل‌شده | گام M — رابط مدیریت یکپارچه و انتخابگر تاریخ شمسی (مراحل ۷۹ تا ۸۴) |
+| تست‌ها | ۱۵۲ تست، همه پاس روی SQLite و MariaDB 10.11 (strict) |
 | محیط هدف | MariaDB 11.4، PHP 8.4، cPanel بدون SSH و npm |
 
 ## قابلیت‌های تکمیل‌شده
@@ -28,18 +28,19 @@
 | J | ۵۸ تا ۶۵ | مدیریت قالب با پیش‌نمایش و فعال‌سازی، پیامک پرداخت/بازپرداخت/وضعیت ایده، ارسال گروهی با پیش‌نمایش و تأیید و رعایت رضایت، ارسال دستی، سابقه پیامک، صف با ضدتکرار و محدودیت نرخ و تلاش دوباره محدود | `d1a4cfa` |
 | K | ۶۶ تا ۷۲ | تعریف آزمایش با فرضیه و معیار موفقیت/توقف، نتایج فقط از داده بازه، مقایسه کمپین‌ها با تعاریف یکسان، تصمیم مدیر با دلیل و snapshot، ارزیابی پس از تصمیم | `d74baf9` |
 | L | ۷۳ تا ۷۸ | داشبورد با کارهای نیازمند رسیدگی و مقایسه هفتگی، قیف تبدیل، اقتصاد ایده با CAC، منابع جذب، گزارش باشگاه مشتریان و پیامک، نمایش تاریخ شمسی | `81f22cc` |
+| M | ۷۹ تا ۸۴ | انتخابگر تاریخ شمسی، نمودار روند روزانه، پنجره تأیید یکسان برای عملیات حساس، جست‌وجوی سریع سراسری، ممیزی دسترس‌پذیری و موبایل همه صفحات | (همین کامیت) |
 
-## آخرین قابلیت: گام L — فایل‌های تغییرکرده
+## آخرین قابلیت: گام M — فایل‌های تغییرکرده
 
 **جدید**
-- سرویس‌ها: `app/Services/Reports/DashboardService.php`، `app/Services/Reports/ReportService.php`
-- تاریخ شمسی: `app/Support/Jalali.php`، `public/js/jalali-hint.js`
-- کنترلر: `app/Http/Controllers/Admin/ReportController.php`
-- نما: `resources/views/admin/reports/{_range,funnel,ideas,sources,contacts,sms}.blade.php`
-- تست: `tests/Feature/ReportsTest.php`
+- `public/js/jalali-datepicker.js`، `public/css/jalali-datepicker.css` (انتخابگر شمسی؛ جایگزین `public/js/jalali-hint.js` که حذف شد)
+- `public/js/admin.js` (پنجره تأیید `data-confirm`)
+- `app/Http/Controllers/Admin/SearchController.php`، `resources/views/admin/search.blade.php`
+- `resources/views/components/admin/trend-chart.blade.php`
+- تست: `tests/Feature/AdminUxTest.php`
 
 **تغییریافته**
-`app/Http/Controllers/Admin/DashboardController.php` و `resources/views/admin/dashboard/index.blade.php` (بازنویسی)، `app/Support/Format.php` (شمسی، `date`، `gregorian`)، `app/Enums/AdminRole.php` (مجوز `reports.view`)، `config/{admin_menu,admin_permissions}.php`، `routes/web.php`، `resources/views/layouts/admin.blade.php`، نمایش تاریخ در `resources/views/admin/{expenses/index,refunds/show,experiments/index,experiments/show,campaigns/show}.blade.php` و `resources/views/ideas/show.blade.php`، `agentic_brain/GAP_ANALYSIS.md`
+`resources/views/layouts/admin.blade.php` (جست‌وجو، اسکریپت‌ها)، `app/Services/Reports/DashboardService.php` (`daily`)، `app/Http/Controllers/Admin/DashboardController.php`، `resources/views/admin/dashboard/index.blade.php`، `routes/web.php`، تأیید عملیات در `resources/views/admin/{refunds/show,contacts/show,experiments/show,expenses/index,expenses/_form,groups/show,campaigns/show,sms/broadcasts/show,sms/messages/index}.blade.php` و `resources/views/ideas/{show,refund-policy}.blade.php`، `agentic_brain/GAP_ANALYSIS.md`
 
 ## خطاها و محدودیت‌های باقی‌مانده
 
@@ -48,8 +49,7 @@
 | قالب OTP در SMS.ir | شناسه قالب هنوز تنظیم نشده؛ تا تنظیم آن ورود مخاطب روی سرور ممکن نیست | اقدام مالک (پنل ← تنظیمات ← پیامک) |
 | آزمون واقعی درگاه‌ها | اتصال به sandbox زرین‌پال و SMS.ir از محیط توسعه ممکن نبود؛ همه مسیرها با شبیه‌سازی آزموده شده‌اند | مراحل ۹۷ و ۹۹ |
 | هم‌زمانی پرداخت | قفل ردیف در شروع پرداخت زیر بار هم‌زمان واقعی MariaDB آزمایش نشده | مرحله ۹۷ |
-| ورود تاریخ | تاریخ‌ها شمسی نمایش داده می‌شوند ولی ورودی‌ها انتخابگر میلادی مرورگر با راهنمای شمسی زیر آن‌اند | در صورت نیاز انتخابگر شمسی (مرحله ۸۴) |
-| نمودار | گزارش‌ها جدول و نوار پیشرفت‌اند؛ نمودار زمانی (روند روزانه) هنوز نیست | مرحله ۸۱ |
+| تاریخ در صفحات عمومی | صفحه فرود و حساب مخاطب ورودی تاریخ ندارند؛ انتخابگر شمسی فقط در پنل بارگذاری می‌شود | در صورت نیاز |
 | ستون قدیمی `preorders.amount` | دیگر خوانده یا نوشته نمی‌شود ولی هنوز حذف نشده | مرحله ۸۵ |
 | بازپرداخت خودکار درگاه | اجرای بازپرداخت دستی ثبت می‌شود (مرجع بانکی)؛ فراخوانی API بازپرداخت زرین‌پال ساخته نشده | در صورت فعال بودن این سرویس برای حساب پذیرنده |
 | هزینه در ارزیابی پس از تصمیم | هزینه‌ها تاریخ روزانه دارند؛ عملکرد پس از تصمیم از ابتدای روز تصمیم شمرده می‌شود | پذیرفته‌شده |
@@ -73,4 +73,4 @@
 
 ## قدم بعدی
 
-**گام M — رابط مدیریت یکپارچه (مراحل ۷۹ تا ۸۴):** بازبینی یکدستی همه صفحات پنل (اجزای مشترک فرم، جدول، پیام و حالت خالی)، نمودار روند روزانه در داشبورد، بررسی دسترس‌پذیری و موبایل همه صفحات، جست‌وجوی سریع سراسری، فیلترهای کاربردی و تأیید عملیات حساس.
+**گام N — نهایی‌سازی مدل داده و سازگاری MySQL (مراحل ۸۵ تا ۸۹):** بازبینی کلیدهای خارجی، ایندکس‌ها و قواعد حذف، حذف ستون قدیمی `preorders.amount`، اجرای همه migrationها روی MySQL 8 علاوه بر MariaDB، بازبینی پیکربندی محیط‌ها و تنظیمات SMS.ir و زرین‌پال، و مستندسازی مرز معماری برای قابلیت‌های تحلیلی آینده (بدون پیاده‌سازی AI).

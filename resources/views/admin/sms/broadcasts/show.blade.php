@@ -86,7 +86,7 @@
                         @endif
                     </div>
                     <div class="card-footer d-flex gap-2">
-                        <form method="POST" action="{{ route('admin.sms.broadcasts.destroy', $broadcast) }}" onsubmit="return confirm('پیش‌نویس حذف شود؟')">
+                        <form method="POST" action="{{ route('admin.sms.broadcasts.destroy', $broadcast) }}" data-confirm="پیش‌نویس حذف شود؟" data-confirm-variant="danger">
                             @csrf
                             @method('DELETE')
                             <button type="submit" class="btn btn-sm btn-outline-danger">حذف پیش‌نویس</button>
@@ -124,7 +124,7 @@
                                 @csrf
                                 <button type="submit" class="btn btn-sm btn-primary"><i class="bi bi-play"></i> ارسال دسته بعدی</button>
                             </form>
-                            <form method="POST" action="{{ route('admin.sms.broadcasts.cancel', $broadcast) }}" onsubmit="return confirm('ارسال پیام‌های باقی‌مانده لغو شود؟')">
+                            <form method="POST" action="{{ route('admin.sms.broadcasts.cancel', $broadcast) }}" data-confirm="ارسال پیام‌های باقی‌مانده لغو شود؟" data-confirm-variant="danger">
                                 @csrf
                                 <button type="submit" class="btn btn-sm btn-outline-danger">لغو باقی‌مانده</button>
                             </form>
