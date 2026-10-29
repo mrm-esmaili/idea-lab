@@ -218,6 +218,14 @@ class IdeaController extends Controller
                 ]);
         }
 
+        if ($idea->experiments()->exists() || \App\Models\Expense::where('idea_id', $idea->id)->exists()) {
+            return redirect()
+                ->route('ideas.show', $idea)
+                ->withErrors([
+                    'idea' => 'این ایده آزمایش یا هزینه ثبت‌شده دارد و قابل حذف نیست؛ به‌جای حذف آن را بایگانی کنید.',
+                ]);
+        }
+
         $idea->delete();
 
         return redirect()

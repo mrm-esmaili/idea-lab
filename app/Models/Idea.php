@@ -59,6 +59,11 @@ class Idea extends Model
             ->latest('id');
     }
 
+    public function experiments(): HasMany
+    {
+        return $this->hasMany(Experiment::class);
+    }
+
     public function refundPolicies(): HasMany
     {
         return $this->hasMany(RefundPolicy::class)->orderByDesc('version');

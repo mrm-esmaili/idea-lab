@@ -178,6 +178,13 @@ return [
                 'active' => ['admin.users.*'],
             ],
             [
+                'label' => 'وضعیت سیستم',
+                'icon' => 'bi-heart-pulse',
+                'route' => 'admin.system',
+                'permission' => 'settings.manage',
+                'active' => ['admin.system'],
+            ],
+            [
                 'label' => 'قالب‌های پیامک',
                 'icon' => 'bi-chat-dots',
                 'route' => 'admin.sms.index',

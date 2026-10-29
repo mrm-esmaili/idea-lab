@@ -11,15 +11,22 @@ class DatabaseSeeder extends Seeder
     use WithoutModelEvents;
 
     /**
-     * Seed the application's database.
+     * فقط برای توسعه محلی؛ روی سرور هیچ کاربر یا داده نمونه‌ای ساخته نمی‌شود.
+     * کاربر نمونه نقش ندارد و به پنل دسترسی ندارد.
      */
     public function run(): void
     {
-        // User::factory(10)->create();
+        if (! app()->environment(['local', 'testing'])) {
+            $this->command?->warn('Seeding skipped: sample data is only created in local/testing environments.');
 
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
-        ]);
+            return;
+        }
+
+        if (! User::where('email', 'test@example.com')->exists()) {
+            User::factory()->create([
+                'name' => 'Test User',
+                'email' => 'test@example.com',
+            ]);
+        }
     }
 }

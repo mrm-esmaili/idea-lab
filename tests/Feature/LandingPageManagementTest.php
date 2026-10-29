@@ -80,7 +80,8 @@ class LandingPageManagementTest extends TestCase
 
         $this->assertSame('clubyar-intro', $page->slug);
         $this->assertSame(['مدیریت شاگردان', 'مدیریت پرداخت'], $content['features']);
-        $this->assertSame([['q' => 'قیمت؟', 'a' => 'ماهانه']], $content['faq']);
+        // ترتیب کلیدهای شیء JSON در MySQL حفظ نمی‌شود
+        $this->assertEquals([['q' => 'قیمت؟', 'a' => 'ماهانه']], $content['faq']);
 
         $this->get('/l/clubyar-intro')
             ->assertOk()

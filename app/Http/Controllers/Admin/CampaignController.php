@@ -4,11 +4,13 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Campaign;
+use App\Models\Expense;
 use App\Models\Idea;
 use App\Models\LandingPage;
 use App\Services\CampaignStatsService;
 use App\Support\Money;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 
 class CampaignController extends Controller
@@ -104,6 +106,18 @@ class CampaignController extends Controller
      */
     public function destroy(Campaign $campaign)
     {
+        // حذف کمپینِ دارای هزینه یا آزمایش، گزارش مالی و دامنه آزمایش را عوض می‌کند
+        $usage = array_filter([
+            Expense::where('campaign_id', $campaign->id)->exists() ? 'هزینه ثبت‌شده' : null,
+            DB::table('experiment_campaign')->where('campaign_id', $campaign->id)->exists() ? 'آزمایش' : null,
+        ]);
+
+        if ($usage) {
+            return redirect()
+                ->route('admin.campaigns.show', $campaign)
+                ->withErrors(['campaign' => 'این کمپین ' . implode(' و ', $usage) . ' دارد و قابل حذف نیست؛ وضعیت آن را «پایان‌یافته» کنید.']);
+        }
+
         $ideaId = $campaign->landingPage?->idea_id;
         $campaign->delete();
 

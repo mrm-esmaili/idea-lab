@@ -29,6 +29,7 @@ use App\Http\Controllers\Admin\SearchController;
 use App\Http\Controllers\Admin\SmsBroadcastController;
 use App\Http\Controllers\Admin\SmsMessageController;
 use App\Http\Controllers\Admin\SmsTemplateController;
+use App\Http\Controllers\Admin\SystemStatusController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\ZarinpalPaymentController;
 
@@ -295,6 +296,8 @@ Route::middleware(['auth:web', 'admin'])->group(function () {
     });
 
     Route::middleware('can:settings.manage')->group(function () {
+        Route::get('/admin/system', SystemStatusController::class)->name('admin.system');
+
         Route::get('/admin/sms', [SmsTemplateController::class, 'index'])
             ->name('admin.sms.index');
 

@@ -6,8 +6,8 @@
 |---|---|
 | آخرین به‌روزرسانی | ۱۴۰۵/۰۸/۰۷ |
 | شاخه | `claude/new-session-ebbvr0` |
-| آخرین قابلیت تکمیل‌شده | گام M — رابط مدیریت یکپارچه و انتخابگر تاریخ شمسی (مراحل ۷۹ تا ۸۴) |
-| تست‌ها | ۱۵۲ تست، همه پاس روی SQLite و MariaDB 10.11 (strict) |
+| آخرین قابلیت تکمیل‌شده | گام N — مدل داده، سازگاری MySQL و پیکربندی (مراحل ۸۵ تا ۸۹) |
+| تست‌ها | ۱۵۹ تست، همه پاس روی SQLite، MariaDB 10.11 و MySQL 8.0 (strict) |
 | محیط هدف | MariaDB 11.4، PHP 8.4، cPanel بدون SSH و npm |
 
 ## قابلیت‌های تکمیل‌شده
@@ -29,18 +29,18 @@
 | K | ۶۶ تا ۷۲ | تعریف آزمایش با فرضیه و معیار موفقیت/توقف، نتایج فقط از داده بازه، مقایسه کمپین‌ها با تعاریف یکسان، تصمیم مدیر با دلیل و snapshot، ارزیابی پس از تصمیم | `d74baf9` |
 | L | ۷۳ تا ۷۸ | داشبورد با کارهای نیازمند رسیدگی و مقایسه هفتگی، قیف تبدیل، اقتصاد ایده با CAC، منابع جذب، گزارش باشگاه مشتریان و پیامک، نمایش تاریخ شمسی | `81f22cc` |
 | M | ۷۹ تا ۸۴ | انتخابگر تاریخ شمسی، نمودار روند روزانه، پنجره تأیید یکسان برای عملیات حساس، جست‌وجوی سریع سراسری، ممیزی دسترس‌پذیری و موبایل همه صفحات | `c7b189a` |
+| N | ۸۵ تا ۸۹ | حذف ستون قدیمی، RESTRICT برای داده تجاری، ایندکس‌های گزارش، اجرای کامل روی MySQL 8، صفحه وضعیت سیستم، seeder امن، سند معماری و مرز AI | (همین کامیت) |
 
-## آخرین قابلیت: گام M — فایل‌های تغییرکرده
+## آخرین قابلیت: گام N — فایل‌های تغییرکرده
 
 **جدید**
-- `public/js/jalali-datepicker.js`، `public/css/jalali-datepicker.css` (انتخابگر شمسی؛ جایگزین `public/js/jalali-hint.js` که حذف شد)
-- `public/js/admin.js` (پنجره تأیید `data-confirm`)
-- `app/Http/Controllers/Admin/SearchController.php`، `resources/views/admin/search.blade.php`
-- `resources/views/components/admin/trend-chart.blade.php`
-- تست: `tests/Feature/AdminUxTest.php`
+- migration: `database/migrations/2026_11_07_100000_finalize_data_model.php`
+- `app/Services/SystemStatus.php`، `app/Http/Controllers/Admin/SystemStatusController.php`، `resources/views/admin/system/index.blade.php`
+- `agentic_brain/ARCHITECTURE.md`
+- تست: `tests/Feature/DataModelTest.php`، `tests/Feature/SystemStatusTest.php`
 
 **تغییریافته**
-`resources/views/layouts/admin.blade.php` (جست‌وجو، اسکریپت‌ها)، `app/Services/Reports/DashboardService.php` (`daily`)، `app/Http/Controllers/Admin/DashboardController.php`، `resources/views/admin/dashboard/index.blade.php`، `routes/web.php`، تأیید عملیات در `resources/views/admin/{refunds/show,contacts/show,experiments/show,expenses/index,expenses/_form,groups/show,campaigns/show,sms/broadcasts/show,sms/messages/index}.blade.php` و `resources/views/ideas/{show,refund-policy}.blade.php`، `agentic_brain/GAP_ANALYSIS.md`
+`app/Models/Preorder.php` (حذف `amount`)، `app/Models/Idea.php` (`experiments`)، `app/Http/Controllers/Admin/CampaignController.php` و `app/Http/Controllers/IdeaController.php` (محافظت حذف)، `database/seeders/DatabaseSeeder.php`، `routes/web.php`، `config/admin_menu.php`، `tests/Feature/{LandingPageManagementTest,SmsNotificationTest}.php` (مقایسه مستقل از ترتیب کلید JSON)، `agentic_brain/GAP_ANALYSIS.md`
 
 ## خطاها و محدودیت‌های باقی‌مانده
 
@@ -50,7 +50,6 @@
 | آزمون واقعی درگاه‌ها | اتصال به sandbox زرین‌پال و SMS.ir از محیط توسعه ممکن نبود؛ همه مسیرها با شبیه‌سازی آزموده شده‌اند | مراحل ۹۷ و ۹۹ |
 | هم‌زمانی پرداخت | قفل ردیف در شروع پرداخت زیر بار هم‌زمان واقعی MariaDB آزمایش نشده | مرحله ۹۷ |
 | تاریخ در صفحات عمومی | صفحه فرود و حساب مخاطب ورودی تاریخ ندارند؛ انتخابگر شمسی فقط در پنل بارگذاری می‌شود | در صورت نیاز |
-| ستون قدیمی `preorders.amount` | دیگر خوانده یا نوشته نمی‌شود ولی هنوز حذف نشده | مرحله ۸۵ |
 | بازپرداخت خودکار درگاه | اجرای بازپرداخت دستی ثبت می‌شود (مرجع بانکی)؛ فراخوانی API بازپرداخت زرین‌پال ساخته نشده | در صورت فعال بودن این سرویس برای حساب پذیرنده |
 | هزینه در ارزیابی پس از تصمیم | هزینه‌ها تاریخ روزانه دارند؛ عملکرد پس از تصمیم از ابتدای روز تصمیم شمرده می‌شود | پذیرفته‌شده |
 | اجرای migration روی هاست | روش اجرای migration بدون SSH هنوز تعیین نشده | مرحله ۹۵ |
@@ -73,4 +72,4 @@
 
 ## قدم بعدی
 
-**گام N — نهایی‌سازی مدل داده و سازگاری MySQL (مراحل ۸۵ تا ۸۹):** بازبینی کلیدهای خارجی، ایندکس‌ها و قواعد حذف، حذف ستون قدیمی `preorders.amount`، اجرای همه migrationها روی MySQL 8 علاوه بر MariaDB، بازبینی پیکربندی محیط‌ها و تنظیمات SMS.ir و زرین‌پال، و مستندسازی مرز معماری برای قابلیت‌های تحلیلی آینده (بدون پیاده‌سازی AI).
+**گام O — امنیت و استقرار (مراحل ۹۰ تا ۹۶):** بازبینی امنیتی ورودی‌ها و خروجی‌ها، مجوز و IDOR همه عملیات، محافظت فرم‌های عمومی از هرزنامه، لاگ بدون اطلاعات حساس، روش پشتیبان‌گیری و بازیابی، و **روش استقرار روی cPanel بدون SSH** (اجرای migration، ساخت اولین مدیر، Cron و کش) همراه با راهنمای گام‌به‌گام.

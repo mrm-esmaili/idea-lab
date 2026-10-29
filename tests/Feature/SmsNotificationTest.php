@@ -139,7 +139,7 @@ class SmsNotificationTest extends TestCase
         // پس از پاسخ (defer) ارسال شده است
         $this->assertSame('sent', $message->status);
         $this->assertSame('9001', $message->provider_message_id);
-        $this->assertSame(['NAME' => 'علی', 'IDEA' => 'باشگاه‌یار', 'AMOUNT' => '120,000', 'REF' => '777'], $message->parameters);
+        $this->assertEquals(['NAME' => 'علی', 'IDEA' => 'باشگاه‌یار', 'AMOUNT' => '120,000', 'REF' => '777'], $message->parameters);
 
         Http::assertSent(fn ($r) => str_ends_with($r->url(), 'send/verify')
             && $r['templateId'] === 100

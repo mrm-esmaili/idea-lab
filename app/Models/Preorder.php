@@ -15,7 +15,6 @@ class Preorder extends Model
         'lead_id',
         'name',
         'phone',
-        'amount',
         'amount_rial',
         'refund_policy_id',
         'terms_accepted_at',
@@ -31,7 +30,6 @@ class Preorder extends Model
     protected function casts(): array
     {
         return [
-            'amount' => 'integer',
             'amount_rial' => 'integer',
             'terms_accepted_at' => 'datetime',
             'consented_at' => 'datetime',
