@@ -24,13 +24,19 @@ jobs:
         options: --health-cmd="healthcheck.sh --connect --innodb_initialized" --health-interval=5s --health-timeout=5s --health-retries=20
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - uses: shivammathur/setup-php@v2
         with:
           php-version: '8.4'
           extensions: pdo_mysql, mbstring, openssl, curl, fileinfo, intl
           tools: composer:v2
+
+      # composer.lock با آینه ایرانی Composer (runflare) ساخته شده که از سرورهای
+      # GitHub در دسترس نیست؛ فقط در همین اجرا نشانی دانلود به معادل GitHub
+      # (همان مخزن و همان commit) تغییر می‌کند. احراز هویت GitHub را setup-php انجام می‌دهد.
+      - name: Download packages from GitHub instead of the regional mirror
+        run: sed -i 's#https://mirror-composer.runflare.com/repos/#https://api.github.com/repos/#g' composer.lock
 
       - name: Install dependencies (with dev, for tests)
         run: composer install --no-interaction --prefer-dist
@@ -52,6 +58,7 @@ jobs:
         run: |
           rm .env
           composer install --no-dev --no-interaction --prefer-dist --optimize-autoloader
+          git checkout -- composer.lock
           mkdir -p dist
           zip -rq dist/idea-lab-${GITHUB_SHA::7}.zip . \
             -x '.git/*' '.github/*' 'tests/*' 'dist/*' 'node_modules/*' \
