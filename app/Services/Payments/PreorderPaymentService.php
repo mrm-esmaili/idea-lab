@@ -5,6 +5,7 @@ namespace App\Services\Payments;
 use App\Models\LandingPageEvent;
 use App\Models\Payment;
 use App\Models\Preorder;
+use App\Services\Notifications\CustomerNotifier;
 use App\Services\ZarinpalService;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Facades\DB;
@@ -32,6 +33,7 @@ class PreorderPaymentService
 
     public function __construct(
         private readonly ZarinpalService $zarinpal,
+        private readonly CustomerNotifier $notifier,
     ) {}
 
     /**
@@ -195,13 +197,13 @@ class PreorderPaymentService
             return $payment->fresh();
         }
 
-        DB::transaction(function () use ($payment, $result) {
+        $transitioned = DB::transaction(function () use ($payment, $result) {
             $locked = Payment::whereKey($payment->id)
                 ->lockForUpdate()
                 ->firstOrFail();
 
             if ($locked->status !== Payment::STATUS_PENDING) {
-                return;
+                return false;
             }
 
             $locked->update([
@@ -223,7 +225,7 @@ class PreorderPaymentService
                     'payment_id' => $locked->id,
                 ]);
 
-                return;
+                return true;
             }
 
             $preorder->update(['payment_status' => Preorder::PAYMENT_PAID]);
@@ -237,7 +239,14 @@ class PreorderPaymentService
                 'campaign' => $preorder->campaign,
                 'occurred_at' => now(),
             ]);
+
+            return true;
         });
+
+        // فقط همان اجرایی که تراکنش را قطعی کرد اطلاع می‌دهد (مرحله ۵۹)
+        if ($transitioned) {
+            $this->notifier->paymentPaid($payment->fresh());
+        }
 
         return $payment->fresh();
     }

@@ -139,6 +139,28 @@
                     </div>
                 @endif
             </div>
+
+            @can('sms.send')
+                <div class="card mb-3">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h2 class="card-title h6 mb-0">ارسال پیامک</h2>
+                        <a href="{{ route('admin.sms.messages.index', ['mobile' => $contact->mobile]) }}" class="small">سابقه پیامک</a>
+                    </div>
+                    <form method="POST" action="{{ route('admin.contacts.sms', $contact) }}">
+                        @csrf
+                        <div class="card-body">
+                            <label for="sms-body" class="form-label small">پیام خدماتی به این مخاطب (پیگیری سفارش، پاسخ پشتیبانی)</label>
+                            <textarea id="sms-body" name="body" rows="3" maxlength="300" required @class(['form-control', 'is-invalid' => $errors->has('body') || $errors->has('sms_body')])>{{ old('body') }}</textarea>
+                            @error('body')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                            @error('sms_body')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                            <div class="form-text">پیام تبلیغاتی فقط از «ارسال گروهی» و به دارندگان رضایت ارسال می‌شود.</div>
+                        </div>
+                        <div class="card-footer">
+                            <button type="submit" class="btn btn-sm btn-primary" onclick="return confirm('پیامک ارسال شود؟')"><i class="bi bi-send"></i> ارسال</button>
+                        </div>
+                    </form>
+                </div>
+            @endcan
         </div>
 
         <div class="col-xl-8">

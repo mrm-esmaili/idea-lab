@@ -9,6 +9,7 @@ use App\Models\Refund;
 use App\Models\RefundRequest;
 use App\Models\User;
 use App\Services\AuditLogger;
+use App\Services\Notifications\CustomerNotifier;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 
@@ -21,11 +22,13 @@ use Illuminate\Support\Facades\DB;
  *   بررسی‌ها زیر قفل ردیف پرداخت انجام می‌شوند.
  * - هر پرداخت حداکثر یک درخواست باز دارد.
  * - همه عملیات در audit_logs ثبت می‌شود.
+ * - پیامک مشتری پس از commit هر مرحله در صف ثبت می‌شود (مرحله ۶۰).
  */
 class RefundService
 {
     public function __construct(
         private readonly AuditLogger $audit,
+        private readonly CustomerNotifier $notifier,
     ) {}
 
     /**
@@ -100,7 +103,7 @@ class RefundService
             throw new RefundException('فقط پرداخت موفق همین سفارش قابل بازپرداخت است.');
         }
 
-        return DB::transaction(function () use ($preorder, $payment, $amountRial, $reason, $actor) {
+        $request = DB::transaction(function () use ($preorder, $payment, $amountRial, $reason, $actor) {
             $locked = Payment::whereKey($payment->id)->lockForUpdate()->firstOrFail();
 
             if (RefundRequest::where('payment_id', $locked->id)->whereIn('status', RefundRequest::OPEN)->exists()) {
@@ -133,6 +136,10 @@ class RefundService
 
             return $request;
         });
+
+        $this->notifier->refundRequested($request);
+
+        return $request;
     }
 
     /**
@@ -140,7 +147,7 @@ class RefundService
      */
     public function approve(RefundRequest $request, int $amountRial, ?string $note, User $user): RefundRequest
     {
-        return DB::transaction(function () use ($request, $amountRial, $note, $user) {
+        $decided = DB::transaction(function () use ($request, $amountRial, $note, $user) {
             Payment::whereKey($request->payment_id)->lockForUpdate()->firstOrFail();
             $locked = RefundRequest::whereKey($request->id)->lockForUpdate()->firstOrFail();
 
@@ -166,6 +173,10 @@ class RefundService
 
             return $locked;
         });
+
+        $this->notifier->refundDecided($decided);
+
+        return $decided;
     }
 
     /**
@@ -173,7 +184,7 @@ class RefundService
      */
     public function reject(RefundRequest $request, string $note, User $user): RefundRequest
     {
-        return DB::transaction(function () use ($request, $note, $user) {
+        $decided = DB::transaction(function () use ($request, $note, $user) {
             $locked = RefundRequest::whereKey($request->id)->lockForUpdate()->firstOrFail();
 
             if ($locked->status !== RefundRequest::STATUS_PENDING) {
@@ -191,6 +202,10 @@ class RefundService
 
             return $locked;
         });
+
+        $this->notifier->refundDecided($decided);
+
+        return $decided;
     }
 
     /**
@@ -207,7 +222,7 @@ class RefundService
         ?string $note,
         User $user,
     ): Refund {
-        return DB::transaction(function () use ($request, $amountRial, $method, $reference, $refundedOn, $note, $user) {
+        $refund = DB::transaction(function () use ($request, $amountRial, $method, $reference, $refundedOn, $note, $user) {
             $payment = Payment::whereKey($request->payment_id)->lockForUpdate()->firstOrFail();
             $locked = RefundRequest::whereKey($request->id)->lockForUpdate()->firstOrFail();
 
@@ -257,6 +272,10 @@ class RefundService
 
             return $refund;
         });
+
+        $this->notifier->refundExecuted($refund);
+
+        return $refund;
     }
 
     public function syncPreorderStatus(Preorder $preorder): string

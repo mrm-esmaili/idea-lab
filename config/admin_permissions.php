@@ -10,6 +10,8 @@ return [
     'finance.manage' => 'امور مالی',
     'contacts.manage' => 'مخاطبان و گروه‌ها',
     'contacts.export' => 'خروجی مخاطبان',
+    'sms.send' => 'سابقه پیامک و ارسال دستی به مخاطب',
+    'sms.broadcast' => 'ارسال گروهی پیامک',
     'users.manage' => 'کاربران',
-    'settings.manage' => 'تنظیمات (پیامک)',
+    'settings.manage' => 'تنظیمات (قالب‌های پیامک)',
 ];

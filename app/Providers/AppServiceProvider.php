@@ -24,6 +24,7 @@ class AppServiceProvider extends ServiceProvider
                     config('services.sms.smsir.api_key'),
                     config('services.sms.smsir.base_url'),
                     (int) config('services.sms.smsir.timeout'),
+                    config('services.sms.smsir.line_number'),
                 ),
                 default => new LogSmsProvider(),
             };

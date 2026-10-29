@@ -5,8 +5,10 @@ namespace App\Http\Controllers;
 use App\Enums\IdeaStatus;
 use App\Models\Campaign;
 use App\Models\Idea;
+use App\Models\SmsTemplate;
 use App\Services\CampaignStatsService;
 use App\Services\IdeaStatsService;
+use App\Services\Notifications\CustomerNotifier;
 use App\Support\Slug;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -71,7 +73,8 @@ class IdeaController extends Controller
     public function show(
         Idea $idea,
         IdeaStatsService $stats,
-        CampaignStatsService $campaignStats
+        CampaignStatsService $campaignStats,
+        CustomerNotifier $notifier,
     ) {
         $idea->load([
             'landingPages' => fn ($query) => $query->latest(),
@@ -97,7 +100,16 @@ class IdeaController extends Controller
             ->take(5)
             ->get();
 
+        // اطلاع پیامکی تغییر وضعیت به خریداران (مرحله ۶۱)
+        $statusSms = [
+            'buyers' => $notifier->ideaStatusRecipients($idea)->count(),
+            'templates' => SmsTemplate::whereIn('key', CustomerNotifier::IDEA_STATUS_TEMPLATES)
+                ->pluck('enabled', 'key')
+                ->all(),
+        ];
+
         return view('ideas.show', compact(
+            'statusSms',
             'idea',
             'pageStats',
             'totals',
@@ -127,14 +139,15 @@ class IdeaController extends Controller
             ->with('success', 'ایده به‌روزرسانی شد.');
     }
 
-    public function changeStatus(Request $request, Idea $idea)
+    public function changeStatus(Request $request, Idea $idea, CustomerNotifier $notifier)
     {
         $data = $request->validate([
             'status' => ['required', Rule::enum(IdeaStatus::class)],
             'note' => ['nullable', 'string', 'max:2000'],
+            'notify_customers' => ['nullable', 'boolean'],
         ]);
 
-        DB::transaction(function () use ($request, $idea, $data) {
+        $change = DB::transaction(function () use ($request, $idea, $data) {
             $locked = Idea::whereKey($idea->id)
                 ->lockForUpdate()
                 ->firstOrFail();
@@ -150,7 +163,7 @@ class IdeaController extends Controller
 
             $locked->update(['status' => $to->value]);
 
-            $locked->statusChanges()->create([
+            return $locked->statusChanges()->create([
                 'user_id' => $request->user()->id,
                 'from_status' => $from->value,
                 'to_status' => $to->value,
@@ -158,9 +171,21 @@ class IdeaController extends Controller
             ]);
         });
 
+        $message = 'وضعیت ایده تغییر کرد.';
+
+        if ($request->boolean('notify_customers')) {
+            $key = CustomerNotifier::IDEA_STATUS_TEMPLATES[$change->to_status] ?? null;
+
+            if (! $key || ! SmsTemplate::where('key', $key)->value('enabled')) {
+                $message .= ' برای این وضعیت قالب پیامک فعالی وجود ندارد؛ پیامکی ارسال نشد.';
+            } else {
+                $message .= ' پیامک برای ' . number_format($notifier->ideaStatusChanged($idea->fresh(), $change)) . ' خریدار در صف ارسال قرار گرفت.';
+            }
+        }
+
         return redirect()
             ->route('ideas.show', $idea)
-            ->with('success', 'وضعیت ایده تغییر کرد.');
+            ->with('success', $message);
     }
 
     public function archive(Idea $idea)

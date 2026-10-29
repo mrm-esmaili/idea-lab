@@ -57,6 +57,27 @@ return [
 
     'sms_variable' => [
         'code' => 'کد یک‌بارمصرف',
+        'name' => 'نام مخاطب',
+        'idea' => 'نام ایده',
+        'amount' => 'مبلغ (تومان)',
+        'ref_id' => 'کد پیگیری پرداخت',
+        'reference' => 'شماره پیگیری واریز',
+    ],
+
+    'sms_message' => [
+        'queued' => 'در صف',
+        'sending' => 'در حال ارسال',
+        'sent' => 'ارسال شد',
+        'failed' => 'ناموفق',
+        'skipped' => 'ارسال نشد',
+        'cancelled' => 'لغو شد',
+    ],
+
+    'sms_broadcast' => [
+        'draft' => 'پیش‌نویس',
+        'sending' => 'در حال ارسال',
+        'completed' => 'تمام‌شده',
+        'cancelled' => 'لغو شد',
     ],
 
     'audit_action' => [
@@ -67,6 +88,9 @@ return [
         'expense.created' => 'ثبت هزینه',
         'expense.updated' => 'ویرایش هزینه',
         'expense.deleted' => 'حذف هزینه',
+        'sms.broadcast_confirmed' => 'تأیید ارسال گروهی',
+        'sms.broadcast_cancelled' => 'لغو ارسال گروهی',
+        'sms.manual_sent' => 'ارسال پیامک دستی',
     ],
 
     // وضعیت هر تراکنش درگاه

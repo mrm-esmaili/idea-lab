@@ -61,8 +61,8 @@ class ContactTimeline
         foreach (SmsMessage::where('mobile', $contact->mobile)->latest('id')->limit(50)->get() as $sms) {
             $items->push($this->item($sms->created_at, 'bi-chat-dots',
                 'پیامک ' . config("statuses.sms_category.{$sms->category}", $sms->category)
-                    . ($sms->status === SmsMessage::STATUS_SENT ? '' : ' (ناموفق)'),
-                $sms->template_key,
+                    . ($sms->status === SmsMessage::STATUS_SENT ? '' : ' (' . config("statuses.sms_message.{$sms->status}", $sms->status) . ')'),
+                $sms->template_key ?? \Illuminate\Support\Str::limit((string) $sms->body, 60),
             ));
         }
 

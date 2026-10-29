@@ -2,15 +2,15 @@
 
 @php
     $color = match ($value) {
-        'new', 'requested', 'draft', 'unpaid', 'cancelled', 'ended' => 'secondary',
+        'new', 'requested', 'draft', 'unpaid', 'cancelled', 'ended', 'skipped' => 'secondary',
         'contacted', 'testing', 'building', 'planned' => 'info',
         'running' => 'success',
         'paused' => 'warning',
         'interested' => 'primary',
-        'pending', 'partially_refunded' => 'warning',
+        'pending', 'partially_refunded', 'queued', 'sending' => 'warning',
         'approved' => 'primary',
         'refunded', 'completed' => 'dark',
-        'prepaid', 'customer', 'validated', 'launched', 'paid' => 'success',
+        'prepaid', 'customer', 'validated', 'launched', 'paid', 'sent' => 'success',
         'rejected', 'failed' => 'danger',
         default => 'light',
     };

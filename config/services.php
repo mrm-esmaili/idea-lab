@@ -43,6 +43,8 @@ return [
             'api_key' => env('SMSIR_API_KEY'),
             'base_url' => env('SMSIR_BASE_URL', 'https://api.sms.ir/v1'),
             'timeout' => (int) env('SMSIR_TIMEOUT', 10),
+            // خط اختصاصی برای ارسال متن آزاد (ارسال گروهی و دستی)
+            'line_number' => env('SMSIR_LINE_NUMBER'),
         ],
     ],
 

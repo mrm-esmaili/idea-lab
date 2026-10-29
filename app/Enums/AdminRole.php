@@ -17,6 +17,8 @@ enum AdminRole: string
         'finance.manage',
         'contacts.manage',
         'contacts.export',
+        'sms.send',
+        'sms.broadcast',
         'users.manage',
         'settings.manage',
     ];
@@ -46,6 +48,8 @@ enum AdminRole: string
                 'preorders.manage',
                 'contacts.manage',
                 'contacts.export',
+                'sms.send',
+                'sms.broadcast',
             ],
 
             self::Finance => [
@@ -59,6 +63,7 @@ enum AdminRole: string
                 'leads.manage',
                 'preorders.manage',
                 'contacts.manage',
+                'sms.send',
             ],
         };
     }

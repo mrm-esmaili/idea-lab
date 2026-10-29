@@ -123,6 +123,26 @@ return [
     ],
 
     [
+        'header' => 'پیامک',
+        'items' => [
+            [
+                'label' => 'ارسال گروهی',
+                'icon' => 'bi-megaphone',
+                'route' => 'admin.sms.broadcasts.index',
+                'permission' => 'sms.broadcast',
+                'active' => ['admin.sms.broadcasts.*'],
+            ],
+            [
+                'label' => 'سابقه پیامک',
+                'icon' => 'bi-chat-left-text',
+                'route' => 'admin.sms.messages.index',
+                'permission' => 'sms.send',
+                'active' => ['admin.sms.messages.*'],
+            ],
+        ],
+    ],
+
+    [
         'header' => 'تنظیمات',
         'items' => [
             [
@@ -133,11 +153,11 @@ return [
                 'active' => ['admin.users.*'],
             ],
             [
-                'label' => 'پیامک',
+                'label' => 'قالب‌های پیامک',
                 'icon' => 'bi-chat-dots',
                 'route' => 'admin.sms.index',
                 'permission' => 'settings.manage',
-                'active' => ['admin.sms.*'],
+                'active' => ['admin.sms.index', 'admin.sms.templates.*'],
             ],
         ],
     ],

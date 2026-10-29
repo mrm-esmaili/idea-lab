@@ -381,6 +381,28 @@
                             <textarea id="note" name="note" rows="2" maxlength="2000" class="form-control">{{ old('note') }}</textarea>
                         </div>
 
+                        @php($smsStatuses = collect(\App\Services\Notifications\CustomerNotifier::IDEA_STATUS_TEMPLATES)->filter(fn ($key) => $statusSms['templates'][$key] ?? false)->keys())
+                        <div class="form-check mb-1">
+                            <input class="form-check-input" type="checkbox" value="1" id="notify_customers" name="notify_customers" @checked(old('notify_customers')) @disabled($smsStatuses->isEmpty() || ! $statusSms['buyers'])>
+                            <label class="form-check-label small" for="notify_customers">
+                                اطلاع پیامکی به {{ number_format($statusSms['buyers']) }} خریدار پیش‌خرید
+                            </label>
+                        </div>
+                        <div class="form-text mb-2">
+                            @if ($smsStatuses->isEmpty())
+                                قالب پیامک وضعیت‌ها (تأییدشده، ردشده، عرضه‌شده) هنوز فعال نشده است.
+                            @else
+                                فقط برای: {{ $smsStatuses->map(fn ($s) => \App\Enums\IdeaStatus::from($s)->label())->join('، ') }}.
+                            @endif
+                            پیام به علاقه‌مندانِ بدون خرید، تبلیغاتی است و از
+                            @can('sms.broadcast')
+                                <a href="{{ route('admin.sms.broadcasts.create', ['ideas' => [$idea->id]]) }}">ارسال گروهی</a>
+                            @else
+                                ارسال گروهی
+                            @endcan
+                            (فقط دارندگان رضایت) انجام می‌شود.
+                        </div>
+
                         <button type="submit" class="btn btn-primary btn-sm">ثبت تغییر وضعیت</button>
                     </form>
                 </div>

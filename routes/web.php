@@ -22,6 +22,8 @@ use App\Http\Controllers\Admin\FinanceReportController;
 use App\Http\Controllers\Admin\PaymentReportController;
 use App\Http\Controllers\Admin\RefundRequestController;
 use App\Http\Controllers\Admin\PreorderManagementController;
+use App\Http\Controllers\Admin\SmsBroadcastController;
+use App\Http\Controllers\Admin\SmsMessageController;
 use App\Http\Controllers\Admin\SmsTemplateController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\ZarinpalPaymentController;
@@ -241,6 +243,26 @@ Route::middleware(['auth:web', 'admin'])->group(function () {
         Route::get('/admin/groups/{group}/export', [ContactGroupController::class, 'export'])
             ->middleware(['can:contacts.export', 'throttle:10,1'])
             ->name('admin.groups.export');
+    });
+
+    Route::middleware('can:sms.broadcast')->group(function () {
+        Route::get('/admin/sms/broadcasts', [SmsBroadcastController::class, 'index'])->name('admin.sms.broadcasts.index');
+        Route::get('/admin/sms/broadcasts/create', [SmsBroadcastController::class, 'create'])->name('admin.sms.broadcasts.create');
+        Route::post('/admin/sms/broadcasts', [SmsBroadcastController::class, 'store'])->name('admin.sms.broadcasts.store');
+        Route::get('/admin/sms/broadcasts/{broadcast}', [SmsBroadcastController::class, 'show'])->whereNumber('broadcast')->name('admin.sms.broadcasts.show');
+        Route::post('/admin/sms/broadcasts/{broadcast}/confirm', [SmsBroadcastController::class, 'confirm'])->whereNumber('broadcast')->middleware('throttle:10,1')->name('admin.sms.broadcasts.confirm');
+        Route::post('/admin/sms/broadcasts/{broadcast}/cancel', [SmsBroadcastController::class, 'cancel'])->whereNumber('broadcast')->name('admin.sms.broadcasts.cancel');
+        Route::post('/admin/sms/broadcasts/{broadcast}/dispatch', [SmsBroadcastController::class, 'dispatchBatch'])->whereNumber('broadcast')->middleware('throttle:30,1')->name('admin.sms.broadcasts.dispatch');
+        Route::delete('/admin/sms/broadcasts/{broadcast}', [SmsBroadcastController::class, 'destroy'])->whereNumber('broadcast')->name('admin.sms.broadcasts.destroy');
+    });
+
+    Route::middleware('can:sms.send')->group(function () {
+        Route::get('/admin/sms/messages', [SmsMessageController::class, 'index'])->name('admin.sms.messages.index');
+        Route::post('/admin/sms/messages/{message}/retry', [SmsMessageController::class, 'retry'])->whereNumber('message')->name('admin.sms.messages.retry');
+        Route::post('/admin/contacts/{contact}/sms', [SmsMessageController::class, 'sendToContact'])
+            ->whereNumber('contact')
+            ->middleware('throttle:10,1')
+            ->name('admin.contacts.sms');
     });
 
     Route::middleware('can:settings.manage')->group(function () {
