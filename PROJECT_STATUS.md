@@ -6,8 +6,8 @@
 |---|---|
 | آخرین به‌روزرسانی | ۱۴۰۵/۰۸/۰۷ |
 | شاخه | `claude/new-session-ebbvr0` |
-| آخرین قابلیت تکمیل‌شده | گام N — مدل داده، سازگاری MySQL و پیکربندی (مراحل ۸۵ تا ۸۹) |
-| تست‌ها | ۱۵۹ تست، همه پاس روی SQLite، MariaDB 10.11 و MySQL 8.0 (strict) |
+| آخرین قابلیت تکمیل‌شده | گام O — امنیت و استقرار (مراحل ۹۰ تا ۹۶) |
+| تست‌ها | ۱۶۹ تست، همه پاس روی MariaDB 10.11 و MySQL 8.0 (strict) و SQLite (۲ تست پشتیبان مخصوص MySQL رد می‌شود) |
 | محیط هدف | MariaDB 11.4، PHP 8.4، cPanel بدون SSH و npm |
 
 ## قابلیت‌های تکمیل‌شده
@@ -30,17 +30,19 @@
 | L | ۷۳ تا ۷۸ | داشبورد با کارهای نیازمند رسیدگی و مقایسه هفتگی، قیف تبدیل، اقتصاد ایده با CAC، منابع جذب، گزارش باشگاه مشتریان و پیامک، نمایش تاریخ شمسی | `81f22cc` |
 | M | ۷۹ تا ۸۴ | انتخابگر تاریخ شمسی، نمودار روند روزانه، پنجره تأیید یکسان برای عملیات حساس، جست‌وجوی سریع سراسری، ممیزی دسترس‌پذیری و موبایل همه صفحات | `c7b189a` |
 | N | ۸۵ تا ۸۹ | حذف ستون قدیمی، RESTRICT برای داده تجاری، ایندکس‌های گزارش، اجرای کامل روی MySQL 8، صفحه وضعیت سیستم، seeder امن، سند معماری و مرز AI | `843aff5` |
+| O | ۹۰ تا ۹۶ | سرآیندهای امنیتی، تست خودکار مجوز/CSRF همه مسیرها، ضدربات فرم‌های عمومی، لاگ امن، پشتیبان و بازیابی آزموده، نصب‌کننده وب و راهنمای استقرار cPanel، بسته نصب GitHub Actions | (همین کامیت) |
 
-## آخرین قابلیت: گام N — فایل‌های تغییرکرده
+## آخرین قابلیت: گام O — فایل‌های تغییرکرده
 
 **جدید**
-- migration: `database/migrations/2026_11_07_100000_finalize_data_model.php`
-- `app/Services/SystemStatus.php`، `app/Http/Controllers/Admin/SystemStatusController.php`، `resources/views/admin/system/index.blade.php`
-- `agentic_brain/ARCHITECTURE.md`
-- تست: `tests/Feature/DataModelTest.php`، `tests/Feature/SystemStatusTest.php`
+- `DEPLOYMENT.md` (راهنمای استقرار cPanel)، `.github/workflows/release.yml`، `.htaccess` ریشه
+- `app/Http/Middleware/{SecurityHeaders,GuardPublicForm}.php`، `resources/views/components/public-form-guard.blade.php`، `config/security.php`
+- `app/Services/Backup/DatabaseBackup.php`، `app/Http/Controllers/Admin/BackupController.php`، `resources/views/admin/backups/index.blade.php`، `config/backup.php`
+- `app/Http/Controllers/InstallController.php`، `resources/views/install.blade.php`
+- تست: `tests/Feature/{SecurityTest,BackupTest}.php`
 
 **تغییریافته**
-`app/Models/Preorder.php` (حذف `amount`)، `app/Models/Idea.php` (`experiments`)، `app/Http/Controllers/Admin/CampaignController.php` و `app/Http/Controllers/IdeaController.php` (محافظت حذف)، `database/seeders/DatabaseSeeder.php`، `routes/web.php`، `config/admin_menu.php`، `tests/Feature/{LandingPageManagementTest,SmsNotificationTest}.php` (مقایسه مستقل از ترتیب کلید JSON)، `agentic_brain/GAP_ANALYSIS.md`
+`bootstrap/app.php` (سرآیندها، `public.form`، `dontFlash`)، `app/Providers/AppServiceProvider.php` (https، بررسی پایگاه داده در `/up`)، `app/Http/Controllers/Admin/SystemStatusController.php` و `resources/views/admin/system/index.blade.php` (migration و کش)، `app/Services/SystemStatus.php`، `public/.htaccess`، `resources/views/landing-pages/show.blade.php`، `routes/{web,console}.php`، `config/{app,admin_menu,statuses}.php`، `lang/fa/validation.php`، `.env.example`، `phpunit.xml`، `agentic_brain/GAP_ANALYSIS.md`
 
 ## خطاها و محدودیت‌های باقی‌مانده
 
@@ -59,17 +61,19 @@
 | پیامک تکراری در timeout | اگر درخواست به SMS.ir برسد ولی پاسخ نرسد، تلاش دوباره ممکن است پیام تکراری بفرستد | پذیرفته‌شده؛ حداکثر ۳ تلاش |
 | گزارش تحویل و لغو۱۱ | وضعیت تحویل و پاسخ «لغو۱۱» از SMS.ir دریافت نمی‌شود | در صورت نیاز با وب‌هوک SMS.ir |
 
-## اقدامات لازم روی هاست (تا این لحظه)
+## اقدامات لازم روی هاست
 
-1. فعال بودن افزونه `pdo_mysql` در cPanel ← Select PHP Version.
-2. اجرای همه migrationها.
-3. قابل نوشتن بودن پوشه `public/uploads`.
-4. تنظیم شرایط بازپرداخت هر ایده (بدون آن فرم پیش‌خرید نمایش داده نمی‌شود).
-5. در `.env`: `SMS_DRIVER=smsir`، `SMSIR_API_KEY`، `SMSIR_LINE_NUMBER` (خط اختصاصی برای ارسال گروهی و دستی) و در صورت نیاز `APP_PRIVACY_URL`، `SMS_RATE_PER_MINUTE`، `SMS_PROMO_HOURS`.
-6. تغییر رمز عبوری که پیش‌تر در تاریخچه Git ثبت شده بود.
-7. ساخت Cron Job در cPanel هر دقیقه: `php /home/USER/idea-lab/artisan schedule:run` (بدون آن پیامک‌های تراکنشی باز هم ارسال می‌شوند، ولی ارسال گروهی باید دستی ادامه داده شود).
-8. ساخت قالب‌های اطلاع‌رسانی در SMS.ir، ورود شناسه و فعال‌سازی هرکدام در پنل ← قالب‌های پیامک.
+راهنمای کامل و گام‌به‌گام در **`DEPLOYMENT.md`** است. خلاصه:
+
+1. ساخت بسته نصب از GitHub Actions (Build release package) و بارگذاری در File Manager.
+2. زیردامنه با document root روی پوشه `public` و AutoSSL.
+3. پایگاه داده و کاربر در MySQL Database Wizard؛ PHP 8.4 با افزونه‌های لازم.
+4. `.env` تولید (جدول DEPLOYMENT.md) و ساخت APP_KEY با Cron یک‌باره.
+5. `/install?token=...` برای migration و اولین مدیر کل، سپس حذف `INSTALL_TOKEN`.
+6. Cron هر دقیقه: `php artisan schedule:run`.
+7. رفع موارد قرمز صفحه «وضعیت سیستم»، تنظیم قالب‌های پیامک و شرایط بازپرداخت هر ایده.
+8. تغییر رمز عبوری که پیش‌تر در تاریخچه Git ثبت شده بود.
 
 ## قدم بعدی
 
-**گام O — امنیت و استقرار (مراحل ۹۰ تا ۹۶):** بازبینی امنیتی ورودی‌ها و خروجی‌ها، مجوز و IDOR همه عملیات، محافظت فرم‌های عمومی از هرزنامه، لاگ بدون اطلاعات حساس، روش پشتیبان‌گیری و بازیابی، و **روش استقرار روی cPanel بدون SSH** (اجرای migration، ساخت اولین مدیر، Cron و کش) همراه با راهنمای گام‌به‌گام.
+**گام P — آزمون عملیاتی و تحویل (مراحل ۹۷ تا ۱۰۰):** آزمون انتها‌به‌انتها در مرورگر (ایده تا صفحه فرود، ثبت مخاطب، پرداخت و گزارش)، آزمون کامل بازپرداخت، آزمون SMS.ir (OTP، تراکنشی، گروهی آزمایشی و خطاهای ارائه‌دهنده) و تحویل نسخه عملیاتی: راهنمای مدیر، فهرست متغیرهای محیط و چک‌لیست بهره‌برداری.

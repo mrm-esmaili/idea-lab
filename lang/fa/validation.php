@@ -39,6 +39,13 @@ return [
     'string' => ':attribute باید متن باشد.',
     'unique' => 'این :attribute قبلاً استفاده شده است.',
     'uploaded' => 'بارگذاری :attribute انجام نشد.',
+    'password' => [
+        'letters' => ':attribute باید دست‌کم یک حرف داشته باشد.',
+        'mixed' => ':attribute باید حروف بزرگ و کوچک داشته باشد.',
+        'numbers' => ':attribute باید دست‌کم یک عدد داشته باشد.',
+        'symbols' => ':attribute باید دست‌کم یک نماد داشته باشد.',
+        'uncompromised' => 'این :attribute در نشت‌های اطلاعاتی دیده شده است؛ رمز دیگری انتخاب کنید.',
+    ],
 
     'attributes' => [
         'name' => 'نام',

@@ -5,12 +5,14 @@ use App\Http\Controllers\Account\AccountController;
 use App\Http\Controllers\Account\AuthController as AccountAuthController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\IdeaController;
+use App\Http\Controllers\InstallController;
 use App\Http\Controllers\IdeaSettingsController;
 use App\Http\Controllers\RefundPolicyController;
 use App\Http\Controllers\LandingPageController;
 use App\Http\Controllers\PublicLandingPageController;
 use App\Http\Controllers\LeadController;
 use App\Http\Controllers\Admin\LeadManagementController;
+use App\Http\Controllers\Admin\BackupController;
 use App\Http\Controllers\Admin\CampaignComparisonController;
 use App\Http\Controllers\Admin\CampaignController;
 use App\Http\Controllers\Admin\ExperimentController;
@@ -32,6 +34,17 @@ use App\Http\Controllers\Admin\SmsTemplateController;
 use App\Http\Controllers\Admin\SystemStatusController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\ZarinpalPaymentController;
+
+// نصب اولیه بدون SSH؛ بدون نشست/کوکی/CSRF چون پیش از migration جدول نشست وجود ندارد
+Route::withoutMiddleware([
+    \Illuminate\Session\Middleware\StartSession::class,
+    \Illuminate\View\Middleware\ShareErrorsFromSession::class,
+    \Illuminate\Foundation\Http\Middleware\ValidateCsrfToken::class,
+    \Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse::class,
+])->group(function () {
+    Route::get('/install', [InstallController::class, 'show'])->name('install');
+    Route::post('/install', [InstallController::class, 'store'])->name('install.store');
+});
 
 Route::get('/login', [
     AuthController::class,
@@ -58,7 +71,7 @@ Route::get('/l/{slug}', [
 Route::post('/l/{slug}/leads', [
     LeadController::class,
     'store',
-])->middleware('throttle:5,1')->name('leads.store');
+])->middleware(['throttle:5,1', 'public.form'])->name('leads.store');
 
 Route::post(
     '/l/{slug}/events',
@@ -71,7 +84,7 @@ Route::post(
     '/l/{slug}/preorders',
     [PreorderController::class, 'store']
 )
-    ->middleware('throttle:5,1')
+    ->middleware(['throttle:5,1', 'public.form'])
     ->name('preorders.store');
 
 Route::get(
@@ -297,6 +310,12 @@ Route::middleware(['auth:web', 'admin'])->group(function () {
 
     Route::middleware('can:settings.manage')->group(function () {
         Route::get('/admin/system', SystemStatusController::class)->name('admin.system');
+        Route::post('/admin/system/migrate', [SystemStatusController::class, 'migrate'])->middleware('throttle:3,1')->name('admin.system.migrate');
+        Route::post('/admin/system/optimize', [SystemStatusController::class, 'optimize'])->middleware('throttle:5,1')->name('admin.system.optimize');
+
+        Route::get('/admin/backups', [BackupController::class, 'index'])->name('admin.backups.index');
+        Route::post('/admin/backups', [BackupController::class, 'store'])->middleware('throttle:3,10')->name('admin.backups.store');
+        Route::get('/admin/backups/{name}', [BackupController::class, 'download'])->where('name', 'idealab-\d{8}-\d{6}\.sql\.gz')->name('admin.backups.download');
 
         Route::get('/admin/sms', [SmsTemplateController::class, 'index'])
             ->name('admin.sms.index');

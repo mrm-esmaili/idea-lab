@@ -185,6 +185,13 @@ return [
                 'active' => ['admin.system'],
             ],
             [
+                'label' => 'پشتیبان‌گیری',
+                'icon' => 'bi-database-down',
+                'route' => 'admin.backups.index',
+                'permission' => 'settings.manage',
+                'active' => ['admin.backups.*'],
+            ],
+            [
                 'label' => 'قالب‌های پیامک',
                 'icon' => 'bi-chat-dots',
                 'route' => 'admin.sms.index',

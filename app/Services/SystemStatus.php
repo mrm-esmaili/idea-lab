@@ -36,6 +36,8 @@ class SystemStatus
         $add('برنامه', 'کلید رمزنگاری', filled(config('app.key')) ? 'ok' : 'error', filled(config('app.key')) ? 'تنظیم شده' : 'تنظیم نشده', filled(config('app.key')) ? null : 'APP_KEY را تولید و در .env قرار دهید.');
         $https = str_starts_with((string) config('app.url'), 'https://');
         $add('برنامه', 'نشانی سایت', $https ? 'ok' : ($production ? 'error' : 'warn'), (string) config('app.url'), $https ? null : 'APP_URL با https و دامنه واقعی (برای بازگشت درگاه و لینک‌ها).');
+        $secureCookie = (bool) config('session.secure');
+        $add('برنامه', 'کوکی امن نشست', $secureCookie ? 'ok' : ($production ? 'error' : 'warn'), $secureCookie ? 'فقط HTTPS' : 'روی HTTP هم ارسال می‌شود', $secureCookie ? null : 'SESSION_SECURE_COOKIE=true (پس از فعال بودن HTTPS)');
         $add('برنامه', 'منطقه زمانی نمایش', 'ok', (string) config('app.display_timezone'));
         $add('برنامه', 'نسخه PHP', version_compare(PHP_VERSION, '8.2.0', '>=') ? 'ok' : 'error', PHP_VERSION);
         $missing = array_values(array_filter(self::REQUIRED_EXTENSIONS, fn ($ext) => ! extension_loaded($ext)));

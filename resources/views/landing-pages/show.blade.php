@@ -306,6 +306,7 @@
 
                     <form action="{{ route('leads.store', $landingPage->slug) }}" method="POST">
                         @csrf
+                        <x-public-form-guard id="lead" />
                         <input type="hidden" name="form" value="lead">
 
                         <div class="form-group">
@@ -393,6 +394,7 @@
 
                 <form method="POST" action="{{ route('preorders.store', ['slug' => $landingPage->slug]) }}">
                     @csrf
+                    <x-public-form-guard id="preorder" />
                     <input type="hidden" name="form" value="preorder">
                     <input type="hidden" name="refund_policy_version" value="{{ $refundPolicy->version }}">
 

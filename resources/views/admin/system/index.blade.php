@@ -6,6 +6,26 @@
     <li class="breadcrumb-item active" aria-current="page">وضعیت سیستم</li>
 @endsection
 
+@section('page-actions')
+    <div class="d-flex flex-wrap gap-2">
+        <form method="POST" action="{{ route('admin.system.migrate') }}" data-confirm="migrationهای جدید اجرا شود؟&#10;پیش از آن از پایگاه داده پشتیبان بگیرید (صفحه پشتیبان‌گیری)." data-confirm-variant="warning">
+            @csrf
+            <button type="submit" class="btn btn-sm btn-outline-warning"><i class="bi bi-database-gear"></i> اجرای migrationهای جدید</button>
+        </form>
+        <form method="POST" action="{{ route('admin.system.optimize') }}">
+            @csrf
+            <input type="hidden" name="cache" value="1">
+            <button type="submit" class="btn btn-sm btn-outline-secondary"><i class="bi bi-lightning"></i> ساخت دوباره کش</button>
+        </form>
+        @if ($configCached)
+            <form method="POST" action="{{ route('admin.system.optimize') }}">
+                @csrf
+                <button type="submit" class="btn btn-sm btn-link">پاک کردن کش</button>
+            </form>
+        @endif
+    </div>
+@endsection
+
 @section('content')
     <div class="d-flex flex-wrap gap-2 mb-3">
         <span class="badge text-bg-danger fs-6">{{ number_format($counts['error'] ?? 0) }} مشکل</span>

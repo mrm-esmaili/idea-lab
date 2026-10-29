@@ -5,6 +5,9 @@
 
     RewriteEngine On
 
+    # فایل‌های نقطه‌دار (مثل .env یا .git) هرگز سرو نشوند
+    RewriteRule (^|/)\.(?!well-known/) - [F,L]
+
     # Handle Authorization Header
     RewriteCond %{HTTP:Authorization} .
     RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
