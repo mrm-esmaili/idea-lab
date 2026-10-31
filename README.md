@@ -1,6 +1,8 @@
 # Idea Lab — ایده‌لب
 
-سامانه اعتبارسنجی ایده: صفحه فرود و کمپین با رهگیری UTM، ثبت مخاطب و باشگاه مشتریان، پیش‌خرید و پرداخت زرین‌پال، بازپرداخت سه‌مرحله‌ای، پیامک SMS.ir، آزمایش و ثبت تصمیم، و گزارش‌های مالی و قیف تبدیل.
+سامانه اعتبارسنجی ایده: صفحه فرود (ویدیو، دمو، پیش‌خرید و «خبرم کن») و کمپین با رهگیری UTM، ثبت مخاطب و باشگاه مشتریان، پیش‌خرید و پرداخت زرین‌پال، بازپرداخت سه‌مرحله‌ای، پیامک SMS.ir، آزمایش و ثبت تصمیم، گزارش‌های مالی و قیف تبدیل، و به‌روزرسانی از داخل پنل.
+
+نسخه فعلی در فایل `VERSION` است. تغییرات نسخه ۱.۱ در `RELEASE_NOTES_1.1.0.md` آمده است.
 
 - Laravel 12، PHP 8.2+ (هاست: PHP 8.4)
 - MariaDB 10.11+/11.4 یا MySQL 8 (utf8mb4)
@@ -13,6 +15,7 @@
 | [`ADMIN_GUIDE.md`](ADMIN_GUIDE.md) | راهنمای مدیر: نقش‌ها و کار روزمره با هر بخش پنل |
 | [`DEPLOYMENT.md`](DEPLOYMENT.md) | استقرار روی cPanel بدون SSH، متغیرهای محیط، به‌روزرسانی و بازیابی |
 | [`OPERATIONS_CHECKLIST.md`](OPERATIONS_CHECKLIST.md) | چک‌لیست پیش از راه‌اندازی، روزانه، هفتگی و ماهانه |
+| [`RELEASE_NOTES_1.1.0.md`](RELEASE_NOTES_1.1.0.md) | تغییرات نسخه ۱.۱، migrationها و راهنمای نصب روی سرور فعلی |
 | [`ROADMAP_V2.md`](ROADMAP_V2.md) | نقشه راه نسخه ۱.۱ (به‌روزرسانی از پنل، صفحه فرود اعتمادساز، خبرم کن) و ۱.۲ (پرسش‌نامه) |
 | [`PROJECT_STATUS.md`](PROJECT_STATUS.md) | وضعیت پروژه، قابلیت‌های تکمیل‌شده و محدودیت‌های باقی‌مانده |
 | [`agentic_brain/ARCHITECTURE.md`](agentic_brain/ARCHITECTURE.md) | معماری، قراردادهای ثابت و مرز قابلیت‌های تحلیلی آینده |
@@ -41,6 +44,12 @@ DB_CONNECTION=mariadb DB_DATABASE=idealab_test DB_USERNAME=... DB_PASSWORD=... p
 
 ```bash
 E2E_DB_DATABASE=idealab_e2e E2E_DB_USERNAME=... E2E_DB_PASSWORD=... tests/e2e/run.sh
+```
+
+آزمون ارتقا (نسخه ۱.۰ با داده نمونه ← نسخه فعلی با نصب دستی، سپس به‌روزرسانی و بازگرداندن با سامانه به‌روزرسانی؛ مقایسه همه ردیف‌ها):
+
+```bash
+UPGRADE_DB_DATABASE=idealab_upgrade UPGRADE_DB_USERNAME=... UPGRADE_DB_PASSWORD=... tests/upgrade/rehearse.sh
 ```
 
 ## امنیت
