@@ -156,6 +156,7 @@ cd /home/USER/idea-lab && php artisan schedule:run >> /dev/null 2>&1
 | `BACKUP_KEEP` | `14` | تعداد پشتیبان روزانه نگه‌داشته‌شده |
 | `APP_UPDATES_ENABLED` | `true` | به‌روزرسانی از پنل؛ با `false` فقط Cron یا File Manager |
 | `UPDATE_MAX_UPLOAD_MB` | `64` | حداکثر حجم بارگذاری بسته از پنل |
+| `LANDING_VIDEO_MAX_MB` | `50` | حداکثر حجم ویدیوی MP4 صفحه فرود (پیشنهاد: ویدیو در آپارات) |
 | `OTP_TTL_SECONDS` | `120` | اعتبار کد ورود مخاطب |
 | `OTP_RESEND_COOLDOWN` | `60` | فاصله ارسال دوباره کد |
 | `CONTACT_SESSION_HOURS` | `24` | عمر نشست مخاطب |

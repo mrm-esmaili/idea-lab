@@ -240,6 +240,11 @@ Route::middleware(['auth:web', 'admin'])->group(function () {
             LandingPageController::class,
             'toggle',
         ])->name('landing-pages.toggle');
+
+        Route::get('/landing-pages/{landingPage}/preview', [
+            LandingPageController::class,
+            'preview',
+        ])->name('landing-pages.preview');
     });
 
     Route::middleware('can:leads.manage')->group(function () {

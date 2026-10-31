@@ -6,9 +6,9 @@
 |---|---|
 | آخرین به‌روزرسانی | ۱۴۰۵/۰۸/۰۹ |
 | شاخه | `claude/new-session-ebbvr0` |
-| نسخه | `1.1.0-beta2` (فایل `VERSION`) |
-| آخرین قابلیت تکمیل‌شده | نسخه ۱.۱، بخش R — تنظیمات سایت و پاورقی اعتمادساز (مراحل ۱۱۱ تا ۱۱۸؛ نقشه راه در `ROADMAP_V2.md`) |
-| تست‌ها | ۱۸۶ تست واحد/ویژگی روی MariaDB 10.11 و MySQL 8.0 (strict) و SQLite؛ آزمون عملیاتی مرورگر ۳۹/۳۹ روی MariaDB و MySQL 8؛ تمرین کامل به‌روزرسانی ۱.۰ ← ۱.۱ روی کپی production |
+| نسخه | `1.1.0-beta3` (فایل `VERSION`) |
+| آخرین قابلیت تکمیل‌شده | نسخه ۱.۱، بخش S — محتوای غنی صفحه فرود (مراحل ۱۱۹ تا ۱۲۸؛ نقشه راه در `ROADMAP_V2.md`) |
+| تست‌ها | ۱۹۴ تست واحد/ویژگی روی MariaDB 10.11 و MySQL 8.0 (strict) و SQLite؛ آزمون عملیاتی مرورگر ۳۹/۳۹ روی MariaDB و MySQL 8؛ تمرین کامل به‌روزرسانی ۱.۰ ← ۱.۱ روی کپی production |
 | محیط هدف | MariaDB 11.4، PHP 8.4، cPanel بدون SSH و npm |
 
 ## قابلیت‌های تکمیل‌شده
@@ -34,24 +34,26 @@
 | O | ۹۰ تا ۹۶ | سرآیندهای امنیتی، تست خودکار مجوز/CSRF همه مسیرها، ضدربات فرم‌های عمومی، لاگ امن، پشتیبان و بازیابی آزموده، نصب‌کننده وب و راهنمای استقرار cPanel، بسته نصب GitHub Actions | `2a81e46` |
 | P | ۹۷ تا ۱۰۰ | آزمون عملیاتی انتها‌به‌انتها در مرورگر با زرین‌پال و SMS.ir شبیه‌سازی‌شده، رفع باگ شمارنده مشترک محدودیت نرخ، راهنمای مدیر، چک‌لیست بهره‌برداری، مرجع متغیرهای محیط | `e409979` |
 | Q | ۱۰۱ تا ۱۱۰ | نسخه‌بندی (`VERSION`)، بسته با manifest و SHA-256 هر فایل، به‌روزرسانی از پنل با تأیید رمز، پشتیبان خودکار، حالت تعمیر، بازگشت خودکار و دستی، مسیر جایگزین Cron/File Manager، تاریخچه به‌روزرسانی | `37b9eb5` |
-| R | ۱۱۱ تا ۱۱۸ | صفحه «تنظیمات سایت» (شرکت، لوگو، اینماد، راه‌های پشتیبانی)، پاورقی یکسان صفحات فرود، حساب و پرداخت بدون «سیستم اعتبارسنجی»، دکمه برجسته «پیگیری سفارش و ورود»، توضیح پیگیری و بازپرداخت در ورود و حساب و رسید، لینک پیگیری اختیاری در پیامک پرداخت | (این کامیت) |
+| R | ۱۱۱ تا ۱۱۸ | صفحه «تنظیمات سایت» (شرکت، لوگو، اینماد، راه‌های پشتیبانی)، پاورقی یکسان صفحات فرود، حساب و پرداخت بدون «سیستم اعتبارسنجی»، دکمه برجسته «پیگیری سفارش و ورود»، توضیح پیگیری و بازپرداخت در ورود و حساب و رسید، لینک پیگیری اختیاری در پیامک پرداخت | `a54e15b` |
+| S | ۱۱۹ تا ۱۲۸ | لینک دمو، ویدیو (آپارات با بارگذاری پس از کلیک یا MP4)، کارت ویژگی دوبخشی با سازگاری محتوای قدیمی، متن پویای پیش‌خرید (نشان، قیمت خط‌خورده، چه می‌گیری، ضمانت، دکمه)، پشتیبانی و بخش ارائه‌دهنده در صفحه، اعداد فارسی، پیش‌نمایش و ساخت بدون انتشار، شمارش کلیک دمو و پخش ویدیو | (این کامیت) |
 
-## آخرین قابلیت: بخش R — تنظیمات سایت و پاورقی اعتمادساز
+## آخرین قابلیت: بخش S — محتوای غنی صفحه فرود
 
 **جدید**
-- `app/Services/SiteSettings.php`، `app/Models/SiteSetting.php`، `app/Support/ContactChannel.php`
-- `app/Http/Controllers/Admin/SiteSettingsController.php`، `resources/views/admin/settings/site.blade.php`
-- `resources/views/components/site-footer.blade.php`
-- `database/migrations/2026_11_10_100000_create_site_settings_table.php`، `2026_11_10_100100_add_link_to_payment_sms_template.php`
-- `tests/Feature/SiteSettingsTest.php`
+- `config/landing.php`، `tests/Feature/LandingContentTest.php` (۸ آزمون)
 
 **تغییریافته**
-`resources/views/landing-pages/show.blade.php` (پاورقی جدید و حذف «ساخته‌شده با سیستم اعتبارسنجی ایده»)، `resources/views/layouts/public.blade.php` (نوار بالا «پیگیری سفارش و ورود» و عنوان با نام شرکت)، `resources/views/account/{login,dashboard}.blade.php`، `resources/views/payments/{checkout,receipt,result}.blade.php`، `app/Models/SmsTemplate.php` و `app/Services/Sms/SmsService.php` و `app/Http/Controllers/Admin/SmsTemplateController.php` و `resources/views/admin/sms/edit.blade.php` (متغیر اختیاری)، `app/Services/Notifications/CustomerNotifier.php`، `config/{admin_menu,statuses}.php`، `app/Providers/AppServiceProvider.php`، `public/css/public.css`، `tests/Feature/SmsNotificationTest.php`، مستندات
+- `app/Models/LandingPage.php`: کلیدهای جدید `content`، سازگاری ویژگی متنی، `aparatHash`، `supportChannels`، `videoUrl`.
+- `app/Http/Controllers/LandingPageController.php`: اعتبارسنجی و ذخیره، پیش‌نمایش، ساخت بدون انتشار.
+- `resources/views/landing-pages/{_form,show,edit}.blade.php`، `resources/views/components/site-footer.blade.php` (خاموش کردن پشتیبانی/شرکت تکراری)، `resources/views/ideas/show.blade.php`، `resources/views/admin/campaigns/show.blade.php`.
+- `app/Support/Format.php` (`faDigits`)، `resources/views/account/dashboard.blade.php`، `resources/views/payments/{receipt,checkout}.blade.php`.
+- `app/Services/{FunnelStats,LandingPageTracker}.php`، `app/Http/Controllers/LandingPageEventController.php`، `routes/web.php`.
+- آزمون‌های موجود (انتظار اعداد فارسی در صفحات عمومی)، مستندات.
 
 **نکات طراحی**
-- لینک هر راه تماس از نوع و مقدار ساخته می‌شود و هیچ نشانی دلخواهی ذخیره نمی‌شود. نماد اینماد هم از شناسه و کد عددی/حرفی ساخته می‌شود و HTML دلخواه در صفحه عمومی درج نمی‌شود.
-- اگر جدول تنظیمات هنوز ساخته نشده باشد (فاصله میان Extract و migrate)، صفحات عمومی با مقادیر پیش‌فرض کار می‌کنند.
-- پارامتر `LINK` پیامک پرداخت به‌طور پیش‌فرض خالی است و ارسال نمی‌شود؛ قالب فعال فعلی در SMS.ir بدون تغییر کار می‌کند.
+- هیچ ستون جدیدی لازم نشد؛ صفحات موجود بدون تبدیل داده نمایش داده می‌شوند.
+- فقط iframe رسمی آپارات با شناسه استخراج‌شده ساخته می‌شود، نه نشانی دلخواه.
+- کلیک دمو و پخش ویدیو مرحله قیف نیستند و تعریف نرخ‌ها تغییر نکرد.
 
 ## اصلاح پس از استقرار: 403 روی کل سایت
 
@@ -93,8 +95,8 @@
 
 ## قدم بعدی
 
-1. **نصب روی سرور:** ساخت بسته `1.1.0-beta2` در GitHub Actions و نصب از تنظیمات ← به‌روزرسانی (اگر بخش Q هنوز نصب نشده، یک بار دستی طبق `DEPLOYMENT.md` گام ۱۰ ← روش ۳). سپس تنظیمات ← **تنظیمات سایت** را پر کنید.
-2. **بخش S (مراحل ۱۱۹ تا ۱۲۸):** لینک دمو، ویدیو، کارت‌های ویژگی دوبخشی، متن پویای پیش‌خرید، پشتیبانی و بخش اعتماد قابل تنظیم برای هر صفحه، اعداد فارسی.
-3. بخش‌های T و U و سپس نسخه ۱.۲ طبق `ROADMAP_V2.md`.
+1. **نصب روی سرور:** بسته `1.1.0-beta3` از GitHub Actions و نصب از تنظیمات ← به‌روزرسانی؛ سپس تکمیل محتوای جدید صفحات فرود (ویدیو، دمو، کارت‌ها، متن پیش‌خرید).
+2. **بخش T (مراحل ۱۲۹ تا ۱۳۶):** چیدمان جدید صفحه (پیش‌خرید پیش از پرسش‌ها) و جریان «فقط خبرم کن» با پیامک آمادگی.
+3. بخش U و سپس نسخه ۱.۲ طبق `ROADMAP_V2.md`.
 
 پیشنهادهای قبلی خارج از نقشه راه (وب‌هوک تحویل و لغو۱۱ SMS.ir، حذف/ناشناس‌سازی داده مخاطب، قابلیت‌های تحلیلی طبق `agentic_brain/ARCHITECTURE.md`) همچنان باز است.

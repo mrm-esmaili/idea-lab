@@ -49,7 +49,7 @@
 
     <div class="row row-cols-1 row-cols-sm-2 row-cols-xl-5 g-3 mb-3">
         @foreach ([
-            ['label' => 'بازدیدکننده یکتا', 'value' => number_format($s['unique_visitors']), 'hint' => number_format($s['page_views']) . ' بازدید — ' . number_format($s['cta_clicks']) . ' کلیک CTA'],
+            ['label' => 'بازدیدکننده یکتا', 'value' => number_format($s['unique_visitors']), 'hint' => number_format($s['page_views']) . ' بازدید — ' . number_format($s['cta_clicks']) . ' کلیک CTA — ' . number_format($s['demo_clicks']) . ' دمو — ' . number_format($s['video_plays']) . ' پخش ویدیو'],
             ['label' => 'سرنخ', 'value' => number_format($s['leads']), 'hint' => 'نرخ ثبت: ' . number_format($s['lead_rate'], 2) . '%'],
             ['label' => 'پیش‌خرید', 'value' => number_format($s['preorders']), 'hint' => null],
             ['label' => 'پرداخت موفق', 'value' => number_format($s['paid_count']), 'hint' => \App\Support\Money::formatRialAsToman($s['paid_rial'])],

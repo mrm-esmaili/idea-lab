@@ -94,14 +94,14 @@
     </p>
 
     <div class="amount">
-        {{ \App\Support\Money::formatRialAsToman($preorder->amount_rial) }}
+        {{ \App\Support\Format::faDigits(\App\Support\Money::formatRialAsToman($preorder->amount_rial)) }}
     </div>
 
     @if ($preorder->refundPolicy)
         <details class="terms">
             <summary>
                 شرایط بازپرداخت پذیرفته‌شده:
-                {{ $preorder->refundPolicy->summary() }}
+                {{ \App\Support\Format::faDigits($preorder->refundPolicy->summary()) }}
             </summary>
             <p>{!! nl2br(e($preorder->refundPolicy->terms)) !!}</p>
         </details>

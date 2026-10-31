@@ -30,10 +30,10 @@
 
                         <div class="row small muted">
                             <span>
-                                {{ \App\Support\Money::formatRialAsToman($preorder->amount_rial) }}
-                                — <span class="ltr">{{ \App\Support\Format::datetime($preorder->created_at, 'Y-m-d') }}</span>
+                                {{ \App\Support\Format::faDigits(\App\Support\Money::formatRialAsToman($preorder->amount_rial)) }}
+                                — <span class="ltr">{{ \App\Support\Format::faDigits(\App\Support\Format::datetime($preorder->created_at, 'Y-m-d')) }}</span>
                                 @if ($preorder->refundPolicy)
-                                    — {{ $preorder->refundPolicy->summary() }}
+                                    — {{ \App\Support\Format::faDigits($preorder->refundPolicy->summary()) }}
                                 @endif
                             </span>
 
@@ -49,7 +49,7 @@
                         @foreach ($preorder->refundRequests as $refundRequest)
                             <div class="small" style="margin-top: 8px">
                                 درخواست بازپرداخت
-                                ({{ \App\Support\Money::formatRialAsToman($refundRequest->requested_amount_rial) }}):
+                                ({{ \App\Support\Format::faDigits(\App\Support\Money::formatRialAsToman($refundRequest->requested_amount_rial)) }}):
                                 <strong>{{ \App\Support\Format::status('refund_request', $refundRequest->status) }}</strong>
                                 @if ($refundRequest->status === 'rejected' && $refundRequest->decision_note)
                                     <div class="muted">دلیل: {{ $refundRequest->decision_note }}</div>
@@ -68,9 +68,9 @@
                                 <form method="POST" action="{{ route('account.refund', $preorder->id) }}" style="margin-top: 8px">
                                     @csrf
                                     <p class="small muted">
-                                        مبلغ قابل بازپرداخت: {{ \App\Support\Money::formatRialAsToman($eligibility['max_rial']) }}
+                                        مبلغ قابل بازپرداخت: {{ \App\Support\Format::faDigits(\App\Support\Money::formatRialAsToman($eligibility['max_rial'])) }}
                                         @if ($eligibility['deadline'])
-                                            — مهلت درخواست تا <span class="ltr">{{ \App\Support\Format::datetime($eligibility['deadline'], 'Y-m-d') }}</span>
+                                            — مهلت درخواست تا <span class="ltr">{{ \App\Support\Format::faDigits(\App\Support\Format::datetime($eligibility['deadline'], 'Y-m-d')) }}</span>
                                         @endif
                                     </p>
                                     <div class="form-group">
@@ -122,7 +122,7 @@
             @if ($contact->marketing_sms_consent)
                 <span>
                     <span class="badge badge-success">فعال</span>
-                    <span class="small muted">از <span class="ltr">{{ \App\Support\Format::datetime($contact->marketing_consent_at, 'Y-m-d') }}</span></span>
+                    <span class="small muted">از <span class="ltr">{{ \App\Support\Format::faDigits(\App\Support\Format::datetime($contact->marketing_consent_at, 'Y-m-d')) }}</span></span>
                 </span>
                 <input type="hidden" name="marketing_sms_consent" value="0">
                 <button type="submit" class="button-secondary">لغو دریافت</button>

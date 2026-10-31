@@ -1,11 +1,19 @@
 {{-- پاورقی صفحات عمومی (مراحل ۱۱۵ و ۱۱۶): پیگیری سفارش، پشتیبانی، شرکت و نماد اعتماد --}}
+{{-- صفحه فرود پشتیبانی و شرکت را در بدنه خود نشان می‌دهد و این دو بخش را خاموش می‌کند --}}
+@props(['support' => true, 'company' => true])
+
 @php
+    $fa = fn ($value) => \App\Support\Format::faDigits($value);
+    $showCompany = (bool) $company;
     $site = app(\App\Services\SiteSettings::class);
+    $channels = $support ? $site->supportChannels() : [];
+    $helpText = $support ? $site->get('support')['help_text'] : null;
     $company = $site->get('company');
-    $channels = $site->supportChannels();
-    $helpText = $site->get('support')['help_text'];
-    $enamad = $site->enamad();
-    $logoUrl = $site->logoUrl();
+    $enamad = $showCompany ? $site->enamad() : null;
+    if (! $showCompany) {
+        $company = ['name' => null, 'website' => $company['website'], 'logo' => null, 'intro' => null];
+    }
+    $logoUrl = $showCompany ? $site->logoUrl() : null;
     $privacyUrl = config('app.privacy_url');
     $loggedIn = auth('contact')->check();
     // روی خود صفحه ورود، دکمه پیگیری تکراری است
@@ -55,9 +63,9 @@
                                 @foreach ($channels as $channel)
                                     <li>
                                         @if ($url = $channel->url())
-                                            <a href="{{ $url }}" @if (str_starts_with($url, 'http')) target="_blank" rel="noopener" @endif>{{ $channel->name() }}: <bdi dir="ltr">{{ $channel->display() }}</bdi></a>
+                                            <a href="{{ $url }}" @if (str_starts_with($url, 'http')) target="_blank" rel="noopener" @endif>{{ $channel->name() }}: <bdi dir="ltr">{{ $fa($channel->display()) }}</bdi></a>
                                         @else
-                                            <span class="sf-chip">{{ $channel->name() }}: <bdi dir="ltr">{{ $channel->display() }}</bdi></span>
+                                            <span class="sf-chip">{{ $channel->name() }}: <bdi dir="ltr">{{ $fa($channel->display()) }}</bdi></span>
                                         @endif
                                     </li>
                                 @endforeach
@@ -97,7 +105,7 @@
         @endif
 
         <div class="sf-bottom sf-muted">
-            <span>© {{ \App\Support\Jalali::format(now(), 'Y') }}{{ $company['name'] ? ' ' . $company['name'] : '' }}</span>
+            <span>© {{ $fa(\App\Support\Jalali::format(now(), 'Y')) }}{{ ($name = app(\App\Services\SiteSettings::class)->companyName()) ? ' ' . $name : '' }}</span>
             <nav aria-label="پیوندهای پاورقی">
                 @if ($company['website'])
                     <a href="{{ $company['website'] }}" target="_blank" rel="noopener">سایت اصلی</a>

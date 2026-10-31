@@ -238,7 +238,7 @@ class ContactOtpTest extends TestCase
         $this->get(route('account.dashboard'))
             ->assertOk()
             ->assertSee('باشگاه‌یار')
-            ->assertSee('200,000 تومان')
+            ->assertSee('۲۰۰٬۰۰۰ تومان')
             ->assertSee($myToken)
             ->assertDontSee('100,000 تومان');
     }

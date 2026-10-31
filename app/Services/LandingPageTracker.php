@@ -132,6 +132,8 @@ class LandingPageTracker
     ): void {
         $allowedEvents = [
             'cta_click',
+            'demo_click',
+            'video_play',
             'form_view',
             'preorder_submit',
             'payment_start',

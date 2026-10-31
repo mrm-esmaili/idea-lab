@@ -144,7 +144,7 @@ class PaymentFlowTest extends TestCase
             ->assertOk()
             ->assertSee('رسید پرداخت')
             ->assertSee('201')
-            ->assertSee('120,000 تومان');
+            ->assertSee('۱۲۰٬۰۰۰ تومان');
     }
 
     public function test_repeated_callback_is_idempotent(): void

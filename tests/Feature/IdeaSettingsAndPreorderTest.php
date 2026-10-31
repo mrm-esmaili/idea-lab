@@ -168,7 +168,7 @@ class IdeaSettingsAndPreorderTest extends TestCase
 
         $this->get('/l/clubyar')
             ->assertSee('id="preorder-form"', false)
-            ->assertSee('120,000 تومان')
+            ->assertSee('۱۲۰٬۰۰۰ تومان')
             ->assertSee('تا ۱۴ روز قابل بازپرداخت است.')
             ->assertSee('name="refund_policy_version" value="1"', false);
     }
@@ -244,8 +244,8 @@ class IdeaSettingsAndPreorderTest extends TestCase
 
         $this->get(route('preorders.checkout', $preorder->public_token))
             ->assertOk()
-            ->assertSee('120,000 تومان')
-            ->assertSee('قابل بازپرداخت تا 14 روز');
+            ->assertSee('۱۲۰٬۰۰۰ تومان')
+            ->assertSee('قابل بازپرداخت تا ۱۴ روز');
 
         $this->post(route('preorders.pay', $preorder->public_token))
             ->assertRedirect('https://sandbox.zarinpal.com/pg/StartPay/A0000TEST');

@@ -128,7 +128,12 @@
                                                 <span class="badge text-bg-secondary">غیرفعال</span>
                                             @endif
                                         </td>
-                                        <td>{{ number_format($s['unique_visitors']) }}</td>
+                                        <td>
+                                            {{ number_format($s['unique_visitors']) }}
+                                            @if ($s['demo_clicks'] || $s['video_plays'])
+                                                <div class="small text-body-secondary">{{ number_format($s['demo_clicks']) }} دمو، {{ number_format($s['video_plays']) }} پخش ویدیو</div>
+                                            @endif
+                                        </td>
                                         <td>
                                             {{ number_format($s['leads']) }}
                                             <div class="small text-body-secondary">{{ number_format($s['lead_rate'], 2) }}%</div>
@@ -139,7 +144,7 @@
                                             <a href="{{ route('landing-pages.edit', $landingPage) }}" class="btn btn-sm btn-outline-secondary" title="ویرایش" aria-label="ویرایش {{ $landingPage->name }}">
                                                 <i class="bi bi-pencil"></i>
                                             </a>
-                                            <a href="{{ route('landing-pages.show', $landingPage->slug) }}" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-outline-primary" title="مشاهده" aria-label="مشاهده {{ $landingPage->name }}">
+                                            <a href="{{ $landingPage->is_active ? route('landing-pages.show', $landingPage->slug) : route('landing-pages.preview', $landingPage) }}" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-outline-primary" title="{{ $landingPage->is_active ? 'مشاهده' : 'پیش‌نمایش' }}" aria-label="{{ $landingPage->is_active ? 'مشاهده' : 'پیش‌نمایش' }} {{ $landingPage->name }}">
                                                 <i class="bi bi-box-arrow-up-left"></i>
                                             </a>
                                             <form
