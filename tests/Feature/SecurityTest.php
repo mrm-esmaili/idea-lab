@@ -107,6 +107,16 @@ class SecurityTest extends TestCase
         $this->post(route('account.login.send'), ['mobile' => 'invalid'])->assertSessionHasErrors();
     }
 
+    /**
+     * آپاچی .htaccess پوشه‌های بالاتر از document root را هم اعمال می‌کند؛ بدون
+     * اجازه صریح در public، «Require all denied» ریشه کل سایت را 403 می‌کرد.
+     */
+    public function test_public_htaccess_overrides_root_deny(): void
+    {
+        $this->assertStringContainsString('Require all denied', file_get_contents(base_path('.htaccess')));
+        $this->assertMatchesRegularExpression('/^Require all granted$/m', file_get_contents(public_path('.htaccess')));
+    }
+
     public function test_security_headers_are_sent(): void
     {
         $this->get(route('login'))

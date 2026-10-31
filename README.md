@@ -13,6 +13,7 @@
 | [`ADMIN_GUIDE.md`](ADMIN_GUIDE.md) | راهنمای مدیر: نقش‌ها و کار روزمره با هر بخش پنل |
 | [`DEPLOYMENT.md`](DEPLOYMENT.md) | استقرار روی cPanel بدون SSH، متغیرهای محیط، به‌روزرسانی و بازیابی |
 | [`OPERATIONS_CHECKLIST.md`](OPERATIONS_CHECKLIST.md) | چک‌لیست پیش از راه‌اندازی، روزانه، هفتگی و ماهانه |
+| [`ROADMAP_V2.md`](ROADMAP_V2.md) | نقشه راه نسخه ۱.۱ (به‌روزرسانی از پنل، صفحه فرود اعتمادساز، خبرم کن) و ۱.۲ (پرسش‌نامه) |
 | [`PROJECT_STATUS.md`](PROJECT_STATUS.md) | وضعیت پروژه، قابلیت‌های تکمیل‌شده و محدودیت‌های باقی‌مانده |
 | [`agentic_brain/ARCHITECTURE.md`](agentic_brain/ARCHITECTURE.md) | معماری، قراردادهای ثابت و مرز قابلیت‌های تحلیلی آینده |
 | [`agentic_brain/GAP_ANALYSIS.md`](agentic_brain/GAP_ANALYSIS.md) | گزارش فنی هر گام نقشه راه |

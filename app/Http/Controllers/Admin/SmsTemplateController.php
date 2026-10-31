@@ -24,6 +24,7 @@ class SmsTemplateController extends Controller
         'amount' => '1,200,000',
         'ref_id' => '201453',
         'reference' => '7781-2290',
+        'link' => 'https://il.example.ir/account/login',
     ];
 
     public function index()
@@ -60,7 +61,10 @@ class SmsTemplateController extends Controller
         ];
 
         foreach (array_keys($template->parameters) as $variable) {
-            $rules["parameters.{$variable}"] = ['required', 'string', 'max:50', 'regex:/^[A-Za-z0-9_]+$/'];
+            $rules["parameters.{$variable}"] = [
+                in_array($variable, SmsTemplate::OPTIONAL_VARIABLES, true) ? 'nullable' : 'required',
+                'string', 'max:50', 'regex:/^[A-Za-z0-9_]+$/',
+            ];
         }
 
         $data = $request->validate($rules, [
@@ -76,7 +80,7 @@ class SmsTemplateController extends Controller
             'enabled' => $template->category === 'otp' ? true : $request->boolean('enabled'),
             'parameters' => array_combine(
                 array_keys($template->parameters),
-                array_map(fn ($variable) => $data['parameters'][$variable], array_keys($template->parameters))
+                array_map(fn ($variable) => (string) ($data['parameters'][$variable] ?? ''), array_keys($template->parameters))
             ),
         ]);
 

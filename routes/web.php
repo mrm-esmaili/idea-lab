@@ -31,7 +31,9 @@ use App\Http\Controllers\Admin\SearchController;
 use App\Http\Controllers\Admin\SmsBroadcastController;
 use App\Http\Controllers\Admin\SmsMessageController;
 use App\Http\Controllers\Admin\SmsTemplateController;
+use App\Http\Controllers\Admin\SiteSettingsController;
 use App\Http\Controllers\Admin\SystemStatusController;
+use App\Http\Controllers\Admin\UpdateController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\ZarinpalPaymentController;
 
@@ -312,6 +314,19 @@ Route::middleware(['auth:web', 'admin'])->group(function () {
         Route::get('/admin/system', SystemStatusController::class)->name('admin.system');
         Route::post('/admin/system/migrate', [SystemStatusController::class, 'migrate'])->middleware('throttle:3,1,admin.system.migrate')->name('admin.system.migrate');
         Route::post('/admin/system/optimize', [SystemStatusController::class, 'optimize'])->middleware('throttle:5,1,admin.system.optimize')->name('admin.system.optimize');
+
+        Route::get('/admin/settings/site', [SiteSettingsController::class, 'edit'])->name('admin.settings.site');
+        Route::put('/admin/settings/site', [SiteSettingsController::class, 'update'])->name('admin.settings.site.update');
+
+        // به‌روزرسانی از پنل؛ در حالت تعمیر هم در دسترس (bootstrap/app.php). نام مسیرها ثابت بماند.
+        Route::get('/admin/updates', [UpdateController::class, 'index'])->name('admin.updates.index');
+        Route::post('/admin/updates/packages', [UpdateController::class, 'upload'])->middleware('throttle:10,10,admin.updates.upload')->name('admin.updates.upload');
+        Route::get('/admin/updates/packages/{package}', [UpdateController::class, 'review'])->where('package', '[0-9A-Za-z][0-9A-Za-z._-]*\.zip')->name('admin.updates.review');
+        Route::post('/admin/updates/packages/{package}/apply', [UpdateController::class, 'apply'])->where('package', '[0-9A-Za-z][0-9A-Za-z._-]*\.zip')->middleware('throttle:5,10,admin.updates.apply')->name('admin.updates.apply');
+        Route::delete('/admin/updates/packages/{package}', [UpdateController::class, 'destroyPackage'])->where('package', '[0-9A-Za-z][0-9A-Za-z._-]*\.zip')->name('admin.updates.packages.destroy');
+        Route::get('/admin/updates/{update}', [UpdateController::class, 'show'])->whereNumber('update')->name('admin.updates.show');
+        Route::post('/admin/updates/{update}/finish', [UpdateController::class, 'finish'])->whereNumber('update')->middleware('throttle:10,10,admin.updates.finish')->name('admin.updates.finish');
+        Route::post('/admin/updates/{update}/rollback', [UpdateController::class, 'rollback'])->whereNumber('update')->middleware('throttle:5,10,admin.updates.rollback')->name('admin.updates.rollback');
 
         Route::get('/admin/backups', [BackupController::class, 'index'])->name('admin.backups.index');
         Route::post('/admin/backups', [BackupController::class, 'store'])->middleware('throttle:3,10,admin.backups.store')->name('admin.backups.store');

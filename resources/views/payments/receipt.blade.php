@@ -100,9 +100,10 @@
         </dl>
 
         <p class="muted">
-            لطفاً کد پیگیری را برای پیگیری‌های بعدی نگه دارید.
-            سفارش‌های خود را با ورود به <a href="{{ route('account.login') }}">حساب کاربری</a> و همین شماره موبایل هم می‌بینید.
+            لطفاً کد پیگیری را نگه دارید. وضعیت سفارش، رسید و درخواست بازپرداخت را هر زمان با همین شماره موبایل از «پیگیری سفارش» ببینید.
         </p>
+
+        <a class="button" href="{{ route('account.login') }}">پیگیری سفارش و درخواست بازپرداخت</a>
 
     @elseif ($payment?->status === \App\Models\Payment::STATUS_PENDING && $payment->authority)
         <h1>در حال بررسی پرداخت</h1>
@@ -130,5 +131,7 @@
         <a class="button" href="{{ route('preorders.checkout', $preorder->public_token) }}">تلاش دوباره برای پرداخت</a>
     @endif
 </div>
+
+<x-site-footer />
 </body>
 </html>

@@ -4,10 +4,9 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Services\AuditLogger;
+use App\Services\CacheRebuilder;
 use App\Services\SystemStatus;
-use Illuminate\Container\Container;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Facade;
 use Illuminate\Support\Facades\Artisan;
 use Throwable;
 
@@ -49,24 +48,9 @@ class SystemStatusController extends Controller
     /**
      * ساخت دوباره کش تنظیمات، مسیرها و نماها (پس از تغییر .env یا به‌روزرسانی کد).
      */
-    public function optimize(Request $request, AuditLogger $audit)
+    public function optimize(Request $request, AuditLogger $audit, CacheRebuilder $cache)
     {
-        $app = app();
-
-        try {
-            Artisan::call('optimize:clear');
-
-            if ($request->boolean('cache')) {
-                Artisan::call('optimize');
-            }
-        } finally {
-            // config:cache برای خواندن تنظیمات یک نمونه تازه از برنامه می‌سازد و
-            // آن را نمونه سراسری و ریشه Facadeها می‌کند؛ بقیه همین درخواست
-            // (نشست، پیام موفقیت، ممیزی) باید روی نمونه اصلی اجرا شود
-            Container::setInstance($app);
-            Facade::clearResolvedInstances();
-            Facade::setFacadeApplication($app);
-        }
+        $cache->rebuild($request->boolean('cache'));
 
         $audit->log($request->user(), 'system.optimized', ['cache' => $request->boolean('cache')]);
 

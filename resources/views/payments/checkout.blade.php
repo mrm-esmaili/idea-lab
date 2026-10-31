@@ -118,5 +118,7 @@
         </button>
     </form>
 </div>
+
+<x-site-footer />
 </body>
 </html>

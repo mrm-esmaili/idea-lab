@@ -22,6 +22,15 @@ class Format
         return Jalali::format($value, str_replace('-', '/', $format));
     }
 
+    /**
+     * متن لاتین (نسخه، نام فایل) داخل جمله فارسی، بدون جابه‌جا شدن اجزایش؛
+     * برای جاهایی مثل عنوان صفحه یا پیام که HTML (bdi) پذیرفته نمی‌شود.
+     */
+    public static function ltr(string $value): string
+    {
+        return "\u{2066}{$value}\u{2069}";
+    }
+
     public static function date(?DateTimeInterface $value): string
     {
         return self::datetime($value, 'Y-m-d');

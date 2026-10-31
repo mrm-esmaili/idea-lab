@@ -6,6 +6,12 @@ use Illuminate\Database\Eloquent\Model;
 
 class SmsTemplate extends Model
 {
+    /**
+     * متغیرهایی که فقط وقتی نام پارامتر دارند ارسال می‌شوند؛ قالب‌های موجود
+     * SMS.ir بدون این پارامترها همچنان کار می‌کنند.
+     */
+    public const OPTIONAL_VARIABLES = ['link'];
+
     protected $fillable = [
         'key',
         'name',
@@ -39,6 +45,10 @@ class SmsTemplate extends Model
         $text = (string) $this->body;
 
         foreach ($this->parameters as $variable => $name) {
+            if ($name === '' || $name === null) {
+                continue;
+            }
+
             $text = str_replace('#' . $name . '#', (string) ($values[$variable] ?? ''), $text);
         }
 

@@ -1,3 +1,7 @@
+# .htaccess ریشه پروژه همه درخواست‌ها را رد می‌کند و آپاچی/لایت‌اسپید آن را برای
+# زیرپوشه‌ها (از جمله همین پوشه) هم اعمال می‌کند؛ اینجا دسترسی دوباره باز می‌شود.
+Require all granted
+
 <IfModule mod_rewrite.c>
     <IfModule mod_negotiation.c>
         Options -MultiViews -Indexes

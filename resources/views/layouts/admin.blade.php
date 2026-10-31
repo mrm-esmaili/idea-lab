@@ -119,7 +119,7 @@
     </main>
 
     <footer class="app-footer small text-body-secondary">
-        ایده‌لب — سامانه اعتبارسنجی ایده
+        ایده‌لب — سامانه اعتبارسنجی ایده — نسخه <bdi>{{ \App\Support\AppVersion::current() }}</bdi>
     </footer>
 </div>
 

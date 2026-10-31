@@ -6,14 +6,14 @@
     <meta name="robots" content="noindex, nofollow">
     <meta name="referrer" content="same-origin">
 
-    <title>@yield('title') | ایده‌لب</title>
+    <title>@yield('title') | {{ app(\App\Services\SiteSettings::class)->companyName() ?? 'ایده‌لب' }}</title>
 
     <link rel="stylesheet" href="{{ asset('css/public.css') }}">
 </head>
 <body>
     <header class="topbar">
         <div class="container">
-            <a href="{{ auth('contact')->check() ? route('account.dashboard') : route('account.login') }}" class="brand">حساب کاربری</a>
+            <a href="{{ auth('contact')->check() ? route('account.dashboard') : route('account.login') }}" class="brand">{{ auth('contact')->check() ? 'سفارش‌های من' : 'پیگیری سفارش و ورود' }}</a>
 
             @auth('contact')
                 <form method="POST" action="{{ route('account.logout') }}">
@@ -38,7 +38,7 @@
         </div>
     </main>
 
-    <footer class="footer">ایده‌لب</footer>
+    <x-site-footer />
 
     @stack('scripts')
 </body>
