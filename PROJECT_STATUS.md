@@ -6,9 +6,9 @@
 |---|---|
 | آخرین به‌روزرسانی | ۱۴۰۵/۰۸/۰۹ |
 | شاخه | `claude/new-session-ebbvr0` |
-| نسخه | `1.1.0-beta1` (فایل `VERSION`) |
-| آخرین قابلیت تکمیل‌شده | نسخه ۱.۱، بخش Q — سامانه به‌روزرسانی از پنل (مراحل ۱۰۱ تا ۱۱۰؛ نقشه راه در `ROADMAP_V2.md`) |
-| تست‌ها | ۱۸۰ تست واحد/ویژگی روی MariaDB 10.11 و MySQL 8.0 (strict) و SQLite؛ آزمون عملیاتی مرورگر ۳۹/۳۹ روی MariaDB و MySQL 8؛ تمرین کامل به‌روزرسانی ۱.۰ ← ۱.۱ روی کپی production |
+| نسخه | `1.1.0-beta2` (فایل `VERSION`) |
+| آخرین قابلیت تکمیل‌شده | نسخه ۱.۱، بخش R — تنظیمات سایت و پاورقی اعتمادساز (مراحل ۱۱۱ تا ۱۱۸؛ نقشه راه در `ROADMAP_V2.md`) |
+| تست‌ها | ۱۸۶ تست واحد/ویژگی روی MariaDB 10.11 و MySQL 8.0 (strict) و SQLite؛ آزمون عملیاتی مرورگر ۳۹/۳۹ روی MariaDB و MySQL 8؛ تمرین کامل به‌روزرسانی ۱.۰ ← ۱.۱ روی کپی production |
 | محیط هدف | MariaDB 11.4، PHP 8.4، cPanel بدون SSH و npm |
 
 ## قابلیت‌های تکمیل‌شده
@@ -33,27 +33,25 @@
 | N | ۸۵ تا ۸۹ | حذف ستون قدیمی، RESTRICT برای داده تجاری، ایندکس‌های گزارش، اجرای کامل روی MySQL 8، صفحه وضعیت سیستم، seeder امن، سند معماری و مرز AI | `843aff5` |
 | O | ۹۰ تا ۹۶ | سرآیندهای امنیتی، تست خودکار مجوز/CSRF همه مسیرها، ضدربات فرم‌های عمومی، لاگ امن، پشتیبان و بازیابی آزموده، نصب‌کننده وب و راهنمای استقرار cPanel، بسته نصب GitHub Actions | `2a81e46` |
 | P | ۹۷ تا ۱۰۰ | آزمون عملیاتی انتها‌به‌انتها در مرورگر با زرین‌پال و SMS.ir شبیه‌سازی‌شده، رفع باگ شمارنده مشترک محدودیت نرخ، راهنمای مدیر، چک‌لیست بهره‌برداری، مرجع متغیرهای محیط | `e409979` |
-| Q | ۱۰۱ تا ۱۱۰ | نسخه‌بندی (`VERSION`)، بسته با manifest و SHA-256 هر فایل، به‌روزرسانی از پنل با تأیید رمز، پشتیبان خودکار، حالت تعمیر، بازگشت خودکار و دستی، مسیر جایگزین Cron/File Manager، تاریخچه به‌روزرسانی | (این کامیت) |
+| Q | ۱۰۱ تا ۱۱۰ | نسخه‌بندی (`VERSION`)، بسته با manifest و SHA-256 هر فایل، به‌روزرسانی از پنل با تأیید رمز، پشتیبان خودکار، حالت تعمیر، بازگشت خودکار و دستی، مسیر جایگزین Cron/File Manager، تاریخچه به‌روزرسانی | `37b9eb5` |
+| R | ۱۱۱ تا ۱۱۸ | صفحه «تنظیمات سایت» (شرکت، لوگو، اینماد، راه‌های پشتیبانی)، پاورقی یکسان صفحات فرود، حساب و پرداخت بدون «سیستم اعتبارسنجی»، دکمه برجسته «پیگیری سفارش و ورود»، توضیح پیگیری و بازپرداخت در ورود و حساب و رسید، لینک پیگیری اختیاری در پیامک پرداخت | (این کامیت) |
 
-## آخرین قابلیت: بخش Q — سامانه به‌روزرسانی
+## آخرین قابلیت: بخش R — تنظیمات سایت و پاورقی اعتمادساز
 
 **جدید**
-- `VERSION`، `app/Support/AppVersion.php`، `config/updates.php`
-- `app/Services/Updates/{ReleaseBuilder,UpdatePackage,UpdateInstaller,PackagePaths,Htaccess,UpdateException}.php`، `app/Services/CacheRebuilder.php`
-- `app/Models/SystemUpdate.php`، `database/migrations/2026_11_08_100000_create_system_updates_table.php`
-- `app/Http/Controllers/Admin/UpdateController.php`، `resources/views/admin/updates/{index,review,show}.blade.php`
-- `tests/Feature/UpdateSystemTest.php` (۹ آزمون)
+- `app/Services/SiteSettings.php`، `app/Models/SiteSetting.php`، `app/Support/ContactChannel.php`
+- `app/Http/Controllers/Admin/SiteSettingsController.php`، `resources/views/admin/settings/site.blade.php`
+- `resources/views/components/site-footer.blade.php`
+- `database/migrations/2026_11_10_100000_create_site_settings_table.php`، `2026_11_10_100100_add_link_to_payment_sms_template.php`
+- `tests/Feature/SiteSettingsTest.php`
 
 **تغییریافته**
-`routes/console.php` (دستورهای `release:build`، `system:update`، `system:finish-update` و `system:rollback`)، `routes/web.php`، `bootstrap/app.php` (مسیرهای به‌روزرسانی در حالت تعمیر)، `config/admin_menu.php`، `config/backup.php`، `app/Services/Backup/DatabaseBackup.php` (پوشه قابل تنظیم)، `app/Services/SystemStatus.php` (نسخه، افزونه zip، به‌روزرسانی نیمه‌کاره)، `app/Http/Controllers/Admin/SystemStatusController.php`، `app/Support/Format.php` (`ltr`)، `resources/views/layouts/admin.blade.php` (نسخه در پاورقی)، `.github/workflows/release.yml` (ورودی نسخه و بسته سبک، چاپ SHA-256)، `.env.example`، `DEPLOYMENT.md` (گام ۱ و ۱۰)، `ADMIN_GUIDE.md`، `OPERATIONS_CHECKLIST.md`، `agentic_brain/ARCHITECTURE.md`، `ROADMAP_V2.md`
+`resources/views/landing-pages/show.blade.php` (پاورقی جدید و حذف «ساخته‌شده با سیستم اعتبارسنجی ایده»)، `resources/views/layouts/public.blade.php` (نوار بالا «پیگیری سفارش و ورود» و عنوان با نام شرکت)، `resources/views/account/{login,dashboard}.blade.php`، `resources/views/payments/{checkout,receipt,result}.blade.php`، `app/Models/SmsTemplate.php` و `app/Services/Sms/SmsService.php` و `app/Http/Controllers/Admin/SmsTemplateController.php` و `resources/views/admin/sms/edit.blade.php` (متغیر اختیاری)، `app/Services/Notifications/CustomerNotifier.php`، `config/{admin_menu,statuses}.php`، `app/Providers/AppServiceProvider.php`، `public/css/public.css`، `tests/Feature/SmsNotificationTest.php`، مستندات
 
-**تمرین روی کپی production (MariaDB، `APP_ENV=production`، کش فعال)**
-1. نسخه ۱.۰ (شاخه main) با داده نمونه ← Extract دستی بسته ۱.۱.0-beta1 ← `system:finish-update`: migration جدید اجرا شد، داده دست نخورد و نسخه ثبت شد.
-2. از پنل در مرورگر: بارگذاری بسته سبک beta2 با یک migration افزایشی، بررسی، رمز، نصب و تکمیل خودکار. ستون جدید ساخته شد، کش دوباره ساخته شد، حالت تعمیر خاموش شد و `/up` پاسخ 200 داد.
-3. **دو باگ در همین تمرین پیدا و رفع شد:**
-   - در نصب نخست، جدول تاریخچه پیش از migration خوانده می‌شد.
-   - بسته سبک پس از بسته کامل کل `vendor` را «حذف‌شده» حساب می‌کرد و پاک می‌کرد.
-   هر دو آزمون بازگشت دارند. مسیر نجات مستند (Extract فایل `rollback-<شماره>.zip` و سپس `system:rollback`) روی همان سرور خراب‌شده آزموده شد و سرور را کامل برگرداند.
+**نکات طراحی**
+- لینک هر راه تماس از نوع و مقدار ساخته می‌شود و هیچ نشانی دلخواهی ذخیره نمی‌شود. نماد اینماد هم از شناسه و کد عددی/حرفی ساخته می‌شود و HTML دلخواه در صفحه عمومی درج نمی‌شود.
+- اگر جدول تنظیمات هنوز ساخته نشده باشد (فاصله میان Extract و migrate)، صفحات عمومی با مقادیر پیش‌فرض کار می‌کنند.
+- پارامتر `LINK` پیامک پرداخت به‌طور پیش‌فرض خالی است و ارسال نمی‌شود؛ قالب فعال فعلی در SMS.ir بدون تغییر کار می‌کند.
 
 ## اصلاح پس از استقرار: 403 روی کل سایت
 
@@ -95,8 +93,8 @@
 
 ## قدم بعدی
 
-1. **نصب بخش Q روی سرور (یک بار، دستی):** ساخت بسته `1.1.0-beta1` در GitHub Actions، سپس `DEPLOYMENT.md` گام ۱۰ ← روش ۳ (Extract در File Manager و `system:finish-update` یا دکمه‌های وضعیت سیستم). از آن به بعد، به‌روزرسانی از پنل انجام می‌شود.
-2. **بخش R (مراحل ۱۱۱ تا ۱۱۸):** تنظیمات سایت، فوتر اعتمادساز (شرکت ایده‌پردازان، اینماد، راه‌های پشتیبانی، «پیگیری سفارش و ورود»).
-3. بخش‌های S تا U و سپس نسخه ۱.۲ طبق `ROADMAP_V2.md`.
+1. **نصب روی سرور:** ساخت بسته `1.1.0-beta2` در GitHub Actions و نصب از تنظیمات ← به‌روزرسانی (اگر بخش Q هنوز نصب نشده، یک بار دستی طبق `DEPLOYMENT.md` گام ۱۰ ← روش ۳). سپس تنظیمات ← **تنظیمات سایت** را پر کنید.
+2. **بخش S (مراحل ۱۱۹ تا ۱۲۸):** لینک دمو، ویدیو، کارت‌های ویژگی دوبخشی، متن پویای پیش‌خرید، پشتیبانی و بخش اعتماد قابل تنظیم برای هر صفحه، اعداد فارسی.
+3. بخش‌های T و U و سپس نسخه ۱.۲ طبق `ROADMAP_V2.md`.
 
 پیشنهادهای قبلی خارج از نقشه راه (وب‌هوک تحویل و لغو۱۱ SMS.ir، حذف/ناشناس‌سازی داده مخاطب، قابلیت‌های تحلیلی طبق `agentic_brain/ARCHITECTURE.md`) همچنان باز است.

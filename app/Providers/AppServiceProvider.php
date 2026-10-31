@@ -22,6 +22,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
+        // تنظیمات سایت یک بار در هر درخواست خوانده می‌شود
+        $this->app->singleton(\App\Services\SiteSettings::class);
+
         $this->app->bind(SmsProvider::class, function () {
             return match (config('services.sms.driver')) {
                 'smsir' => new SmsIrProvider(

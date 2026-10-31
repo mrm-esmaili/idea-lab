@@ -86,6 +86,11 @@ class SmsService
         $logged = [];
 
         foreach ($template->parameters as $variable => $parameterName) {
+            // متغیر اختیاری بدون نام پارامتر در قالب SMS.ir نیست
+            if ($parameterName === '' || $parameterName === null) {
+                continue;
+            }
+
             $value = (string) ($values[$variable] ?? '');
             $parameters[$parameterName] = $value;
             $logged[$parameterName] = in_array($variable, $secret, true) ? '***' : $value;

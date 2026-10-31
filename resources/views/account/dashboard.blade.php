@@ -8,6 +8,13 @@
     <section class="card">
         <h2>سفارش‌های پیش‌خرید</h2>
 
+        @if ($preorders->isNotEmpty())
+            <p class="muted small">
+                وضعیت هر سفارش و رسید پرداخت را اینجا می‌بینید. برای بازپرداخت، دکمه «درخواست بازپرداخت» زیر همان سفارش را بزنید؛
+                نتیجه بررسی با پیامک اطلاع داده می‌شود و همین‌جا هم نمایش داده می‌شود.
+            </p>
+        @endif
+
         @if ($preorders->isEmpty())
             <p class="muted" style="margin: 0">هنوز سفارشی ثبت نکرده‌اید.</p>
         @else
@@ -57,7 +64,7 @@
 
                         @if ($eligibility['eligible'])
                             <details style="margin-top: 8px">
-                                <summary class="small" style="cursor: pointer">درخواست بازپرداخت</summary>
+                                <summary class="button button-secondary small" style="display: inline-block; padding: 6px 16px">درخواست بازپرداخت</summary>
                                 <form method="POST" action="{{ route('account.refund', $preorder->id) }}" style="margin-top: 8px">
                                     @csrf
                                     <p class="small muted">

@@ -1,11 +1,19 @@
 @extends('layouts.public')
 
-@section('title', 'ورود به حساب')
+@section('title', 'پیگیری سفارش و ورود')
 
 @section('content')
     <div class="card" style="max-width: 440px; margin-inline: auto">
-        <h1>ورود یا ثبت‌نام</h1>
-        <p class="muted">شماره موبایل خود را وارد کنید تا کد ورود برایتان پیامک شود.</p>
+        <h1>پیگیری سفارش و ورود</h1>
+        <p class="muted">
+            با همان شماره موبایلی که پیش‌خرید یا ثبت‌نام کرده‌اید وارد شوید. کد ورود برایتان پیامک می‌شود.
+        </p>
+
+        <ul class="small" style="padding-inline-start: 20px">
+            <li>دیدن وضعیت پیش‌خرید و رسید پرداخت</li>
+            <li>ثبت و پیگیری درخواست بازپرداخت</li>
+            <li>مدیریت پیامک‌های اطلاع‌رسانی</li>
+        </ul>
 
         <form method="POST" action="{{ route('account.login.send') }}">
             @csrf

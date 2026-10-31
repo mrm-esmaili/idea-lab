@@ -192,6 +192,13 @@ return [
                 'active' => ['admin.backups.*'],
             ],
             [
+                'label' => 'تنظیمات سایت',
+                'icon' => 'bi-shop-window',
+                'route' => 'admin.settings.site',
+                'permission' => 'settings.manage',
+                'active' => ['admin.settings.site*'],
+            ],
+            [
                 'label' => 'به‌روزرسانی',
                 'icon' => 'bi-cloud-arrow-up',
                 'route' => 'admin.updates.index',

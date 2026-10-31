@@ -113,6 +113,26 @@ class SmsNotificationTest extends TestCase
         return User::factory()->create(['role' => $role]);
     }
 
+    /**
+     * مرحله ۱۱۷: لینک پیگیری فقط وقتی ارسال می‌شود که مدیر نام پارامتر آن را
+     * وارد کرده باشد؛ قالب‌های فعلی SMS.ir بدون آن تغییری نمی‌کنند.
+     */
+    public function test_payment_sms_link_is_optional(): void
+    {
+        $this->enable('payment_paid');
+        $template = SmsTemplate::where('key', 'payment_paid')->sole();
+        $this->assertSame('', $template->parameters['link']);
+
+        $this->actingAs($this->admin(), 'web')
+            ->put(route('admin.sms.templates.update', $template), ['enabled' => '1', 'provider_template_id' => 100, 'parameters' => ['link' => 'LINK'] + $template->parameters])
+            ->assertSessionHasNoErrors();
+
+        app(\App\Services\Notifications\CustomerNotifier::class)->paymentPaid($this->paidPreorder()->payments()->sole());
+        $this->dispatch();
+
+        $this->assertSame(route('account.login'), SmsMessage::sole()->parameters['LINK']);
+    }
+
     public function test_payment_success_notifies_once_after_server_verification(): void
     {
         $this->enable('payment_paid');

@@ -40,6 +40,7 @@ class CustomerNotifier
         $this->toCustomer($preorder, 'payment_paid', "payment.paid:{$payment->id}", [
             'amount' => $this->toman($payment->amount_rial),
             'ref_id' => (string) $payment->ref_id,
+            'link' => route('account.login'),
         ]);
     }
 

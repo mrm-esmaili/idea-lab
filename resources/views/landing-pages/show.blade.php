@@ -199,10 +199,6 @@
             font-size: 14px;
         }
 
-        .footer { padding: 24px 0; text-align: center; color: var(--muted); font-size: 13px; }
-
-        .footer a { color: inherit; }
-
         @media (prefers-reduced-motion: no-preference) {
             html { scroll-behavior: smooth; }
         }
@@ -444,15 +440,7 @@
         @endif
     </main>
 
-    <footer class="footer">
-        <div class="container">
-            ساخته‌شده با سیستم اعتبارسنجی ایده
-            — <a href="{{ route('account.login') }}">ورود به حساب کاربری</a>
-            @if ($privacyUrl)
-                — <a href="{{ $privacyUrl }}" target="_blank" rel="noopener">حریم خصوصی</a>
-            @endif
-        </div>
-    </footer>
+    <x-site-footer />
 
     <script>
     document.addEventListener('DOMContentLoaded', function () {

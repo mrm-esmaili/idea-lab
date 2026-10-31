@@ -61,11 +61,14 @@
                             نام پارامتر برای «{{ config("statuses.sms_variable.{$variable}", $variable) }}»
                         </label>
                         <input
-                            id="param-{{ $variable }}" type="text" name="parameters[{{ $variable }}]" maxlength="50" required
+                            id="param-{{ $variable }}" type="text" name="parameters[{{ $variable }}]" maxlength="50" @required(! in_array($variable, \App\Models\SmsTemplate::OPTIONAL_VARIABLES, true))
                             value="{{ old("parameters.{$variable}", $name) }}"
                             @class(['form-control', 'ltr', 'is-invalid' => $errors->has("parameters.{$variable}")])
                         >
                         @error("parameters.{$variable}")<div class="invalid-feedback">{{ $message }}</div>@enderror
+                        @if (in_array($variable, \App\Models\SmsTemplate::OPTIONAL_VARIABLES, true))
+                            <div class="form-text">اختیاری؛ فقط اگر قالب SMS.ir این متغیر را دارد (مثلاً <span class="ltr">#LINK#</span> ← <span class="ltr">LINK</span>). خالی یعنی ارسال نمی‌شود.</div>
+                        @endif
                     </div>
                 @endforeach
             </div>

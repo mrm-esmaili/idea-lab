@@ -31,6 +31,7 @@ use App\Http\Controllers\Admin\SearchController;
 use App\Http\Controllers\Admin\SmsBroadcastController;
 use App\Http\Controllers\Admin\SmsMessageController;
 use App\Http\Controllers\Admin\SmsTemplateController;
+use App\Http\Controllers\Admin\SiteSettingsController;
 use App\Http\Controllers\Admin\SystemStatusController;
 use App\Http\Controllers\Admin\UpdateController;
 use App\Http\Controllers\Admin\UserController;
@@ -313,6 +314,9 @@ Route::middleware(['auth:web', 'admin'])->group(function () {
         Route::get('/admin/system', SystemStatusController::class)->name('admin.system');
         Route::post('/admin/system/migrate', [SystemStatusController::class, 'migrate'])->middleware('throttle:3,1,admin.system.migrate')->name('admin.system.migrate');
         Route::post('/admin/system/optimize', [SystemStatusController::class, 'optimize'])->middleware('throttle:5,1,admin.system.optimize')->name('admin.system.optimize');
+
+        Route::get('/admin/settings/site', [SiteSettingsController::class, 'edit'])->name('admin.settings.site');
+        Route::put('/admin/settings/site', [SiteSettingsController::class, 'update'])->name('admin.settings.site.update');
 
         // به‌روزرسانی از پنل؛ در حالت تعمیر هم در دسترس (bootstrap/app.php). نام مسیرها ثابت بماند.
         Route::get('/admin/updates', [UpdateController::class, 'index'])->name('admin.updates.index');
