@@ -73,11 +73,11 @@
                         <input
                             id="cta_text" type="text" name="cta_text" maxlength="255"
                             value="{{ old('cta_text', $landingPage->cta_text) }}"
-                            placeholder="ثبت‌نام در لیست انتظار"
+                            placeholder="پیش‌خرید با تخفیف"
                             @class(['form-control', 'is-invalid' => $errors->has('cta_text')])
                         >
                         @error('cta_text')<div class="invalid-feedback">{{ $message }}</div>@enderror
-                        <div class="form-text">خالی بماند تا دکمه نمایش داده نشود.</div>
+                        <div class="form-text">دکمه اصلی به پیش‌خرید (و اگر پیش‌خرید بسته باشد به «خبرم کن») می‌رود. خالی = «پیش‌خرید» یا «خبرم کن».</div>
                     </div>
                 </div>
             </div>
@@ -240,7 +240,7 @@
                         id="show_lead_form" name="show_lead_form" value="1"
                         @checked(old('show_lead_form', $content['show_lead_form']))
                     >
-                    <label class="form-check-label" for="show_lead_form">فرم ثبت علاقه‌مندی</label>
+                    <label class="form-check-label" for="show_lead_form">فرم «وقتی آماده شد خبرم کن»</label>
                 </div>
 
                 <input type="hidden" name="show_preorder_form" value="0">

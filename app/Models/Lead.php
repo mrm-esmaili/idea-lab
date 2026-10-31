@@ -7,6 +7,16 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Lead extends Model
 {
+    public const INTENT_INTEREST = 'interest';
+
+    /** «وقتی آماده شد خبرم کن» (مرحله ۱۳۰) */
+    public const INTENT_NOTIFY = 'notify_when_ready';
+
+    public const INTENTS = [
+        self::INTENT_INTEREST => 'ثبت علاقه',
+        self::INTENT_NOTIFY => 'خبرم کن',
+    ];
+
     protected $fillable = [
         'landing_page_id',
         'visitor_id',
@@ -15,6 +25,7 @@ class Lead extends Model
         'phone',
         'email',
         'status',
+        'intent',
         'source',
         'medium',
         'campaign',
@@ -29,6 +40,11 @@ class Lead extends Model
         return [
             'consented_at' => 'datetime',
         ];
+    }
+
+    public function intentLabel(): string
+    {
+        return self::INTENTS[$this->intent] ?? self::INTENTS[self::INTENT_INTEREST];
     }
 
     public function landingPage(): BelongsTo

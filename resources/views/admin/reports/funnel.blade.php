@@ -32,6 +32,8 @@
             <p class="small text-body-secondary mb-0">
                 بازدید صفحه (بدون یکتاسازی): {{ number_format($report['page_views']) }} —
                 کلیک دکمه‌های اقدام: {{ number_format($report['cta_clicks']) }} (مرحله قیف نیست؛ فرم بدون کلیک هم ثبت می‌شود) —
+                درخواست «خبرم کن» (بدون پیش‌پرداخت، بخشی از سرنخ‌ها): {{ number_format($report['totals']['notify_requests']) }}
+                ({{ number_format(\App\Services\FunnelStats::rate($report['totals']['notify_requests'], $report['totals']['unique_visitors']), 2) }}% بازدیدکنندگان؛ خروجی موازی پیش‌خرید، نه مرحله‌ای از آن) —
                 وجه پیش‌پرداخت تأییدشده: {{ \App\Support\Money::formatRialAsToman($report['totals']['paid_rial']) }}.
                 هر مرحله رویدادهای ثبت‌شده در همان بازه است؛ نفرات یک مرحله لزوماً زیرمجموعه مرحله قبل نیستند (مثلاً پرداخت امروز برای سفارش ماه قبل).
             </p>
@@ -44,7 +46,7 @@
             <div class="table-responsive">
                 <table class="table table-sm mb-0 align-middle">
                     <thead>
-                        <tr><th>ایده</th><th>بازدیدکننده</th><th>سرنخ</th><th>نرخ سرنخ</th><th>پیش‌خرید</th><th>پیش‌پرداخت</th><th>نرخ پرداخت</th></tr>
+                        <tr><th>ایده</th><th>بازدیدکننده</th><th>سرنخ</th><th>نرخ سرنخ</th><th>پیش‌خرید</th><th>«خبرم کن»</th><th>پیش‌پرداخت</th><th>نرخ پرداخت</th></tr>
                     </thead>
                     <tbody>
                         @forelse ($report['per_idea'] as $row)
@@ -54,11 +56,12 @@
                                 <td>{{ number_format($row['leads']) }}</td>
                                 <td>{{ number_format($row['lead_rate'], 2) }}%</td>
                                 <td>{{ number_format($row['preorders']) }}</td>
+                                <td>{{ number_format($row['notify_requests']) }} <span class="small text-body-secondary">({{ number_format(\App\Services\FunnelStats::rate($row['notify_requests'], $row['unique_visitors']), 2) }}%)</span></td>
                                 <td>{{ number_format($row['paid_count']) }}</td>
                                 <td>{{ number_format($row['paid_rate'], 2) }}%</td>
                             </tr>
                         @empty
-                            <x-admin.empty-row colspan="7">داده‌ای نیست.</x-admin.empty-row>
+                            <x-admin.empty-row colspan="8">داده‌ای نیست.</x-admin.empty-row>
                         @endforelse
                     </tbody>
                 </table>

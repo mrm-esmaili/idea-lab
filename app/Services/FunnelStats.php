@@ -19,6 +19,8 @@ use Illuminate\Support\Collection;
  * - cta_clicks: تعداد رویداد cta_click
  * - demo_clicks / video_plays: کلیک دکمه دمو و شروع پخش ویدیو (مرحله ۱۲۷؛ مرحله قیف نیستند)
  * - leads / preorders: تعداد رکوردهای ثبت‌شده
+ * - notify_requests: سرنخ‌هایی که «وقتی آماده شد خبرم کن» را زده‌اند (زیرمجموعه leads؛
+ *   خروجی موازی پیش‌خرید، نه مرحله‌ای از آن — مرحله ۱۳۴)
  * - paid_count: تعداد سفارش‌های دارای پرداخت تأییدشده (پرداخت تکراری یک سفارش یک بار شمرده می‌شود)
  * - paid_rial: جمع وجه دریافت‌شده از پرداخت‌های تأییدشده (status = paid)
  * - lead_rate: سرنخ تقسیم بر بازدیدکننده یکتا (درصد)
@@ -38,6 +40,7 @@ class FunnelStats
         'demo_clicks',
         'video_plays',
         'leads',
+        'notify_requests',
         'preorders',
         'paid_count',
         'paid_rial',
@@ -74,7 +77,8 @@ class FunnelStats
         $leads = $this->rows(
             $within(Lead::query(), 'created_at')
                 ->whereIn('landing_page_id', $pageIds)
-                ->selectRaw('COUNT(*) AS leads'),
+                ->selectRaw('COUNT(*) AS leads')
+                ->selectRaw("SUM(CASE WHEN intent = 'notify_when_ready' THEN 1 ELSE 0 END) AS notify_requests"),
             $group
         );
 
@@ -111,6 +115,7 @@ class FunnelStats
                 'demo_clicks' => (int) ($events[$key]->demo_clicks ?? 0),
                 'video_plays' => (int) ($events[$key]->video_plays ?? 0),
                 'leads' => (int) ($leads[$key]->leads ?? 0),
+                'notify_requests' => (int) ($leads[$key]->notify_requests ?? 0),
                 'preorders' => (int) ($preorders[$key]->preorders ?? 0),
                 'paid_count' => (int) ($payments[$key]->paid_count ?? 0),
                 'paid_rial' => (int) ($payments[$key]->paid_rial ?? 0),

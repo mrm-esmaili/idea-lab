@@ -6,9 +6,9 @@
 |---|---|
 | آخرین به‌روزرسانی | ۱۴۰۵/۰۸/۰۹ |
 | شاخه | `claude/new-session-ebbvr0` |
-| نسخه | `1.1.0-beta3` (فایل `VERSION`) |
-| آخرین قابلیت تکمیل‌شده | نسخه ۱.۱، بخش S — محتوای غنی صفحه فرود (مراحل ۱۱۹ تا ۱۲۸؛ نقشه راه در `ROADMAP_V2.md`) |
-| تست‌ها | ۱۹۴ تست واحد/ویژگی روی MariaDB 10.11 و MySQL 8.0 (strict) و SQLite؛ آزمون عملیاتی مرورگر ۳۹/۳۹ روی MariaDB و MySQL 8؛ تمرین کامل به‌روزرسانی ۱.۰ ← ۱.۱ روی کپی production |
+| نسخه | `1.1.0-rc1` (فایل `VERSION`) |
+| آخرین قابلیت تکمیل‌شده | نسخه ۱.۱، بخش T — چیدمان جدید صفحه و «فقط خبرم کن» (مراحل ۱۲۹ تا ۱۳۶؛ نقشه راه در `ROADMAP_V2.md`) |
+| تست‌ها | ۱۹۹ تست واحد/ویژگی روی MariaDB 10.11 و MySQL 8.0 (strict) و SQLite؛ آزمون عملیاتی مرورگر ۴۰/۴۰ روی MariaDB؛ تمرین کامل به‌روزرسانی ۱.۰ ← ۱.۱ روی کپی production |
 | محیط هدف | MariaDB 11.4، PHP 8.4، cPanel بدون SSH و npm |
 
 ## قابلیت‌های تکمیل‌شده
@@ -35,25 +35,27 @@
 | P | ۹۷ تا ۱۰۰ | آزمون عملیاتی انتها‌به‌انتها در مرورگر با زرین‌پال و SMS.ir شبیه‌سازی‌شده، رفع باگ شمارنده مشترک محدودیت نرخ، راهنمای مدیر، چک‌لیست بهره‌برداری، مرجع متغیرهای محیط | `e409979` |
 | Q | ۱۰۱ تا ۱۱۰ | نسخه‌بندی (`VERSION`)، بسته با manifest و SHA-256 هر فایل، به‌روزرسانی از پنل با تأیید رمز، پشتیبان خودکار، حالت تعمیر، بازگشت خودکار و دستی، مسیر جایگزین Cron/File Manager، تاریخچه به‌روزرسانی | `37b9eb5` |
 | R | ۱۱۱ تا ۱۱۸ | صفحه «تنظیمات سایت» (شرکت، لوگو، اینماد، راه‌های پشتیبانی)، پاورقی یکسان صفحات فرود، حساب و پرداخت بدون «سیستم اعتبارسنجی»، دکمه برجسته «پیگیری سفارش و ورود»، توضیح پیگیری و بازپرداخت در ورود و حساب و رسید، لینک پیگیری اختیاری در پیامک پرداخت | `a54e15b` |
-| S | ۱۱۹ تا ۱۲۸ | لینک دمو، ویدیو (آپارات با بارگذاری پس از کلیک یا MP4)، کارت ویژگی دوبخشی با سازگاری محتوای قدیمی، متن پویای پیش‌خرید (نشان، قیمت خط‌خورده، چه می‌گیری، ضمانت، دکمه)، پشتیبانی و بخش ارائه‌دهنده در صفحه، اعداد فارسی، پیش‌نمایش و ساخت بدون انتشار، شمارش کلیک دمو و پخش ویدیو | (این کامیت) |
+| S | ۱۱۹ تا ۱۲۸ | لینک دمو، ویدیو (آپارات با بارگذاری پس از کلیک یا MP4)، کارت ویژگی دوبخشی با سازگاری محتوای قدیمی، متن پویای پیش‌خرید (نشان، قیمت خط‌خورده، چه می‌گیری، ضمانت، دکمه)، پشتیبانی و بخش ارائه‌دهنده در صفحه، اعداد فارسی، پیش‌نمایش و ساخت بدون انتشار، شمارش کلیک دمو و پخش ویدیو | `9fac066` |
+| T | ۱۲۹ تا ۱۳۶ | ترتیب جدید صفحه (دکمه‌ها، رسانه، ویژگی‌ها، پیش‌خرید، پرسش‌ها، خبرم کن)، فرم «وقتی آماده شد خبرم کن» با `leads.intent`، لینک «فعلاً پیش‌پرداخت نمی‌کنم»، پیامک آمادگی جدا و یک‌باره برای درخواست‌کنندگان، فیلتر و قاعده گروه پویا، شاخص و نرخ «خبرم کن» کنار پیش‌خرید | (این کامیت) |
 
-## آخرین قابلیت: بخش S — محتوای غنی صفحه فرود
+## آخرین قابلیت: بخش T — چیدمان جدید و «فقط خبرم کن»
 
 **جدید**
-- `config/landing.php`، `tests/Feature/LandingContentTest.php` (۸ آزمون)
+- `database/migrations/2026_11_11_100000_add_intent_to_leads_and_notify_template.php` (ستون `leads.intent` و قالب `idea_launched_notify`، غیرفعال)
+- `tests/Feature/NotifyMeFlowTest.php`
 
 **تغییریافته**
-- `app/Models/LandingPage.php`: کلیدهای جدید `content`، سازگاری ویژگی متنی، `aparatHash`، `supportChannels`، `videoUrl`.
-- `app/Http/Controllers/LandingPageController.php`: اعتبارسنجی و ذخیره، پیش‌نمایش، ساخت بدون انتشار.
-- `resources/views/landing-pages/{_form,show,edit}.blade.php`، `resources/views/components/site-footer.blade.php` (خاموش کردن پشتیبانی/شرکت تکراری)، `resources/views/ideas/show.blade.php`، `resources/views/admin/campaigns/show.blade.php`.
-- `app/Support/Format.php` (`faDigits`)، `resources/views/account/dashboard.blade.php`، `resources/views/payments/{receipt,checkout}.blade.php`.
-- `app/Services/{FunnelStats,LandingPageTracker}.php`، `app/Http/Controllers/LandingPageEventController.php`، `routes/web.php`.
-- آزمون‌های موجود (انتظار اعداد فارسی در صفحات عمومی)، مستندات.
+- `resources/views/landing-pages/show.blade.php` (ترتیب، فرم خبرم کن بدون ایمیل، فوکوس فیلد پس از پرش)، `resources/views/landing-pages/_form.blade.php`.
+- `app/Models/Lead.php`، `app/Http/Controllers/LeadController.php`.
+- `app/Services/Notifications/CustomerNotifier.php` (`launchRequesters`، `ideaLaunchedToRequesters`)، `app/Http/Controllers/IdeaController.php`، `resources/views/ideas/show.blade.php`.
+- `app/Services/{ContactSegment,ContactTimeline,FunnelStats,ExperimentMetrics,LandingPageTracker}.php`، `app/Http/Controllers/{LandingPageEventController,Admin/LeadManagementController}.php`.
+- `resources/views/admin/{leads/index,contacts/_rules,reports/funnel}.blade.php`.
+- `tests/Feature/SmsNotificationTest.php`، `tests/e2e/scenario.cjs` (بررسی intent و اعداد فارسی رسید که از بخش S جا مانده بود).
 
 **نکات طراحی**
-- هیچ ستون جدیدی لازم نشد؛ صفحات موجود بدون تبدیل داده نمایش داده می‌شوند.
-- فقط iframe رسمی آپارات با شناسه استخراج‌شده ساخته می‌شود، نه نشانی دلخواه.
-- کلیک دمو و پخش ویدیو مرحله قیف نیستند و تعریف نرخ‌ها تغییر نکرد.
+- «خبرم کن» زیرمجموعه سرنخ‌هاست، پس تعریف `leads` و نرخ سرنخ تغییر نکرد. نرخ آن کنار پیش‌خرید نمایش داده می‌شود، نه به‌عنوان مرحله‌ای از قیف.
+- فرم‌های ذخیره‌شده پیش از نسخه ۱.۱ (بدون `intent`) همچنان «ثبت علاقه» ثبت می‌شوند.
+- **در بررسی ظاهری رفع شد:** فوکوس خودکار پس از کلیک روی فیلد ضدربات (honeypot) می‌افتاد و ممکن بود کاربر واقعی ربات تشخیص داده شود.
 
 ## اصلاح پس از استقرار: 403 روی کل سایت
 
@@ -95,8 +97,8 @@
 
 ## قدم بعدی
 
-1. **نصب روی سرور:** بسته `1.1.0-beta3` از GitHub Actions و نصب از تنظیمات ← به‌روزرسانی؛ سپس تکمیل محتوای جدید صفحات فرود (ویدیو، دمو، کارت‌ها، متن پیش‌خرید).
-2. **بخش T (مراحل ۱۲۹ تا ۱۳۶):** چیدمان جدید صفحه (پیش‌خرید پیش از پرسش‌ها) و جریان «فقط خبرم کن» با پیامک آمادگی.
-3. بخش U و سپس نسخه ۱.۲ طبق `ROADMAP_V2.md`.
+1. **نصب روی سرور:** بسته `1.1.0-rc1` از GitHub Actions و نصب از تنظیمات ← به‌روزرسانی؛ سپس ساخت قالب «آماده‌شدن محصول (درخواست‌کنندگان)» در SMS.ir و فعال کردن آن در پنل.
+2. **بخش U (مراحل ۱۳۷ تا ۱۴۰):** آزمون ارتقا از ۱.۰ با داده نمونه، به‌روزرسانی راهنماها، بسته نهایی `1.1.0` و راهنمای نصب روی سرور فعلی.
+3. سپس نسخه ۱.۲ (پرسش‌نامه) طبق `ROADMAP_V2.md`، پس از تأیید مالک.
 
 پیشنهادهای قبلی خارج از نقشه راه (وب‌هوک تحویل و لغو۱۱ SMS.ir، حذف/ناشناس‌سازی داده مخاطب، قابلیت‌های تحلیلی طبق `agentic_brain/ARCHITECTURE.md`) همچنان باز است.

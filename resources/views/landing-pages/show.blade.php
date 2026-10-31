@@ -249,6 +249,12 @@
 
         .trust-body .seal img { width: 88px; height: auto; }
 
+        .notify-alt { margin: 16px 0 0; text-align: center; font-size: 15px; }
+
+        .notify-alt a { color: var(--primary); }
+
+        .hero .media { margin-top: 28px; }
+
         .preview-banner { position: sticky; top: 0; z-index: 10; padding: 8px 16px; background: #fef3c7; color: #92400e; text-align: center; font-size: 14px; }
 
         @media (prefers-reduced-motion: no-preference) {
@@ -302,6 +308,27 @@
                     <p class="description">{{ $fa($landingPage->description) }}</p>
                 @endif
 
+                @php
+                    // ترتیب پیشنهادی: پیش‌خرید اول؛ اگر بسته است، «خبرم کن» دکمه اصلی است
+                    $primaryHref = $preorderOpen ? '#preorder-form' : ($content['show_lead_form'] ? '#lead-form' : null);
+                    $primaryText = $landingPage->cta_text ?: ($preorderOpen ? 'پیش‌خرید' : 'خبرم کن');
+                @endphp
+
+                <div class="hero-actions">
+                    @if ($primaryHref)
+                        <a href="{{ $primaryHref }}" class="cta" id="main-cta" data-track="cta_click">{{ $fa($primaryText) }}</a>
+                    @endif
+
+                    @if ($content['demo_url'])
+                        <a href="{{ $content['demo_url'] }}" class="cta cta-secondary" data-track="demo_click"
+                            @if ($content['demo_new_tab']) target="_blank" rel="noopener" @endif>
+                            {{ $fa($content['demo_label'] ?: 'دیدن دمو') }}
+                        </a>
+                    @elseif ($preorderOpen && $content['show_lead_form'])
+                        <a href="#lead-form" class="cta cta-secondary" data-track="notify_click">وقتی آماده شد خبرم کن</a>
+                    @endif
+                </div>
+
                 @if ($aparatUrl || $videoUrl)
                     <div class="media">
                         <div class="video-frame">
@@ -320,20 +347,6 @@
                     <img src="{{ $heroImageUrl }}" alt="{{ $landingPage->title }}" class="hero-image">
                 @endif
 
-                <div class="hero-actions">
-                    @if ($landingPage->cta_text && ($content['show_lead_form'] || $preorderOpen))
-                        <a href="{{ $content['show_lead_form'] ? '#lead-form' : '#preorder-form' }}" class="cta" id="main-cta" data-track="cta_click">
-                            {{ $fa($landingPage->cta_text) }}
-                        </a>
-                    @endif
-
-                    @if ($content['demo_url'])
-                        <a href="{{ $content['demo_url'] }}" class="cta cta-secondary" data-track="demo_click"
-                            @if ($content['demo_new_tab']) target="_blank" rel="noopener" @endif>
-                            {{ $fa($content['demo_label'] ?: 'دیدن دمو') }}
-                        </a>
-                    @endif
-                </div>
             </div>
         </section>
 
@@ -361,104 +374,7 @@
                     @endforeach
                 </ul>
             @endif
-
-            @if ($content['faq'])
-                <div class="faq">
-                    <h2>پرسش‌های متداول</h2>
-                    @foreach ($content['faq'] as $item)
-                        <details>
-                            <summary>{{ $fa($item['q']) }}</summary>
-                            <p>{!! nl2br(e($fa($item['a']))) !!}</p>
-                        </details>
-                    @endforeach
-                </div>
-            @endif
         </section>
-
-        @if ($content['show_lead_form'])
-            <section id="lead-form" class="form-card container">
-                <h2>دریافت اطلاعات و ثبت علاقه‌مندی</h2>
-
-                @if (session('lead_success') === $landingPage->slug)
-                    <div class="form-alert success" role="status">
-                        اطلاعات شما با موفقیت ثبت شد.
-                        در صورت نیاز به پیگیری، از طریق اطلاعات تماس ارائه‌شده با شما ارتباط خواهیم گرفت.
-                    </div>
-                @else
-                    @if ($leadErrors->any())
-                        <div class="form-alert error" role="alert">
-                            لطفاً موارد مشخص‌شده را اصلاح کنید.
-                        {{-- خطای فیلدهای متنی زیر خود فیلد نمایش داده می‌شود --}}
-                        @php($otherErrors = collect($leadErrors->messages())->except(['name', 'phone', 'email'])->flatten())
-                        @if ($otherErrors->isNotEmpty())
-                            <ul>
-                                @foreach ($otherErrors as $error)
-                                    <li>{{ $error }}</li>
-                                @endforeach
-                            </ul>
-                        @endif
-                        </div>
-                    @endif
-
-                    <form action="{{ route('leads.store', $landingPage->slug) }}" method="POST">
-                        @csrf
-                        <x-public-form-guard id="lead" />
-                        <input type="hidden" name="form" value="lead">
-
-                        <div class="form-group">
-                            <label for="lead-name">نام</label>
-                            <input id="lead-name" type="text" name="name" value="{{ $oldFor('lead', 'name') }}"
-                                maxlength="120" autocomplete="name" required
-                                @if ($leadErrors->has('name')) aria-invalid="true" aria-describedby="lead-name-error" @endif>
-                            @if ($leadErrors->has('name'))
-                                <div class="field-error" id="lead-name-error">{{ $leadErrors->first('name') }}</div>
-                            @endif
-                        </div>
-
-                        <div class="form-group">
-                            <label for="lead-phone">شماره موبایل</label>
-                            <input id="lead-phone" type="tel" name="phone" value="{{ $oldFor('lead', 'phone') }}"
-                                maxlength="30" autocomplete="tel" inputmode="tel" placeholder="09123456789" class="ltr-input" required
-                                @if ($leadErrors->has('phone')) aria-invalid="true" aria-describedby="lead-phone-error" @endif>
-                            @if ($leadErrors->has('phone'))
-                                <div class="field-error" id="lead-phone-error">{{ $leadErrors->first('phone') }}</div>
-                            @endif
-                        </div>
-
-                        <div class="form-group">
-                            <label for="lead-email">ایمیل (اختیاری)</label>
-                            <input id="lead-email" type="email" name="email" value="{{ $oldFor('lead', 'email') }}"
-                                maxlength="255" autocomplete="email" class="ltr-input"
-                                @if ($leadErrors->has('email')) aria-invalid="true" aria-describedby="lead-email-error" @endif>
-                            @if ($leadErrors->has('email'))
-                                <div class="field-error" id="lead-email-error">{{ $leadErrors->first('email') }}</div>
-                            @endif
-                        </div>
-
-                        <div class="form-group">
-                            <label class="check">
-                                <input type="checkbox" name="consent" value="1" required @checked($oldFor('lead', 'consent'))>
-                                <span>
-                                    موافقم برای پیگیری درخواست و اطلاع‌رسانی مرتبط با این محصول با من تماس گرفته شود.
-                                    @if ($privacyUrl)
-                                        <a href="{{ $privacyUrl }}" target="_blank" rel="noopener">سیاست حریم خصوصی</a>
-                                    @endif
-                                </span>
-                            </label>
-                        </div>
-
-                        <div class="form-group">
-                            <label class="check">
-                                <input type="checkbox" name="marketing_consent" value="1" @checked($oldFor('lead', 'marketing_consent'))>
-                                <span>مایلم پیامک‌های معرفی محصولات و پیشنهادهای جدید را هم دریافت کنم (اختیاری، قابل لغو).</span>
-                            </label>
-                        </div>
-
-                        <button type="submit">ثبت علاقه‌مندی</button>
-                    </form>
-                @endif
-            </section>
-        @endif
 
         @if ($preorderOpen)
             <section id="preorder-form" class="form-card container preorder-section">
@@ -555,8 +471,106 @@
 
                     <button type="submit">{{ $fa($content['preorder_button'] ?: 'ثبت درخواست و ادامه به پرداخت') }}</button>
                 </form>
+
+                @if ($content['show_lead_form'])
+                    <p class="notify-alt">
+                        <a href="#lead-form" data-track="notify_click">فعلاً پیش‌پرداخت نمی‌کنم؛ وقتی آماده شد خبرم کن</a>
+                    </p>
+                @endif
             </section>
         @endif
+        @if ($content['faq'])
+            <section class="content container">
+                <div class="faq">
+                    <h2>پرسش‌های متداول</h2>
+                    @foreach ($content['faq'] as $item)
+                        <details>
+                            <summary>{{ $fa($item['q']) }}</summary>
+                            <p>{!! nl2br(e($fa($item['a']))) !!}</p>
+                        </details>
+                    @endforeach
+                </div>
+            </section>
+        @endif
+
+        @if ($content['show_lead_form'])
+            <section id="lead-form" class="form-card container">
+                <h2>وقتی آماده شد خبرم کن</h2>
+
+                @if (session('lead_success') === $landingPage->slug)
+                    <div class="form-alert success" role="status">
+                        اطلاعات شما با موفقیت ثبت شد.
+                        وقتی {{ $fa($landingPage->idea->name) }} آماده شد، با پیامک خبرتان می‌کنیم.
+                    </div>
+                @else
+                    <p class="form-intro">نام و شماره موبایلتان را بگذارید؛ بدون پرداخت، فقط وقتی {{ $fa($landingPage->idea->name) }} آماده شد پیامک می‌گیرید.</p>
+
+                    @if ($leadErrors->any())
+                        <div class="form-alert error" role="alert">
+                            لطفاً موارد مشخص‌شده را اصلاح کنید.
+                        {{-- خطای فیلدهای متنی زیر خود فیلد نمایش داده می‌شود --}}
+                        @php($otherErrors = collect($leadErrors->messages())->except(['name', 'phone'])->flatten())
+                        @if ($otherErrors->isNotEmpty())
+                            <ul>
+                                @foreach ($otherErrors as $error)
+                                    <li>{{ $error }}</li>
+                                @endforeach
+                            </ul>
+                        @endif
+                        </div>
+                    @endif
+
+                    <form action="{{ route('leads.store', $landingPage->slug) }}" method="POST">
+                        @csrf
+                        <x-public-form-guard id="lead" />
+                        <input type="hidden" name="form" value="lead">
+                        <input type="hidden" name="intent" value="{{ \App\Models\Lead::INTENT_NOTIFY }}">
+
+                        <div class="form-group">
+                            <label for="lead-name">نام</label>
+                            <input id="lead-name" type="text" name="name" value="{{ $oldFor('lead', 'name') }}"
+                                maxlength="120" autocomplete="name" required
+                                @if ($leadErrors->has('name')) aria-invalid="true" aria-describedby="lead-name-error" @endif>
+                            @if ($leadErrors->has('name'))
+                                <div class="field-error" id="lead-name-error">{{ $leadErrors->first('name') }}</div>
+                            @endif
+                        </div>
+
+                        <div class="form-group">
+                            <label for="lead-phone">شماره موبایل</label>
+                            <input id="lead-phone" type="tel" name="phone" value="{{ $oldFor('lead', 'phone') }}"
+                                maxlength="30" autocomplete="tel" inputmode="tel" placeholder="09123456789" class="ltr-input" required
+                                @if ($leadErrors->has('phone')) aria-invalid="true" aria-describedby="lead-phone-error" @endif>
+                            @if ($leadErrors->has('phone'))
+                                <div class="field-error" id="lead-phone-error">{{ $leadErrors->first('phone') }}</div>
+                            @endif
+                        </div>
+
+                        <div class="form-group">
+                            <label class="check">
+                                <input type="checkbox" name="consent" value="1" required @checked($oldFor('lead', 'consent'))>
+                                <span>
+                                    موافقم برای پیگیری درخواست و اطلاع‌رسانی مرتبط با این محصول با من تماس گرفته شود.
+                                    @if ($privacyUrl)
+                                        <a href="{{ $privacyUrl }}" target="_blank" rel="noopener">سیاست حریم خصوصی</a>
+                                    @endif
+                                </span>
+                            </label>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="check">
+                                <input type="checkbox" name="marketing_consent" value="1" @checked($oldFor('lead', 'marketing_consent'))>
+                                <span>مایلم پیامک‌های معرفی محصولات و پیشنهادهای جدید را هم دریافت کنم (اختیاری، قابل لغو).</span>
+                            </label>
+                        </div>
+
+                        <button type="submit">خبرم کن</button>
+                    </form>
+                @endif
+            </section>
+        @endif
+
         @if ($supportChannels || $supportText || $showTrust)
             <section class="assurance container" aria-label="پشتیبانی و ارائه‌دهنده">
                 @if ($supportChannels || $supportText)
@@ -654,6 +668,18 @@
         document.querySelectorAll('[data-track]').forEach(function (element) {
             element.addEventListener('click', function () {
                 track(element.dataset.track);
+            });
+        });
+
+        // پس از پرش به یک فرم، اولین فیلد آن فوکوس می‌گیرد (دسترس‌پذیری، مرحله ۱۳۵)
+        document.querySelectorAll('a[href="#lead-form"], a[href="#preorder-form"]').forEach(function (link) {
+            link.addEventListener('click', function () {
+                // فیلد ضدربات (tabindex=-1) نباید فوکوس بگیرد
+                const field = document.querySelector(link.getAttribute('href') + ' input:not([type="hidden"]):not([tabindex="-1"])');
+
+                if (field) {
+                    setTimeout(function () { field.focus({ preventScroll: true }); }, 450);
+                }
             });
         });
 

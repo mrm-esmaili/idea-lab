@@ -237,6 +237,49 @@ class SmsNotificationTest extends TestCase
         $this->assertSame(2, SmsMessage::count());
     }
 
+    /**
+     * مرحله ۱۳۲: درخواست‌کنندگان «خبرم کن» هنگام عرضه با قالب جدا پیامک
+     * می‌گیرند؛ خریداران فقط پیام خریدار را، و هر شماره فقط یک بار.
+     */
+    public function test_launch_notifies_notify_me_requesters_once_without_buyers(): void
+    {
+        $this->enable('idea_launched', 'idea_launched_notify');
+        $manager = $this->admin(AdminRole::Manager);
+        $lead = fn (string $phone, string $intent = 'notify_when_ready') => $this->page->leads()->create([
+            'name' => 'درخواست‌کننده', 'phone' => $phone, 'status' => 'new', 'intent' => $intent, 'consented_at' => now(),
+        ]);
+
+        $this->paidPreorder();
+        $lead('09121234567');               // خریدار هم «خبرم کن» زده: فقط پیام خریدار
+        $lead('09123333333');
+        $lead('09123333333');               // دو بار ثبت: یک پیام
+        $lead('09124444444');
+        $lead('09128888888', 'interest');   // ثبت علاقه قدیمی: پیامی نمی‌گیرد
+
+        $this->actingAs($manager, 'web')->get(route('ideas.show', $this->idea))->assertSee('به 2 نفر که «خبرم کن» زده‌اند');
+
+        $this->actingAs($manager, 'web')
+            ->patch(route('ideas.status', $this->idea), ['status' => 'launched', 'notify_customers' => '1', 'notify_requesters' => '1'])
+            ->assertSessionHas('success', fn ($m) => str_contains($m, 'پیامک برای 1 خریدار') && str_contains($m, 'پیامک آمادگی برای 2 درخواست‌کننده'));
+
+        $this->assertSame(['09121234567'], SmsMessage::where('template_key', 'idea_launched')->pluck('mobile')->all());
+        $this->assertEqualsCanonicalizing(['09123333333', '09124444444'], SmsMessage::where('template_key', 'idea_launched_notify')->pluck('mobile')->all());
+
+        // عرضه دوباره همان ایده پیام آمادگی تکراری نمی‌سازد
+        $this->actingAs($manager, 'web')->patch(route('ideas.status', $this->idea), ['status' => 'building']);
+        $this->actingAs($manager, 'web')->patch(route('ideas.status', $this->idea), ['status' => 'launched', 'notify_requesters' => '1']);
+        $this->assertSame(2, SmsMessage::where('template_key', 'idea_launched_notify')->count());
+
+        // قالب غیرفعال: پیامی ساخته نمی‌شود و مدیر مطلع می‌شود
+        SmsTemplate::where('key', 'idea_launched_notify')->update(['enabled' => false]);
+        $lead('09129999999');
+        $this->actingAs($manager, 'web')->patch(route('ideas.status', $this->idea), ['status' => 'building']);
+        $this->actingAs($manager, 'web')
+            ->patch(route('ideas.status', $this->idea), ['status' => 'launched', 'notify_requesters' => '1'])
+            ->assertSessionHas('success', fn ($m) => str_contains($m, 'فعال نیست'));
+        $this->assertSame(0, SmsMessage::where('mobile', '09129999999')->count());
+    }
+
     public function test_transient_failures_retry_limited_times_and_rejections_do_not(): void
     {
         $this->enable('payment_paid');

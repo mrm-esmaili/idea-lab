@@ -134,6 +134,7 @@ class LandingPageTracker
             'cta_click',
             'demo_click',
             'video_play',
+            'notify_click',
             'form_view',
             'preorder_submit',
             'payment_start',

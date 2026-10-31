@@ -46,6 +46,16 @@
                 </div>
 
                 <div class="col-sm-6 col-lg-3">
+                    <label for="intent" class="form-label">نوع درخواست</label>
+                    <select name="intent" id="intent" class="form-select">
+                        <option value="">همه</option>
+                        @foreach (\App\Models\Lead::INTENTS as $value => $label)
+                            <option value="{{ $value }}" @selected(request('intent') === $value)>{{ $label }}</option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <div class="col-sm-6 col-lg-3">
                     <label for="campaign" class="form-label">کمپین</label>
                     <input
                         id="campaign"
@@ -110,6 +120,9 @@
                                     {{ $lead->landingPage->idea->name ?? '—' }}
                                     <div class="small text-body-secondary">
                                         {{ $lead->landingPage->name ?? '—' }}
+                                        @if ($lead->intent === \App\Models\Lead::INTENT_NOTIFY)
+                                            <span class="badge text-bg-info">خبرم کن</span>
+                                        @endif
                                     </div>
                                 </td>
                                 <td class="ltr">{{ $lead->source ?? '—' }}</td>

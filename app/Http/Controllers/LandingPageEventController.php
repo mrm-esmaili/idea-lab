@@ -22,6 +22,7 @@ class LandingPageEventController extends Controller
                     'cta_click',
                     'demo_click',
                     'video_play',
+                    'notify_click',
                     'form_view',
                     'payment_start',
                 ]),

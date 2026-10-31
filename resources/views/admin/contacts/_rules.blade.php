@@ -53,6 +53,16 @@
     </div>
 
     <div class="col-sm-6 col-lg-2">
+        <label for="{{ $fieldId('notify_idea') }}" class="form-label">«خبرم کن» برای ایده</label>
+        <select id="{{ $fieldId('notify_idea') }}" name="{{ $field('notify_idea') }}" class="form-select">
+            <option value="">همه</option>
+            @foreach ($ideas as $ideaOption)
+                <option value="{{ $ideaOption->id }}" @selected((int) $value('notify_idea') === $ideaOption->id)>{{ $ideaOption->name }}</option>
+            @endforeach
+        </select>
+    </div>
+
+    <div class="col-sm-6 col-lg-2">
         <label for="{{ $fieldId('campaign') }}" class="form-label">کد کمپین</label>
         <input id="{{ $fieldId('campaign') }}" type="text" name="{{ $field('campaign') }}" value="{{ $value('campaign') }}" maxlength="100" class="form-control ltr">
     </div>

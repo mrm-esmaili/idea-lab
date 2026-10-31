@@ -19,6 +19,7 @@ class LeadManagementController extends Controller
             ],
             'campaign' => ['nullable', 'string', 'max:255'],
             'idea' => ['nullable', 'integer', 'exists:ideas,id'],
+            'intent' => ['nullable', Rule::in(array_keys(Lead::INTENTS))],
             'q' => ['nullable', 'string', 'max:100'],
         ]);
 
@@ -28,6 +29,10 @@ class LeadManagementController extends Controller
 
         if (! empty($filters['status'])) {
             $query->where('status', $filters['status']);
+        }
+
+        if (! empty($filters['intent'])) {
+            $query->where('intent', $filters['intent']);
         }
 
         if (! empty($filters['q'])) {
