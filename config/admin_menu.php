@@ -192,6 +192,13 @@ return [
                 'active' => ['admin.backups.*'],
             ],
             [
+                'label' => 'به‌روزرسانی',
+                'icon' => 'bi-cloud-arrow-up',
+                'route' => 'admin.updates.index',
+                'permission' => 'settings.manage',
+                'active' => ['admin.updates.*'],
+            ],
+            [
                 'label' => 'قالب‌های پیامک',
                 'icon' => 'bi-chat-dots',
                 'route' => 'admin.sms.index',

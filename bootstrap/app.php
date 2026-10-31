@@ -13,6 +13,9 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->append(\App\Http\Middleware\SecurityHeaders::class);
 
+        // تکمیل به‌روزرسانی در حالت تعمیر انجام می‌شود (UpdateInstaller)
+        $middleware->preventRequestsDuringMaintenance(except: ['admin/updates', 'admin/updates/*']);
+
         $middleware->alias([
             'admin' => \App\Http\Middleware\EnsureUserIsAdmin::class,
             'contact.fresh' => \App\Http\Middleware\EnsureContactSessionIsFresh::class,

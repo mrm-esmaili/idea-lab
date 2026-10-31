@@ -3,10 +3,13 @@
 namespace App\Services;
 
 use App\Models\SmsTemplate;
+use App\Models\SystemUpdate;
 use App\Services\Sms\SmsDispatcher;
+use App\Support\AppVersion;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Throwable;
 
 /**
@@ -42,6 +45,8 @@ class SystemStatus
         $add('برنامه', 'نسخه PHP', version_compare(PHP_VERSION, '8.2.0', '>=') ? 'ok' : 'error', PHP_VERSION);
         $missing = array_values(array_filter(self::REQUIRED_EXTENSIONS, fn ($ext) => ! extension_loaded($ext)));
         $add('برنامه', 'افزونه‌های PHP', $missing ? 'error' : 'ok', $missing ? 'فعال نیست: ' . implode(', ', $missing) : implode(', ', self::REQUIRED_EXTENSIONS), $missing ? 'cPanel ← Select PHP Version ← Extensions' : null);
+        $add('برنامه', 'نسخه', 'ok', AppVersion::current());
+        $add('برنامه', 'افزونه zip', class_exists(\ZipArchive::class) ? 'ok' : 'warn', class_exists(\ZipArchive::class) ? 'فعال' : 'فعال نیست', class_exists(\ZipArchive::class) ? null : 'برای به‌روزرسانی از پنل: cPanel ← Select PHP Version ← Extensions ← zip');
         $add('برنامه', 'کش پیکربندی', app()->configurationIsCached() ? 'ok' : 'warn', app()->configurationIsCached() ? 'فعال' : 'غیرفعال', app()->configurationIsCached() ? null : 'برای سرعت بیشتر: php artisan config:cache (پس از هر تغییر .env دوباره).');
 
         // پایگاه داده
@@ -54,6 +59,10 @@ class SystemStatus
             $files = array_keys($migrator->getMigrationFiles(database_path('migrations')));
             $pending = $migrator->repositoryExists() ? array_values(array_diff($files, $migrator->getRepository()->getRan())) : $files;
             $add('پایگاه داده', 'migrationها', $pending ? 'error' : 'ok', $pending ? count($pending) . ' اجرا نشده (اولین: ' . $pending[0] . ')' : 'همه اجرا شده (' . count($files) . ')', $pending ? 'migrationهای اجرانشده را اجرا کنید؛ تا آن زمان بخش‌هایی از پنل کار نمی‌کند.' : null);
+
+            if (Schema::hasTable('system_updates') && ($pendingUpdate = SystemUpdate::whereIn('status', [SystemUpdate::APPLYING, SystemUpdate::FILES_APPLIED])->latest('id')->first())) {
+                $add('پایگاه داده', 'به‌روزرسانی نیمه‌کاره', 'error', '#' . $pendingUpdate->id . ' (' . $pendingUpdate->to_version . ')', 'تنظیمات ← به‌روزرسانی ← تکمیل یا بازگرداندن؛ یا Cron یک‌باره: php artisan system:finish-update');
+            }
         } catch (Throwable $e) {
             $add('پایگاه داده', 'اتصال', 'error', 'برقرار نشد', 'DB_HOST، DB_DATABASE، DB_USERNAME و DB_PASSWORD را در .env بررسی کنید.');
         }

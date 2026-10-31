@@ -24,7 +24,7 @@ class DatabaseBackup
 
     public function directory(): string
     {
-        return storage_path('app/backups');
+        return config('backup.directory') ?: storage_path('app/backups');
     }
 
     /**

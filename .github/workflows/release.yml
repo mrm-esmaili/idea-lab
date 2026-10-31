@@ -1,10 +1,21 @@
-# ساخت بسته نصب برای cPanel بدون SSH/Composer (مرحله ۹۵).
+# ساخت بسته نصب و به‌روزرسانی برای cPanel بدون SSH/Composer (مراحل ۹۵ و ۱۰۲).
 # فقط دستی اجرا می‌شود: GitHub ← Actions ← Build release package ← Run workflow.
-# خروجی: فایل zip در بخش Artifacts همان اجرا (شامل vendor، بدون .env و تست).
+# خروجی: idea-lab-<نسخه>.zip در بخش Artifacts همان اجرا (بدون .env و تست، با
+# manifest.json شامل SHA-256 هر فایل). SHA-256 کل بسته در خلاصه اجرا چاپ می‌شود.
 name: Build release package
 
 on:
   workflow_dispatch:
+    inputs:
+      version:
+        description: 'شماره نسخه، مثلاً 1.1.0 یا 1.1.0-beta2'
+        required: true
+        type: string
+      lite:
+        description: 'بسته سبک بدون vendor (فقط اگر composer.lock تغییر نکرده باشد)'
+        required: false
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -49,18 +60,25 @@ jobs:
           php artisan test
 
       - name: Build production package
+        env:
+          VERSION: ${{ inputs.version }}
+          LITE: ${{ inputs.lite }}
         run: |
           rm .env
           composer install --no-dev --no-interaction --prefer-dist --optimize-autoloader
-          mkdir -p dist
-          zip -rq dist/idea-lab-${GITHUB_SHA::7}.zip . \
-            -x '.git/*' '.github/*' 'tests/*' 'dist/*' 'node_modules/*' \
-               '.env' 'storage/logs/*.log' 'storage/framework/sessions/*' \
-               'storage/framework/views/*.php' 'storage/framework/cache/data/*' \
-               'storage/app/backups/*' 'public/uploads/landing-pages/*' 'phpunit.xml'
+          if [ "$LITE" = "true" ]; then FLAG=--lite; SUFFIX=-lite; else FLAG=; SUFFIX=; fi
+          php artisan release:build "$VERSION" --output="dist/idea-lab-$VERSION$SUFFIX.zip" --commit="$GITHUB_SHA" $FLAG
+          {
+            echo "### idea-lab $VERSION$SUFFIX"
+            echo ''
+            echo 'SHA-256 (مقایسه با صفحه بررسی بسته در پنل):'
+            echo '```'
+            (cd dist && sha256sum *.zip)
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
 
       - uses: actions/upload-artifact@v4
         with:
-          name: idea-lab-release-${{ github.sha }}
+          name: idea-lab-${{ inputs.version }}
           path: dist/*.zip
           retention-days: 30
