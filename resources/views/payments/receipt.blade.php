@@ -85,17 +85,17 @@
             <dd>{{ $preorder->landingPage?->idea?->name }}</dd>
 
             <dt>مبلغ</dt>
-            <dd>{{ \App\Support\Money::formatRialAsToman($payment?->amount_rial ?? $preorder->amount_rial) }}</dd>
+            <dd>{{ \App\Support\Format::faDigits(\App\Support\Money::formatRialAsToman($payment?->amount_rial ?? $preorder->amount_rial)) }}</dd>
 
             <dt>کد پیگیری</dt>
             <dd class="ltr"><strong>{{ $payment?->ref_id }}</strong></dd>
 
             <dt>زمان</dt>
-            <dd class="ltr">{{ \App\Support\Format::datetime($payment?->verified_at) }}</dd>
+            <dd class="ltr">{{ \App\Support\Format::faDigits(\App\Support\Format::datetime($payment?->verified_at)) }}</dd>
 
             @if ($preorder->refundPolicy)
                 <dt>شرایط بازپرداخت</dt>
-                <dd>{{ $preorder->refundPolicy->summary() }}</dd>
+                <dd>{{ \App\Support\Format::faDigits($preorder->refundPolicy->summary()) }}</dd>
             @endif
         </dl>
 

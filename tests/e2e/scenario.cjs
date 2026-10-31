@@ -22,6 +22,8 @@ const db = (sql) => execFileSync(process.env.E2E_DB_CLI || 'mariadb', [
 const gateway = async (path, method = 'GET') => (await fetch(GW + path, { method })).json();
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const tomanText = (n) => n.toLocaleString('en-US') + ' تومان';
+// صفحات عمومی اعداد فارسی دارند (۱۲۰٬۰۰۰)
+const faTomanText = (n) => tomanText(n).replace(/,/g, '٬').replace(/\d/g, (d) => '۰۱۲۳۴۵۶۷۸۹'[d]);
 
 // ارسال فرمی که پنجره تأیید دارد
 const submitConfirmed = async (page, formSelector) => {
@@ -129,7 +131,8 @@ const openPages = [];
     await customer.check('form[action$="/leads"] input[name=consent]');
     await customer.check('form[action$="/leads"] input[name=marketing_consent]');
     await submit(customer, 'form[action$="/leads"] button[type=submit]');
-    check(db(`SELECT campaign FROM leads WHERE phone = '${MOBILE}'`) === 'divar-e2e', 'ثبت علاقه‌مندی با شماره فارسی و انتساب کمپین');
+    check(db(`SELECT campaign FROM leads WHERE phone = '${MOBILE}'`) === 'divar-e2e', 'ثبت «خبرم کن» با شماره فارسی و انتساب کمپین');
+    check(db(`SELECT intent FROM leads WHERE phone = '${MOBILE}'`) === 'notify_when_ready', 'نوع درخواست «خبرم کن» ثبت شد');
     check(db(`SELECT marketing_sms_consent FROM contacts WHERE mobile = '${MOBILE}'`) === '1', 'ثبت رضایت پیامک تبلیغاتی');
 
     await sleep(3500);
@@ -147,7 +150,7 @@ const openPages = [];
     const callbackUrl = await customer.getAttribute('#pay', 'href');
     await submit(customer, '#pay');
     check(customer.url().includes('/receipt'), 'بازگشت از درگاه و نمایش رسید');
-    check((await customer.content()).includes(tomanText(120000)), 'مبلغ رسید به تومان');
+    check((await customer.content()).includes(faTomanText(120000)), 'مبلغ رسید به تومان (اعداد فارسی)');
     await shot(customer, '02-receipt');
 
     // تکرار بازگشت از درگاه (رفرش یا حمله تکرار)

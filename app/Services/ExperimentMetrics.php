@@ -26,6 +26,8 @@ class ExperimentMetrics
         'unique_visitors' => ['بازدیدکننده یکتا', 'count', 'بازدیدکننده یکتا (کوکی) با دست‌کم یک بازدید صفحه در بازه'],
         'leads' => ['سرنخ', 'count', 'فرم‌های علاقه‌مندی ثبت‌شده در بازه'],
         'lead_rate' => ['نرخ سرنخ', 'percent', 'سرنخ ÷ بازدیدکننده یکتا'],
+        'notify_requests' => ['درخواست «خبرم کن»', 'count', 'سرنخ‌هایی که بدون پیش‌پرداخت «وقتی آماده شد خبرم کن» را زده‌اند (بخشی از سرنخ‌ها)'],
+        'notify_rate' => ['نرخ «خبرم کن»', 'percent', 'درخواست «خبرم کن» ÷ بازدیدکننده یکتا'],
         'preorders' => ['پیش‌خرید', 'count', 'درخواست‌های پیش‌خرید ثبت‌شده در بازه'],
         'paid_count' => ['پیش‌پرداخت', 'count', 'سفارش‌هایی که پرداختشان در بازه توسط درگاه تأیید شده'],
         'paid_rial' => ['مبلغ پیش‌پرداخت', 'rial', 'جمع پرداخت‌های تأییدشده در بازه (پیش از کسر بازپرداخت)'],
@@ -165,6 +167,7 @@ class ExperimentMetrics
         }
 
         $row['lead_rate'] = FunnelStats::rate($row['leads'], $row['unique_visitors']);
+        $row['notify_rate'] = FunnelStats::rate($row['notify_requests'], $row['unique_visitors']);
         $row['paid_rate'] = FunnelStats::rate($row['paid_count'], $row['unique_visitors']);
         $row['lead_to_paid_rate'] = FunnelStats::rate($row['paid_count'], $row['leads']);
         $row['cost_per_lead_rial'] = $spent > 0 && $row['leads'] > 0 ? intdiv($spent, $row['leads']) : null;

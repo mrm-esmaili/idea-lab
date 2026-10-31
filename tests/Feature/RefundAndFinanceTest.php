@@ -89,7 +89,7 @@ class RefundAndFinanceTest extends TestCase
 
     public function test_eligible_customer_can_request_full_remaining_amount(): void
     {
-        $this->asContact()->get(route('account.dashboard'))->assertSee('درخواست بازپرداخت')->assertSee('120,000 تومان');
+        $this->asContact()->get(route('account.dashboard'))->assertSee('درخواست بازپرداخت')->assertSee('۱۲۰٬۰۰۰ تومان');
 
         $request = $this->customerRequest();
 

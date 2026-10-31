@@ -25,3 +25,4 @@ Thumbs.db
 /public/uploads/*
 !/public/uploads/.htaccess
 /storage/e2e
+/storage/upgrade-rehearsal

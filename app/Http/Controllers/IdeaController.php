@@ -103,6 +103,8 @@ class IdeaController extends Controller
         // اطلاع پیامکی تغییر وضعیت به خریداران (مرحله ۶۱)
         $statusSms = [
             'buyers' => $notifier->ideaStatusRecipients($idea)->count(),
+            'requesters' => $notifier->launchRequesters($idea)->count(),
+            'requesters_template' => (bool) SmsTemplate::where('key', 'idea_launched_notify')->value('enabled'),
             'templates' => SmsTemplate::whereIn('key', CustomerNotifier::IDEA_STATUS_TEMPLATES)
                 ->pluck('enabled', 'key')
                 ->all(),
@@ -180,6 +182,15 @@ class IdeaController extends Controller
                 $message .= ' برای این وضعیت قالب پیامک فعالی وجود ندارد؛ پیامکی ارسال نشد.';
             } else {
                 $message .= ' پیامک برای ' . number_format($notifier->ideaStatusChanged($idea->fresh(), $change)) . ' خریدار در صف ارسال قرار گرفت.';
+            }
+        }
+
+        // درخواست‌کنندگان «خبرم کن» فقط هنگام عرضه، با قالب جدا
+        if ($request->boolean('notify_requesters') && $change->to_status === IdeaStatus::Launched->value) {
+            if (! SmsTemplate::where('key', 'idea_launched_notify')->value('enabled')) {
+                $message .= ' قالب پیامک «آماده‌شدن محصول (درخواست‌کنندگان)» فعال نیست؛ به درخواست‌کنندگان پیامکی ارسال نشد.';
+            } else {
+                $message .= ' پیامک آمادگی برای ' . number_format($notifier->ideaLaunchedToRequesters($idea->fresh())) . ' درخواست‌کننده «خبرم کن» در صف قرار گرفت.';
             }
         }
 

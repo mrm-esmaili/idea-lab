@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\LandingPage;
+use App\Models\Lead;
 use App\Services\ContactActivity;
 use App\Services\ContactResolver;
 use App\Rules\IranianMobile;
@@ -38,6 +39,8 @@ class LeadController extends Controller
             'email' => ['nullable', 'email', 'max:255'],
             'consent' => ['accepted'],
             'marketing_consent' => ['nullable', 'boolean'],
+            // صفحه‌های ذخیره‌شده پیش از نسخه ۱.۱ این فیلد را ندارند
+            'intent' => ['nullable', Rule::in(array_keys(Lead::INTENTS))],
         ]);
 
         $data['phone'] = PhoneNumber::normalizeMobile($data['phone']);
@@ -87,6 +90,7 @@ class LeadController extends Controller
                 'phone' => $data['phone'],
                 'email' => $data['email'] ?? null,
                 'status' => 'new',
+                'intent' => $data['intent'] ?? Lead::INTENT_INTEREST,
 
                 'source' => $latestEvent?->source
                     ?? $visitor?->first_source,

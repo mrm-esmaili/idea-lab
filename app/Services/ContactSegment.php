@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\Lead;
 use App\Models\Preorder;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Validation\Rule;
@@ -23,7 +24,7 @@ use Illuminate\Validation\Rule;
  */
 class ContactSegment
 {
-    public const KEYS = ['q', 'ideas', 'campaign', 'payment', 'consent', 'source', 'lead_status', 'joined_within_days'];
+    public const KEYS = ['q', 'ideas', 'campaign', 'payment', 'consent', 'source', 'lead_status', 'notify_idea', 'joined_within_days'];
 
     public static function validationRules(): array
     {
@@ -36,6 +37,8 @@ class ContactSegment
             'consent' => ['nullable', Rule::in(['yes', 'no'])],
             'source' => ['nullable', 'string', 'max:100'],
             'lead_status' => ['nullable', Rule::in(array_keys(config('statuses.lead')))],
+            // درخواست «خبرم کن» برای یک ایده (مرحله ۱۳۳)
+            'notify_idea' => ['nullable', 'integer', 'exists:ideas,id'],
             'joined_within_days' => ['nullable', 'integer', 'min:1', 'max:3650'],
         ];
     }
@@ -108,6 +111,15 @@ class ContactSegment
                 ->where('leads.status', $rules['lead_status']));
         }
 
+        if (isset($rules['notify_idea'])) {
+            $query->whereExists(fn ($q) => $q->selectRaw('1')
+                ->from('leads')
+                ->join('landing_pages', 'landing_pages.id', '=', 'leads.landing_page_id')
+                ->whereColumn('leads.contact_id', 'contacts.id')
+                ->where('leads.intent', Lead::INTENT_NOTIFY)
+                ->where('landing_pages.idea_id', (int) $rules['notify_idea']));
+        }
+
         if (isset($rules['joined_within_days'])) {
             $query->where('contacts.created_at', '>=', now()->subDays((int) $rules['joined_within_days']));
         }
@@ -152,6 +164,10 @@ class ContactSegment
 
         if (isset($rules['lead_status'])) {
             $lines[] = 'وضعیت سرنخ: ' . config("statuses.lead.{$rules['lead_status']}");
+        }
+
+        if (isset($rules['notify_idea'])) {
+            $lines[] = '«خبرم کن» برای: ' . ($ideaNames[(int) $rules['notify_idea']] ?? '#' . $rules['notify_idea']);
         }
 
         if (isset($rules['joined_within_days'])) {

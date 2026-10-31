@@ -9,15 +9,16 @@
 @endsection
 
 @section('page-actions')
-    <a
-        href="{{ route('landing-pages.show', $landingPage->slug) }}"
-        target="_blank"
-        rel="noopener noreferrer"
-        class="btn btn-outline-primary"
-    >
-        <i class="bi bi-box-arrow-up-left"></i>
-        مشاهده صفحه
-    </a>
+    <div class="d-flex gap-2">
+        <a href="{{ route('landing-pages.preview', $landingPage) }}" target="_blank" rel="noopener" class="btn btn-outline-secondary">
+            <i class="bi bi-eye"></i> پیش‌نمایش
+        </a>
+        @if ($landingPage->is_active)
+            <a href="{{ route('landing-pages.show', $landingPage->slug) }}" target="_blank" rel="noopener noreferrer" class="btn btn-outline-primary">
+                <i class="bi bi-box-arrow-up-left"></i> مشاهده صفحه
+            </a>
+        @endif
+    </div>
 @endsection
 
 @section('content')

@@ -20,6 +20,9 @@ class LandingPageEventController extends Controller
                 'string',
                 Rule::in([
                     'cta_click',
+                    'demo_click',
+                    'video_play',
+                    'notify_click',
                     'form_view',
                     'payment_start',
                 ]),

@@ -4,6 +4,7 @@ namespace App\Services\Notifications;
 
 use App\Models\Idea;
 use App\Models\IdeaStatusChange;
+use App\Models\Lead;
 use App\Models\Payment;
 use App\Models\Preorder;
 use App\Models\Refund;
@@ -88,6 +89,51 @@ class CustomerNotifier
     }
 
     /**
+     * کسانی که «وقتی آماده شد خبرم کن» را زده‌اند و خریدار نیستند (مرحله ۱۳۲)؛
+     * یک ردیف برای هر شماره.
+     *
+     * @return \Illuminate\Support\Collection<int, Lead>
+     */
+    public function launchRequesters(Idea $idea)
+    {
+        $buyers = $this->ideaStatusRecipients($idea)->map(fn (Preorder $preorder) => $this->mobileOf($preorder))->all();
+
+        return Lead::with(['contact', 'landingPage'])
+            ->whereHas('landingPage', fn ($q) => $q->where('idea_id', $idea->id))
+            ->where('intent', Lead::INTENT_NOTIFY)
+            ->latest('id')
+            ->get()
+            ->filter(fn (Lead $lead) => ($mobile = $this->mobileOfLead($lead)) !== null && ! in_array($mobile, $buyers, true))
+            ->unique(fn (Lead $lead) => $this->mobileOfLead($lead))
+            ->values();
+    }
+
+    /**
+     * پیامک آمادگی به درخواست‌کنندگان؛ پیام خدماتی است (خود مشتری درخواست
+     * کرده) و به رضایت تبلیغاتی وابسته نیست. برای هر شماره و ایده فقط یک بار.
+     *
+     * @return int تعداد پیامک ثبت‌شده در صف
+     */
+    public function ideaLaunchedToRequesters(Idea $idea): int
+    {
+        $queued = 0;
+
+        foreach ($this->launchRequesters($idea) as $lead) {
+            $mobile = $this->mobileOfLead($lead);
+
+            $message = $this->sms->queueTemplate('idea_launched_notify', $mobile, [
+                'name' => $lead->contact?->name ?: $lead->name,
+                'idea' => $idea->name,
+                'link' => $lead->landingPage ? route('landing-pages.show', $lead->landingPage->slug) : '',
+            ], "idea.launch_notify:{$idea->id}:{$mobile}", ['contact_id' => $lead->contact_id]);
+
+            $queued += $message ? 1 : 0;
+        }
+
+        return $queued;
+    }
+
+    /**
      * @return int تعداد پیامک ثبت‌شده در صف
      */
     public function ideaStatusChanged(Idea $idea, IdeaStatusChange $change): int
@@ -131,6 +177,11 @@ class CustomerNotifier
     private function preorderOf(RefundRequest $request): ?Preorder
     {
         return $request->preorder()->with(['contact', 'landingPage.idea'])->first();
+    }
+
+    private function mobileOfLead(Lead $lead): ?string
+    {
+        return $lead->contact?->mobile ?? PhoneNumber::normalizeMobile($lead->phone);
     }
 
     private function mobileOf(Preorder $preorder): ?string

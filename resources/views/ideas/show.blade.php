@@ -72,7 +72,7 @@
     <div class="row row-cols-1 row-cols-sm-2 row-cols-xl-4 g-3 mb-3">
         @foreach ([
             ['label' => 'بازدیدکننده یکتا', 'value' => number_format($totals['unique_visitors']), 'hint' => number_format($totals['page_views']) . ' بازدید صفحه', 'icon' => 'bi-people', 'color' => 'primary'],
-            ['label' => 'سرنخ', 'value' => number_format($totals['leads']), 'hint' => 'نرخ ثبت: ' . number_format($totals['lead_rate'], 2) . '%', 'icon' => 'bi-person-lines-fill', 'color' => 'success'],
+            ['label' => 'سرنخ', 'value' => number_format($totals['leads']), 'hint' => 'نرخ ثبت: ' . number_format($totals['lead_rate'], 2) . '% — ' . number_format($totals['notify_requests']) . ' درخواست «خبرم کن»', 'icon' => 'bi-person-lines-fill', 'color' => 'success'],
             ['label' => 'درخواست پیش‌خرید', 'value' => number_format($totals['preorders']), 'hint' => null, 'icon' => 'bi-bag', 'color' => 'info'],
             ['label' => 'پرداخت موفق', 'value' => number_format($totals['paid_count']), 'hint' => \App\Support\Money::formatRialAsToman($totals['paid_rial']), 'icon' => 'bi-credit-card', 'color' => 'warning'],
         ] as $stat)
@@ -128,18 +128,28 @@
                                                 <span class="badge text-bg-secondary">غیرفعال</span>
                                             @endif
                                         </td>
-                                        <td>{{ number_format($s['unique_visitors']) }}</td>
+                                        <td>
+                                            {{ number_format($s['unique_visitors']) }}
+                                            @if ($s['demo_clicks'] || $s['video_plays'])
+                                                <div class="small text-body-secondary">{{ number_format($s['demo_clicks']) }} دمو، {{ number_format($s['video_plays']) }} پخش ویدیو</div>
+                                            @endif
+                                        </td>
                                         <td>
                                             {{ number_format($s['leads']) }}
                                             <div class="small text-body-secondary">{{ number_format($s['lead_rate'], 2) }}%</div>
                                         </td>
-                                        <td>{{ number_format($s['preorders']) }}</td>
+                                        <td>
+                                            {{ number_format($s['preorders']) }}
+                                            @if ($s['notify_requests'])
+                                                <div class="small text-body-secondary">{{ number_format($s['notify_requests']) }} خبرم کن</div>
+                                            @endif
+                                        </td>
                                         <td>{{ number_format($s['paid_count']) }}</td>
                                         <td class="text-nowrap">
                                             <a href="{{ route('landing-pages.edit', $landingPage) }}" class="btn btn-sm btn-outline-secondary" title="ویرایش" aria-label="ویرایش {{ $landingPage->name }}">
                                                 <i class="bi bi-pencil"></i>
                                             </a>
-                                            <a href="{{ route('landing-pages.show', $landingPage->slug) }}" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-outline-primary" title="مشاهده" aria-label="مشاهده {{ $landingPage->name }}">
+                                            <a href="{{ $landingPage->is_active ? route('landing-pages.show', $landingPage->slug) : route('landing-pages.preview', $landingPage) }}" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-outline-primary" title="{{ $landingPage->is_active ? 'مشاهده' : 'پیش‌نمایش' }}" aria-label="{{ $landingPage->is_active ? 'مشاهده' : 'پیش‌نمایش' }} {{ $landingPage->name }}">
                                                 <i class="bi bi-box-arrow-up-left"></i>
                                             </a>
                                             <form
@@ -406,6 +416,22 @@
                             @endcan
                             (فقط دارندگان رضایت) انجام می‌شود.
                         </div>
+
+                        @if (collect($transitions)->contains(\App\Enums\IdeaStatus::Launched))
+                            <div class="form-check mb-1">
+                                <input class="form-check-input" type="checkbox" value="1" id="notify_requesters" name="notify_requesters" @checked(old('notify_requesters')) @disabled(! $statusSms['requesters_template'] || ! $statusSms['requesters'])>
+                                <label class="form-check-label small" for="notify_requesters">
+                                    هنگام «عرضه‌شده»: پیامک آمادگی به {{ number_format($statusSms['requesters']) }} نفر که «خبرم کن» زده‌اند
+                                </label>
+                            </div>
+                            <div class="form-text mb-2">
+                                @if (! $statusSms['requesters_template'])
+                                    قالب «آماده‌شدن محصول (درخواست‌کنندگان)» در قالب‌های پیامک فعال نیست.
+                                @else
+                                    پیام خدماتی است (خودشان درخواست کرده‌اند)؛ هر شماره فقط یک بار و خریداران جدا پیام می‌گیرند.
+                                @endif
+                            </div>
+                        @endif
 
                         <button type="submit" class="btn btn-primary btn-sm">ثبت تغییر وضعیت</button>
                     </form>

@@ -24,7 +24,7 @@ class ContactTimeline
 
         foreach ($contact->leads()->with('landingPage.idea')->get() as $lead) {
             $items->push($this->item($lead->created_at, 'bi-person-lines-fill',
-                'فرم علاقه‌مندی: ' . ($lead->landingPage?->idea?->name ?? '—'),
+                ($lead->intent === \App\Models\Lead::INTENT_NOTIFY ? '«خبرم کن»: ' : 'فرم علاقه‌مندی: ') . ($lead->landingPage?->idea?->name ?? '—'),
                 trim(($lead->landingPage?->name ?? '') . ($lead->campaign ? " — کمپین {$lead->campaign}" : '')),
             ));
         }

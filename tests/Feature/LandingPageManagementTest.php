@@ -79,7 +79,8 @@ class LandingPageManagementTest extends TestCase
         $content = $page->contentData();
 
         $this->assertSame('clubyar-intro', $page->slug);
-        $this->assertSame(['مدیریت شاگردان', 'مدیریت پرداخت'], $content['features']);
+        // فرم متنی نسخه ۱.۰ همچنان پذیرفته می‌شود: هر خط یک عنوان
+        $this->assertEquals([['title' => 'مدیریت شاگردان', 'description' => null], ['title' => 'مدیریت پرداخت', 'description' => null]], $content['features']);
         // ترتیب کلیدهای شیء JSON در MySQL حفظ نمی‌شود
         $this->assertEquals([['q' => 'قیمت؟', 'a' => 'ماهانه']], $content['faq']);
 
@@ -105,7 +106,8 @@ class LandingPageManagementTest extends TestCase
             ->assertDontSee('<script>alert(1)</script>', false)
             ->assertDontSee('<img src=x', false)
             ->assertDontSee('<script>a</script>', false)
-            ->assertSee('&lt;script&gt;alert(1)&lt;/script&gt;', false);
+            // ارقام متن صفحه فرود فارسی نمایش داده می‌شود (مرحله ۱۲۵)
+            ->assertSee('&lt;script&gt;alert(۱)&lt;/script&gt;', false);
     }
 
     public function test_invalid_and_duplicate_slugs_are_rejected(): void
