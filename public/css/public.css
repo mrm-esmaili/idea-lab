@@ -122,6 +122,8 @@ a:focus-visible, button:focus-visible, input:focus-visible { outline: 3px solid 
 
 .alert-notice { background: var(--notice-bg); color: var(--notice-text); }
 
+.alert-warning { background: #fff8e6; color: #7a5200; }
+
 .list { margin: 0; padding: 0; list-style: none; }
 
 .list > li { padding: 14px 0; border-bottom: 1px solid var(--border); }

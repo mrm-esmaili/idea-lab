@@ -30,6 +30,7 @@ class SiteSettingsController extends Controller
             'support' => $settings->get('support'),
             'channels' => array_pad($channels, self::MAX_CHANNELS, ['type' => '', 'value' => '', 'label' => null, 'display' => null]),
             'enamad' => $settings->enamad(),
+            'refunds' => $settings->get('refunds'),
         ]);
     }
 
@@ -49,6 +50,7 @@ class SiteSettingsController extends Controller
             'channels.*.value' => ['nullable', 'string', 'max:120', 'required_with:channels.*.type'],
             'channels.*.label' => ['nullable', 'string', 'max:60'],
             'channels.*.display' => ['nullable', 'string', 'max:60'],
+            'refund_wait_hours' => ['required', 'integer', 'min:0', 'max:720'],
         ], [
             'company_website.url' => 'نشانی سایت باید کامل باشد، مثلاً https://itmb.ir',
             'enamad_id.regex' => 'شناسه اینماد فقط عدد است.',
@@ -58,6 +60,7 @@ class SiteSettingsController extends Controller
             'company_logo' => 'لوگو',
             'enamad_id' => 'شناسه اینماد',
             'enamad_code' => 'کد اینماد',
+            'refund_wait_hours' => 'حداقل فاصله از پرداخت',
         ]);
 
         $channels = [];
@@ -108,7 +111,9 @@ class SiteSettingsController extends Controller
             'channels' => $channels,
         ], $user);
 
-        $audit->log($user, 'site_settings.updated', ['channels' => count($channels), 'enamad' => filled($data['enamad_id'] ?? null)]);
+        $settings->save('refunds', ['min_hours_after_payment' => (int) $data['refund_wait_hours']], $user);
+
+        $audit->log($user, 'site_settings.updated', ['channels' => count($channels), 'enamad' => filled($data['enamad_id'] ?? null), 'refund_wait_hours' => (int) $data['refund_wait_hours']]);
 
         return redirect()->route('admin.settings.site')->with('success', 'تنظیمات سایت ذخیره شد.');
     }

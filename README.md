@@ -15,6 +15,7 @@
 | [`ADMIN_GUIDE.md`](ADMIN_GUIDE.md) | راهنمای مدیر: نقش‌ها و کار روزمره با هر بخش پنل |
 | [`DEPLOYMENT.md`](DEPLOYMENT.md) | استقرار روی cPanel بدون SSH، متغیرهای محیط، به‌روزرسانی و بازیابی |
 | [`OPERATIONS_CHECKLIST.md`](OPERATIONS_CHECKLIST.md) | چک‌لیست پیش از راه‌اندازی، روزانه، هفتگی و ماهانه |
+| [`RELEASE_NOTES_1.1.2.md`](RELEASE_NOTES_1.1.2.md) | درخواست بازپرداخت سخت‌گیرانه‌تر (فاصله ۲۴ ساعته و تأیید) |
 | [`RELEASE_NOTES_1.1.1.md`](RELEASE_NOTES_1.1.1.md) | ویرایشگر متن بخش‌های توضیحی صفحه فرود |
 | [`RELEASE_NOTES_1.1.0.md`](RELEASE_NOTES_1.1.0.md) | تغییرات نسخه ۱.۱، migrationها و راهنمای نصب روی سرور فعلی |
 | [`ROADMAP_V2.md`](ROADMAP_V2.md) | نقشه راه نسخه ۱.۱ (به‌روزرسانی از پنل، صفحه فرود اعتمادساز، خبرم کن) و ۱.۲ (پرسش‌نامه) |

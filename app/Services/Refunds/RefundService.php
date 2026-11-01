@@ -10,6 +10,8 @@ use App\Models\RefundRequest;
 use App\Models\User;
 use App\Services\AuditLogger;
 use App\Services\Notifications\CustomerNotifier;
+use App\Services\SiteSettings;
+use App\Support\Format;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 
@@ -29,6 +31,7 @@ class RefundService
     public function __construct(
         private readonly AuditLogger $audit,
         private readonly CustomerNotifier $notifier,
+        private readonly SiteSettings $settings,
     ) {}
 
     /**
@@ -46,12 +49,13 @@ class RefundService
      */
     public function customerEligibility(Preorder $preorder): array
     {
-        $result = fn (bool $eligible, ?string $reason, ?Payment $payment = null, int $max = 0, ?Carbon $deadline = null) => [
+        $result = fn (bool $eligible, ?string $reason, ?Payment $payment = null, int $max = 0, ?Carbon $deadline = null, ?Carbon $availableAt = null) => [
             'eligible' => $eligible,
             'reason' => $reason,
             'payment' => $payment,
             'max_rial' => $max,
             'deadline' => $deadline,
+            'available_at' => $availableAt,
         ];
 
         if (! in_array($preorder->payment_status, [Preorder::PAYMENT_PAID, Preorder::PAYMENT_PARTIALLY_REFUNDED], true)) {
@@ -84,6 +88,20 @@ class RefundService
 
         if ($deadline && now()->gt($deadline)) {
             return $result(false, 'مهلت درخواست بازپرداخت طبق شرایط پذیرفته‌شده به پایان رسیده است.', $payment, 0, $deadline);
+        }
+
+        // فاصله اجباری پس از پرداخت (تنظیمات سایت)؛ اگر مهلت شرایط کوتاه‌تر از آن
+        // باشد، مهلت شرایط مقدم است تا مشتری هرگز از حقش محروم نشود
+        $hours = $this->settings->refundWaitHours();
+        $availableAt = $hours > 0 ? Carbon::instance($payment->verified_at ?? $payment->created_at)->addHours($hours) : null;
+
+        if ($availableAt && $deadline && $availableAt->gte($deadline)) {
+            $availableAt = null;
+        }
+
+        if ($availableAt && now()->lt($availableAt)) {
+            return $result(false, 'درخواست بازپرداخت از ' . Format::faDigits($hours) . ' ساعت پس از پرداخت ممکن است؛ از '
+                . Format::faDigits(Format::datetime($availableAt)) . '.', $payment, 0, $deadline, $availableAt);
         }
 
         return $result(true, null, $payment, $this->remaining($payment), $deadline);

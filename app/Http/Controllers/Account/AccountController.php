@@ -41,7 +41,11 @@ class AccountController extends Controller
 
         $data = $request->validate([
             'reason' => ['required', 'string', 'min:5', 'max:2000'],
-        ], [], ['reason' => 'دلیل درخواست']);
+            // تأیید صریح هشدار (بدون جاوااسکریپت هم اجباری است)
+            'confirm' => ['accepted'],
+        ], [
+            'confirm.accepted' => 'برای ثبت درخواست، تأیید کنید که از بازپرداخت و لغو پیش‌خرید مطمئن هستید.',
+        ], ['reason' => 'دلیل درخواست']);
 
         $eligibility = $refunds->customerEligibility($preorder);
 

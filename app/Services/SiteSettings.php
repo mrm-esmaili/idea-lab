@@ -17,6 +17,8 @@ class SiteSettings
         'company' => ['name' => null, 'website' => null, 'logo' => null, 'intro' => null],
         'trust_seal' => ['enamad_id' => null, 'enamad_code' => null],
         'support' => ['help_text' => null, 'channels' => []],
+        // درخواست بازپرداخت مشتری زودتر از این چند ساعت پس از پرداخت ممکن نیست
+        'refunds' => ['min_hours_after_payment' => 24],
     ];
 
     private const CACHE_KEY = 'site_settings';
@@ -58,6 +60,11 @@ class SiteSettings
 
         Cache::forget(self::CACHE_KEY);
         $this->loaded = null;
+    }
+
+    public function refundWaitHours(): int
+    {
+        return max(0, min(720, (int) $this->get('refunds')['min_hours_after_payment']));
     }
 
     public function companyName(): ?string
