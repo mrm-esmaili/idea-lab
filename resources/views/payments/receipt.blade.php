@@ -9,10 +9,18 @@
     <title>{{ $preorder->isPaid() ? 'رسید پرداخت' : 'وضعیت پرداخت' }}</title>
 
     <style>
+        @font-face {
+            font-family: 'Vazirmatn';
+            src: url('{{ asset('vendor/vazirmatn/Vazirmatn-Variable.woff2') }}') format('woff2-variations'),
+                 url('{{ asset('vendor/vazirmatn/Vazirmatn-Variable.woff2') }}') format('woff2');
+            font-weight: 100 900;
+            font-display: swap;
+        }
+
         body {
             margin: 0;
             padding: 24px;
-            font-family: Tahoma, Arial, sans-serif;
+            font-family: 'Vazirmatn', Tahoma, Arial, sans-serif;
             background: #f4f6fa;
             color: #202938;
             line-height: 1.9;
@@ -59,6 +67,8 @@
         }
 
         .muted { color: #64748b; font-size: 14px; }
+
+        button, input, select, textarea { font-family: inherit; }
     </style>
 </head>
 

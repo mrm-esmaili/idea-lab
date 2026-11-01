@@ -5,15 +5,26 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
     <meta name="robots" content="noindex, nofollow">
-    <meta name="referrer" content="no-referrer">
+    {{-- زرین‌پال دامنه فرستنده را با دامنه ثبت‌شده درگاه می‌سنجد؛ بدون Referer خطای
+         «دسترسی از این دامنه مجاز نمی‌باشد» می‌دهد. origin فقط دامنه را می‌فرستد،
+         نه نشانی این صفحه که توکن سفارش دارد. --}}
+    <meta name="referrer" content="origin">
 
     <title>پرداخت پیش‌خرید</title>
 
     <style>
+        @font-face {
+            font-family: 'Vazirmatn';
+            src: url('{{ asset('vendor/vazirmatn/Vazirmatn-Variable.woff2') }}') format('woff2-variations'),
+                 url('{{ asset('vendor/vazirmatn/Vazirmatn-Variable.woff2') }}') format('woff2');
+            font-weight: 100 900;
+            font-display: swap;
+        }
+
         body {
             margin: 0;
             padding: 24px;
-            font-family: Tahoma, Arial, sans-serif;
+            font-family: 'Vazirmatn', Tahoma, Arial, sans-serif;
             background: #f4f6fa;
             color: #202938;
         }
@@ -69,6 +80,8 @@
             cursor: pointer;
             font-size: 15px;
         }
+
+        button, input, select, textarea { font-family: inherit; }
     </style>
 </head>
 

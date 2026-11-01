@@ -179,6 +179,7 @@ class LandingPageController extends Controller
             'support_channels.*.type' => ['nullable', Rule::in(array_keys(ContactChannel::TYPES))],
             'support_channels.*.value' => ['nullable', 'string', 'max:120', 'required_with:support_channels.*.type'],
             'support_channels.*.label' => ['nullable', 'string', 'max:60'],
+            'support_channels.*.display' => ['nullable', 'string', 'max:60'],
             'show_trust' => ['nullable', 'boolean'],
         ];
     }

@@ -120,6 +120,14 @@ class SiteSettingsTest extends TestCase
         $this->assertSame('https://wa.me/971501234567', $url('whatsapp', '+971 50 123 4567'));
         $this->assertSame('https://t.me/itmb', $url('telegram', 'https://t.me/itmb'));
         $this->assertSame('https://ble.ir/itmb', $url('bale', 'ble.ir/itmb'));
+        // لینک خودش نمایش داده نمی‌شود: متن نمایشی، یا شناسه/شماره قابل استخراج، یا هیچ
+        $channel = fn (array $data) => ContactChannel::fromArray($data);
+        $this->assertSame('@itmb_support', $channel(['type' => 'whatsapp', 'value' => 'wa.me/message/ABCD12', 'display' => '@itmb_support'])->display());
+        $this->assertSame('https://wa.me/message/ABCD12', $channel(['type' => 'whatsapp', 'value' => 'wa.me/message/ABCD12', 'display' => '@itmb_support'])->url());
+        $this->assertSame('', $channel(['type' => 'whatsapp', 'value' => 'wa.me/message/ABCD12'])->display());
+        $this->assertSame('09121234567', $channel(['type' => 'whatsapp', 'value' => 'https://wa.me/989121234567'])->display());
+        $this->assertSame('@itmb', $channel(['type' => 'telegram', 'value' => 'https://t.me/itmb'])->display());
+
         // لینک دامنه دیگر یا نشانی دست‌کاری‌شده پذیرفته نمی‌شود
         foreach (['https://evil.com/wa.me', 'wa.me.evil.com/x', 'https://user@wa.me/x', 'wa.me/x"onmouseover=y', 'javascript:alert(1)', 'wa.me/'] as $bad) {
             $this->assertNull(ContactChannel::fromArray(['type' => 'whatsapp', 'value' => $bad]), $bad);
@@ -128,6 +136,24 @@ class SiteSettingsTest extends TestCase
         $this->assertNull(ContactChannel::fromArray(['type' => 'telegram', 'value' => 'https://evil.example']));
         $this->assertNull(ContactChannel::fromArray(['type' => 'sms', 'value' => '09121234567']));
         $this->assertSame('09121234567', ContactChannel::fromArray(['type' => 'bale', 'value' => '۰۹۱۲۱۲۳۴۵۶۷'])->display());
+    }
+
+    public function test_whatsapp_link_shows_display_text_not_the_link(): void
+    {
+        $this->actingAs($this->owner())->put(route('admin.settings.site.update'), $this->validSettings(['channels' => [
+            ['type' => 'whatsapp', 'value' => 'https://wa.me/message/ABCD12', 'label' => '', 'display' => '@itmb_support'],
+            ['type' => 'whatsapp', 'value' => 'chat.whatsapp.com/Invite123', 'label' => 'گروه مشتریان', 'display' => ''],
+        ]]))->assertSessionHasNoErrors();
+
+        // فاصله‌های اضافه میان ویژگی‌های HTML اهمیتی ندارد
+        $html = preg_replace('/\s+/', ' ', $this->get(route('account.login'))->assertOk()->getContent());
+        $html = str_replace('" >', '">', $html);
+
+        $this->assertStringContainsString('<a href="https://wa.me/message/ABCD12" target="_blank" rel="noopener">واتساپ: <bdi dir="ltr">@itmb_support</bdi></a>', $html);
+        $this->assertStringContainsString('<a href="https://chat.whatsapp.com/Invite123" target="_blank" rel="noopener">گروه مشتریان</a>', $html);
+        // متن پیوند هرگز خود نشانی نیست
+        $this->assertStringNotContainsString('>wa.me', $html);
+        $this->assertStringNotContainsString('chat.whatsapp.com/Invite123</bdi>', $html);
     }
 
     public function test_public_pages_show_trust_footer(): void

@@ -38,6 +38,8 @@ final class ContactChannel
         public readonly string $type,
         public readonly string $value,
         public readonly ?string $label = null,
+        // متن نمایشی به‌جای مقدار (مثلاً شناسه، وقتی مقدار لینک است)
+        public readonly ?string $displayText = null,
     ) {
     }
 
@@ -51,8 +53,9 @@ final class ContactChannel
         }
 
         $label = trim((string) ($data['label'] ?? ''));
+        $display = mb_substr(trim((string) ($data['display'] ?? '')), 0, 60);
 
-        return new self($type, $value, $label !== '' ? $label : null);
+        return new self($type, $value, $label !== '' ? $label : null, $display !== '' ? $display : null);
     }
 
     /**
@@ -77,10 +80,24 @@ final class ContactChannel
         return $this->label ?? self::TYPES[$this->type];
     }
 
+    /**
+     * متن کنار نام پیام‌رسان؛ رشته خالی یعنی فقط نام نمایش داده شود.
+     */
     public function display(): string
     {
+        if ($this->displayText !== null) {
+            return $this->displayText;
+        }
+
+        // لینک خودش نمایش داده نمی‌شود؛ فقط شناسه یا شماره‌ای که از آن پیداست
         if ($link = self::link($this->type, $this->value)) {
-            return rtrim(preg_replace('#^https://(www\.)?#', '', $link), '/');
+            $path = trim((string) parse_url($link, PHP_URL_PATH), '/');
+
+            if (preg_match('/^\d{8,15}$/', $path)) {
+                return str_starts_with($path, '98') ? '0' . substr($path, 2) : '+' . $path;
+            }
+
+            return in_array($this->type, ['telegram', 'bale', 'eitaa'], true) && preg_match(self::USERNAME, $path, $match) ? '@' . $match[1] : '';
         }
 
         if ($this->type !== 'email' && preg_match(self::USERNAME, $this->value, $match)) {
@@ -119,7 +136,7 @@ final class ContactChannel
 
     public function toArray(): array
     {
-        return ['type' => $this->type, 'value' => $this->value, 'label' => $this->label];
+        return ['type' => $this->type, 'value' => $this->value, 'label' => $this->label, 'display' => $this->displayText];
     }
 
     /**

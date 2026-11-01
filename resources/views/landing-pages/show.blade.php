@@ -616,9 +616,9 @@
                                 @foreach ($supportChannels as $channel)
                                     <li>
                                         @if ($url = $channel->url())
-                                            <a href="{{ $url }}" @if (str_starts_with($url, 'http')) target="_blank" rel="noopener" @endif>{{ $channel->name() }}: <bdi dir="ltr">{{ $fa($channel->display()) }}</bdi></a>
+                                            <a href="{{ $url }}" @if (str_starts_with($url, 'http')) target="_blank" rel="noopener" @endif>{{ $channel->name() }}@if ($channel->display() !== ''): <bdi dir="ltr">{{ $fa($channel->display()) }}</bdi>@endif</a>
                                         @else
-                                            <span>{{ $channel->name() }}: <bdi dir="ltr">{{ $fa($channel->display()) }}</bdi></span>
+                                            <span>{{ $channel->name() }}@if ($channel->display() !== ''): <bdi dir="ltr">{{ $fa($channel->display()) }}</bdi>@endif</span>
                                         @endif
                                     </li>
                                 @endforeach
