@@ -28,7 +28,7 @@ class SiteSettingsController extends Controller
             'logoUrl' => $settings->logoUrl(),
             'trustSeal' => $settings->get('trust_seal'),
             'support' => $settings->get('support'),
-            'channels' => array_pad($channels, self::MAX_CHANNELS, ['type' => '', 'value' => '', 'label' => null]),
+            'channels' => array_pad($channels, self::MAX_CHANNELS, ['type' => '', 'value' => '', 'label' => null, 'display' => null]),
             'enamad' => $settings->enamad(),
         ]);
     }
@@ -48,6 +48,7 @@ class SiteSettingsController extends Controller
             'channels.*.type' => ['nullable', Rule::in(array_keys(ContactChannel::TYPES))],
             'channels.*.value' => ['nullable', 'string', 'max:120', 'required_with:channels.*.type'],
             'channels.*.label' => ['nullable', 'string', 'max:60'],
+            'channels.*.display' => ['nullable', 'string', 'max:60'],
         ], [
             'company_website.url' => 'نشانی سایت باید کامل باشد، مثلاً https://itmb.ir',
             'enamad_id.regex' => 'شناسه اینماد فقط عدد است.',

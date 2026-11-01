@@ -116,6 +116,19 @@ class PaymentFlowTest extends TestCase
         return LandingPageEvent::where('event_name', 'payment_success')->count();
     }
 
+    /**
+     * زرین‌پال درخواست بدون Referer را «دامنه غیرمجاز» می‌داند؛ صفحه پرداخت فقط
+     * دامنه را می‌فرستد (نه نشانی کامل که توکن سفارش دارد) و فونت فارسی دارد.
+     */
+    public function test_checkout_sends_origin_referrer_and_persian_font(): void
+    {
+        $this->get(route('preorders.checkout', $this->preorder->public_token))
+            ->assertOk()
+            ->assertSee('<meta name="referrer" content="origin">', false)
+            ->assertDontSee('content="no-referrer"', false)
+            ->assertSee('vendor/vazirmatn/Vazirmatn-Variable.woff2', false);
+    }
+
     public function test_successful_payment_flow(): void
     {
         $this->fakeGateway();

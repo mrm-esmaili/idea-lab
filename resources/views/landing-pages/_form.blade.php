@@ -325,7 +325,7 @@
                 <input id="support_text" type="text" name="support_text" maxlength="300" placeholder="سؤال دارید؟ در بله پیام دهید."
                     value="{{ old('support_text', $content['support_text']) }}" @class(['form-control', 'is-invalid' => $errors->has('support_text')])>
 
-                <div class="form-text mb-2">راه‌های تماس مخصوص این صفحه؛ اگر خالی بماند، راه‌های <a href="{{ route('admin.settings.site') }}">تنظیمات سایت</a> نمایش داده می‌شود.</div>
+                <div class="form-text mb-2">راه‌های تماس مخصوص این صفحه (شماره، شناسه یا لینک؛ «متن نمایشی» به‌جای لینک نمایش داده می‌شود)؛ اگر خالی بماند، راه‌های <a href="{{ route('admin.settings.site') }}">تنظیمات سایت</a> نمایش داده می‌شود.</div>
                 @for ($i = 0; $i < 4; $i++)
                     <div class="input-group input-group-sm mb-1">
                         <select name="support_channels[{{ $i }}][type]" class="form-select" style="max-width: 96px" aria-label="نوع راه تماس {{ $i + 1 }}">
@@ -338,6 +338,8 @@
                             aria-label="شماره یا نام کاربری {{ $i + 1 }}" @class(['form-control', 'ltr', 'is-invalid' => $errors->has("support_channels.$i.value")])>
                         <input type="hidden" name="support_channels[{{ $i }}][label]" value="{{ $supportChannels[$i]['label'] ?? '' }}">
                     </div>
+                    <input type="text" name="support_channels[{{ $i }}][display]" maxlength="60" value="{{ $supportChannels[$i]['display'] ?? '' }}"
+                        placeholder="متن نمایشی (اختیاری)، مثلاً ‎@itmb_support" aria-label="متن نمایشی راه تماس {{ $i + 1 }}" class="form-control form-control-sm mb-2">
                     @error("support_channels.$i.value")<div class="text-danger small mb-1">{{ $message }}</div>@enderror
                 @endfor
 

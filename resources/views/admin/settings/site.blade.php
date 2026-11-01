@@ -100,12 +100,13 @@
                     <strong>واتساپ:</strong> شماره موبایل (ایران یا خارج با +)، لینک (<span class="ltr">wa.me/...</span>، لینک گروه یا کانال) یا شناسه.
                     <strong>تلگرام، بله و ایتا:</strong> نام کاربری (بدون @)، لینک کامل (<span class="ltr">t.me/...</span>، <span class="ltr">ble.ir/...</span>، <span class="ltr">eitaa.com/...</span>) یا شماره موبایل.
                     شماره و نام کاربری بله و ایتا، و شناسه واتساپ، لینک مستقیم ندارند و فقط نمایش داده می‌شوند.
+                    <strong>متن نمایشی</strong> (اختیاری) به‌جای مقدار کنار نام پیام‌رسان می‌آید؛ مثلاً لینک <span class="ltr">wa.me/message/...</span> بگذارید و شناسه را نمایش دهید. لینک خودش هرگز نمایش داده نمی‌شود.
                     ردیف‌های بدون نوع نادیده گرفته می‌شوند.
                 </p>
 
                 @foreach ($channels as $index => $channel)
                     <div class="row g-2 mb-2 align-items-start">
-                        <div class="col-sm-3">
+                        <div class="col-sm-2">
                             <label class="visually-hidden" for="channel-type-{{ $index }}">نوع</label>
                             <select id="channel-type-{{ $index }}" name="channels[{{ $index }}][type]" class="form-select">
                                 <option value="">—</option>
@@ -114,15 +115,20 @@
                                 @endforeach
                             </select>
                         </div>
-                        <div class="col-sm-5">
-                            <label class="visually-hidden" for="channel-value-{{ $index }}">شماره یا نام کاربری</label>
+                        <div class="col-sm-4">
+                            <label class="visually-hidden" for="channel-value-{{ $index }}">شماره، نام کاربری یا لینک</label>
                             <input id="channel-value-{{ $index }}" name="channels[{{ $index }}][value]" type="text" maxlength="120" placeholder="09121234567، itmb_support یا wa.me/..."
                                 value="{{ old("channels.{$index}.value", $channel['value']) }}" @class(['form-control', 'ltr', 'is-invalid' => $errors->has("channels.{$index}.value")])>
                             @error("channels.{$index}.value")<div class="invalid-feedback">{{ $message }}</div>@enderror
                         </div>
-                        <div class="col-sm-4">
+                        <div class="col-sm-3">
+                            <label class="visually-hidden" for="channel-display-{{ $index }}">متن نمایشی (اختیاری)</label>
+                            <input id="channel-display-{{ $index }}" name="channels[{{ $index }}][display]" type="text" maxlength="60" placeholder="نمایش: مثلاً ‎@itmb_support"
+                                value="{{ old("channels.{$index}.display", $channel['display'] ?? '') }}" class="form-control">
+                        </div>
+                        <div class="col-sm-3">
                             <label class="visually-hidden" for="channel-label-{{ $index }}">عنوان (اختیاری)</label>
-                            <input id="channel-label-{{ $index }}" name="channels[{{ $index }}][label]" type="text" maxlength="60" placeholder="عنوان (اختیاری)، مثلاً پشتیبانی فروش"
+                            <input id="channel-label-{{ $index }}" name="channels[{{ $index }}][label]" type="text" maxlength="60" placeholder="عنوان؛ مثلاً پشتیبانی فروش"
                                 value="{{ old("channels.{$index}.label", $channel['label']) }}" class="form-control">
                         </div>
                     </div>
