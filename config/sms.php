@@ -32,4 +32,7 @@ return [
     'promo_footer' => env('SMS_PROMO_FOOTER', 'لغو۱۱'),
 
     'max_text_length' => 600,
+
+    // حداکثر طول مقدار هر پارامتر قالب در SMS.ir؛ مقدار بلندتر خودکار کوتاه می‌شود
+    'template_param_max' => (int) env('SMS_TEMPLATE_PARAM_MAX', 25),
 ];

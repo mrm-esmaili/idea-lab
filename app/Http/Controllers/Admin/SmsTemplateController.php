@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Services\Sms\SmsParameterStats;
 use App\Models\SmsMessage;
 use App\Models\SmsTemplate;
 use App\Services\Sms\SmsDispatcher;
@@ -33,6 +34,7 @@ class SmsTemplateController extends Controller
 
         return view('admin.sms.index', [
             'templates' => $templates,
+            'overLimit' => $templates->flatten()->mapWithKeys(fn ($template) => [$template->id => app(SmsParameterStats::class)->overLimit($template)]),
             'queue' => [
                 'queued' => SmsMessage::where('status', SmsMessage::STATUS_QUEUED)->count(),
                 'failed_24h' => SmsMessage::where('status', SmsMessage::STATUS_FAILED)->where('created_at', '>=', now()->subDay())->count(),
@@ -44,11 +46,13 @@ class SmsTemplateController extends Controller
         ]);
     }
 
-    public function edit(SmsTemplate $template)
+    public function edit(SmsTemplate $template, SmsParameterStats $stats)
     {
         return view('admin.sms.edit', [
             'template' => $template,
             'samples' => self::SAMPLES,
+            'stats' => $stats->all(),
+            'paramLimit' => $stats->limit(),
         ]);
     }
 

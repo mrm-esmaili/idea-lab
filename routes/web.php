@@ -65,6 +65,14 @@ Route::post('/logout', [
 ])->middleware('auth:web')->name('logout');
 
 // صفحات عمومی
+// نشانی‌های کوتاه پیامک (پارامتر SMS.ir حداکثر ۲۵ نویسه است)
+Route::get('/a', fn () => redirect()->route('account.login'))->name('short.account');
+Route::get('/p/{landingPage}', function (\App\Models\LandingPage $landingPage) {
+    abort_unless(\App\Models\LandingPage::whereKey($landingPage->id)->publiclyVisible()->exists(), 404);
+
+    return redirect()->route('landing-pages.show', $landingPage->slug);
+})->whereNumber('landingPage')->name('short.page');
+
 Route::get('/l/{slug}', [
     PublicLandingPageController::class,
     'show',
