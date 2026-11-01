@@ -95,7 +95,7 @@ class LandingContentTest extends TestCase
             // راه تماس خود صفحه جای راه‌های سایت را می‌گیرد و پاورقی تکرارش نمی‌کند
             ->assertSee('href="https://t.me/club_support"', false)
             ->assertSee('سؤال دارید؟')
-            ->assertDontSee('tel:02112345678', false)
+            ->assertDontSee('tel:+982112345678', false)
             ->assertDontSee('sf-support-title', false)
             ->assertSee('این محصول توسط')
             ->assertSee('ایده‌پردازان')
@@ -114,7 +114,7 @@ class LandingContentTest extends TestCase
         ]))->assertSessionHasNoErrors();
 
         $this->get('/l/club')
-            ->assertSee('href="tel:02112345678"', false)
+            ->assertSee('href="tel:+982112345678"', false)
             ->assertSee('متن سایت')
             ->assertDontSee('data-track="demo_click"', false)
             ->assertDontSee('data-video-src="', false)
@@ -132,7 +132,7 @@ class LandingContentTest extends TestCase
             'demo_url' => 'javascript:alert(1)',
             'preorder_original_price_toman' => 'رایگان',
             'preorder_includes' => implode("\n", range(1, 9)),
-            'support_channels' => [['type' => 'whatsapp', 'value' => 'abc', 'label' => '']],
+            'support_channels' => [['type' => 'whatsapp', 'value' => 'https://evil.example/x', 'label' => '']],
             'features' => [['title' => '', 'description' => 'توضیح بی‌عنوان']],
         ] as $field => $value) {
             $this->post(route('landing-pages.store', $this->idea), $this->payload([$field => $value]))
