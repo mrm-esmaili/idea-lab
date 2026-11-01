@@ -20,7 +20,8 @@ use Throwable;
  */
 class SystemStatus
 {
-    public const REQUIRED_EXTENSIONS = ['pdo_mysql', 'mbstring', 'openssl', 'curl', 'fileinfo'];
+    // dom: پاک‌سازی متن قالب‌دار صفحه فرود (App\Support\RichText)
+    public const REQUIRED_EXTENSIONS = ['pdo_mysql', 'mbstring', 'openssl', 'curl', 'fileinfo', 'dom'];
 
     /**
      * @return list<array{group: string, label: string, status: string, detail: string, fix: ?string}>

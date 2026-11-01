@@ -37,7 +37,14 @@ class LandingPage extends Model
         // خالی = راه‌های تماس تنظیمات سایت
         'support_channels' => [],
         'show_trust' => true,
+
+        // نسخه ۱.۱.۱: body_text، پاسخ پرسش‌ها، preorder_intro و preorder_guarantee
+        // به‌صورت HTML امن ذخیره شده‌اند؛ محتوای قدیمی متن ساده است
+        'rich_text' => false,
     ];
+
+    /** کلیدهای متن قالب‌دار (ویرایشگر) */
+    public const RICH_FIELDS = ['body_text', 'preorder_intro', 'preorder_guarantee'];
 
     public const APARAT_HASH = '/^[A-Za-z0-9]{3,24}$/';
 
@@ -122,12 +129,22 @@ class LandingPage extends Model
                 && is_string($item['a'] ?? null)
         ));
 
+        // متن ساده نسخه‌های قبل به HTML تبدیل می‌شود تا نمایش و ویرایشگر یکسان باشند
+        if (! $content['rich_text']) {
+            foreach (self::RICH_FIELDS as $field) {
+                $content[$field] = is_string($content[$field]) ? \App\Support\RichText::fromPlain($content[$field]) : null;
+            }
+
+            $content['faq'] = array_map(fn ($item) => ['q' => $item['q'], 'a' => (string) \App\Support\RichText::fromPlain($item['a'])], $content['faq']);
+        }
+
         $content['preorder_includes'] = array_values(array_filter((array) $content['preorder_includes'], 'is_string'));
         $content['support_channels'] = array_values(array_filter((array) $content['support_channels'], 'is_array'));
         $content['preorder_original_price_toman'] = is_numeric($content['preorder_original_price_toman']) ? (int) $content['preorder_original_price_toman'] : null;
         $content['video_aparat'] = is_string($content['video_aparat']) && preg_match(self::APARAT_HASH, $content['video_aparat']) ? $content['video_aparat'] : null;
         $content['demo_new_tab'] = (bool) $content['demo_new_tab'];
         $content['show_trust'] = (bool) $content['show_trust'];
+        $content['rich_text'] = (bool) $content['rich_text'];
 
         $content['show_lead_form'] = (bool) $content['show_lead_form'];
         $content['show_preorder_form'] = (bool) $content['show_preorder_form'];

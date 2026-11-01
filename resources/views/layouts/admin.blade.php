@@ -12,6 +12,7 @@
     <link rel="stylesheet" href="{{ asset('vendor/bootstrap-icons/bootstrap-icons.min.css') }}">
     <link rel="stylesheet" href="{{ asset('css/admin.css') }}">
     <link rel="stylesheet" href="{{ asset('css/jalali-datepicker.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/rich-editor.css') }}">
 </head>
 
 <body class="layout-fixed sidebar-expand-lg bg-body-tertiary">
@@ -126,6 +127,7 @@
 <script src="{{ asset('vendor/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
 <script src="{{ asset('vendor/adminlte/js/adminlte.min.js') }}"></script>
 <script src="{{ asset('js/jalali-datepicker.js') }}" defer></script>
+<script src="{{ asset('js/rich-editor.js') }}" defer></script>
 <script src="{{ asset('js/admin.js') }}" defer></script>
 @stack('scripts')
 </body>

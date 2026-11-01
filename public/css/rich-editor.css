@@ -1,0 +1,44 @@
+/* ویرایشگر متن پنل (public/js/rich-editor.js) */
+.rich-editor { border: 1px solid var(--bs-border-color); border-radius: var(--bs-border-radius); background: var(--bs-body-bg); }
+
+.rich-editor-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; padding: 6px; border-bottom: 1px solid var(--bs-border-color); background: var(--bs-tertiary-bg); border-radius: var(--bs-border-radius) var(--bs-border-radius) 0 0; }
+
+.rich-editor-toolbar .form-select { width: auto; min-width: 110px; }
+
+.rich-editor-toolbar .btn { padding: .15rem .45rem; line-height: 1.4; }
+
+.rich-editor-separator { width: 1px; align-self: stretch; margin: 2px 2px; background: var(--bs-border-color); }
+
+.rich-editor-area,
+.rich-editor .rich-editor-source { min-height: 180px; max-height: 520px; overflow-y: auto; border: 0; border-radius: 0 0 var(--bs-border-radius) var(--bs-border-radius); line-height: 1.9; }
+
+.rich-editor-compact .rich-editor-area,
+.rich-editor-compact .rich-editor-source { min-height: 76px; }
+
+.rich-editor .rich-editor-source { width: 100%; font-family: monospace; font-size: .85rem; direction: ltr; text-align: left; }
+
+.rich-editor-area:focus { box-shadow: none; outline: 2px solid rgba(var(--bs-primary-rgb), .35); outline-offset: -2px; }
+
+.rich-editor-area.is-invalid { outline: 2px solid var(--bs-danger); }
+
+.rich-editor-area:empty::before { content: attr(data-placeholder); color: var(--bs-secondary-color); pointer-events: none; }
+
+.rich-editor-area > :first-child { margin-top: 0; }
+
+.rich-editor-area p { margin: 0 0 .6em; }
+
+.rich-editor-area h1, .rich-editor-area h2, .rich-editor-area h3,
+.rich-editor-area h4, .rich-editor-area h5, .rich-editor-area h6 { margin: .8em 0 .4em; font-weight: 700; }
+
+.rich-editor-area h1 { font-size: 1.6rem; }
+.rich-editor-area h2 { font-size: 1.4rem; }
+.rich-editor-area h3 { font-size: 1.25rem; }
+.rich-editor-area h4 { font-size: 1.1rem; }
+.rich-editor-area h5 { font-size: 1rem; }
+.rich-editor-area h6 { font-size: .9rem; }
+
+.rich-editor-area ul, .rich-editor-area ol { padding-inline-start: 1.6em; margin-bottom: .6em; }
+
+.rich-editor-area blockquote { margin: .6em 0; padding: .5em 1em; border-inline-start: 4px solid var(--bs-primary-border-subtle); background: var(--bs-primary-bg-subtle); border-radius: 6px; }
+
+.rich-editor-area hr { margin: 1em 0; }

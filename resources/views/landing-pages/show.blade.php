@@ -255,6 +255,36 @@
 
         .hero .media { margin-top: 28px; }
 
+        /* متن قالب‌دار ویرایشگر (نسخه ۱.۱.۱) */
+        .rich-text { text-align: start; overflow-wrap: anywhere; }
+
+        .rich-text > :first-child { margin-top: 0; }
+
+        .rich-text > :last-child { margin-bottom: 0; }
+
+        .rich-text h1, .rich-text h2, .rich-text h3, .rich-text h4, .rich-text h5, .rich-text h6 { margin: 1.2em 0 .4em; line-height: 1.6; color: var(--text); }
+
+        .rich-text h1 { font-size: 1.6em; }
+        .rich-text h2 { font-size: 1.4em; }
+        .rich-text h3 { font-size: 1.25em; }
+        .rich-text h4 { font-size: 1.1em; }
+        .rich-text h5 { font-size: 1em; }
+        .rich-text h6 { font-size: .9em; color: var(--muted); }
+
+        .rich-text p { margin: 0 0 .8em; }
+
+        .rich-text ul, .rich-text ol { margin: 0 0 .8em; padding-inline-start: 1.6em; }
+
+        .rich-text li { margin-bottom: .25em; }
+
+        .rich-text blockquote { margin: 1em 0; padding: .6em 1em; border-inline-start: 4px solid #c7d2fe; background: #eef2ff; border-radius: 8px; color: var(--text); }
+
+        .rich-text hr { margin: 1.4em 0; border: 0; border-top: 1px solid var(--border); }
+
+        .rich-text a { color: var(--primary); }
+
+        .body-text.rich-text { color: var(--text); }
+
         .preview-banner { position: sticky; top: 0; z-index: 10; padding: 8px 16px; background: #fef3c7; color: #92400e; text-align: center; font-size: 14px; }
 
         @media (prefers-reduced-motion: no-preference) {
@@ -354,7 +384,7 @@
             <h2>{{ $fa($content['body_title'] ?? 'به‌زودی اطلاعات بیشتری منتشر می‌شود') }}</h2>
 
             @if ($content['body_text'])
-                <p class="body-text">{!! nl2br(e($fa($content['body_text']))) !!}</p>
+                <div class="body-text rich-text">{!! \App\Support\RichText::render($content['body_text']) !!}</div>
             @else
                 <p class="body-text">
                     اگر به این محصول علاقه‌مند هستید،
@@ -384,9 +414,11 @@
 
                 <h2>{{ $fa($content['preorder_title'] ?: 'درخواست پیش‌خرید') }}</h2>
 
-                <p class="form-intro">
-                    {{ $fa($content['preorder_intro'] ?: 'اگر به این محصول علاقه‌مند هستید، اطلاعات خود را وارد کنید تا به صفحه پرداخت هدایت شوید.') }}
-                </p>
+                @if ($content['preorder_intro'])
+                    <div class="form-intro rich-text">{!! \App\Support\RichText::render($content['preorder_intro']) !!}</div>
+                @else
+                    <p class="form-intro">اگر به این محصول علاقه‌مند هستید، اطلاعات خود را وارد کنید تا به صفحه پرداخت هدایت شوید.</p>
+                @endif
 
                 @if ($content['preorder_includes'])
                     <ul class="includes" aria-label="چه می‌گیرید">
@@ -405,7 +437,7 @@
                 </p>
 
                 @if ($content['preorder_guarantee'])
-                    <div class="guarantee">{!! nl2br(e($fa($content['preorder_guarantee']))) !!}</div>
+                    <div class="guarantee rich-text">{!! \App\Support\RichText::render($content['preorder_guarantee']) !!}</div>
                 @endif
 
                 @if ($preorderErrors->any())
@@ -486,7 +518,7 @@
                     @foreach ($content['faq'] as $item)
                         <details>
                             <summary>{{ $fa($item['q']) }}</summary>
-                            <p>{!! nl2br(e($fa($item['a']))) !!}</p>
+                            <div class="rich-text">{!! \App\Support\RichText::render($item['a']) !!}</div>
                         </details>
                     @endforeach
                 </div>

@@ -543,3 +543,9 @@
 - **مسیر آزمون‌شده:** Extract دستی و `system:finish-update` (نصب نخست)، و `system:update` همراه با پشتیبان خودکار و `system:rollback` (به‌روزرسانی‌های بعدی). بررسی ۵ صفحه عمومی و ۱۰ صفحه پنل در وب‌سرور.
 - **نتیجه:** ۲۷ از ۲۷ روی MariaDB و MySQL 8.
 - **حجم بسته:** بسته محلی (با vendor توسعه) حدود ۲۱۰ مگابایت است، که phpunit، mockery، pint و phpstan درون sebastian است. بسته GitHub با `--no-dev` حدود ۸ مگابایت است.
+
+## ۲۸. گزارش نسخه ۱.۱.۱ (ویرایشگر متن صفحه فرود) — انجام شد
+
+- **فهرست سفید:** `p, br, h1–h6, ul, ol, li, hr, blockquote, strong, b, em, i, u, s, a`. همه ویژگی‌ها حذف می‌شوند، جز `href` با `http(s)`، `mailto` یا `tel` (بدون فاصله و نقل‌قول). پیوند بیرونی `target="_blank" rel="noopener nofollow"` می‌گیرد. `script`، `style`، `iframe`، `img`، `svg`، فرم و ... با محتوا حذف می‌شوند. تگ ناشناخته فقط پوسته‌اش حذف می‌شود و `div` به `br` تبدیل می‌شود. بند کاملاً خالی حذف می‌شود.
+- **کلیدها:** `body_text`، `faq[].a`، `preorder_intro` و `preorder_guarantee` با `rich_text: true` HTML هستند. محتوای قدیمی در `contentData()` با `fromPlain` تبدیل می‌شود. طول متن خالص محدود است (۵۰۰۰، ۲۰۰۰ و ۱۰۰۰ نویسه).
+- **ویرایشگر:** `contenteditable` و `execCommand` (formatBlock و فهرست‌ها)، پاک‌سازی سمت مرورگر هنگام چسباندن و ذخیره، و حالت نمایش HTML. به‌دلیل قاعده «بدون npm و CDN» کتابخانه خارجی ندارد.

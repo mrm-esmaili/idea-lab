@@ -82,12 +82,13 @@ class LandingPageManagementTest extends TestCase
         // فرم متنی نسخه ۱.۰ همچنان پذیرفته می‌شود: هر خط یک عنوان
         $this->assertEquals([['title' => 'مدیریت شاگردان', 'description' => null], ['title' => 'مدیریت پرداخت', 'description' => null]], $content['features']);
         // ترتیب کلیدهای شیء JSON در MySQL حفظ نمی‌شود
-        $this->assertEquals([['q' => 'قیمت؟', 'a' => 'ماهانه']], $content['faq']);
+        // پاسخ متن ساده به HTML ویرایشگر تبدیل می‌شود (نسخه ۱.۱.۱)
+        $this->assertEquals([['q' => 'قیمت؟', 'a' => '<p>ماهانه</p>']], $content['faq']);
 
         $this->get('/l/clubyar-intro')
             ->assertOk()
             ->assertSee('چرا باشگاه‌یار؟')
-            ->assertSee('خط اول<br />', false)
+            ->assertSee('خط اول<br>', false)
             ->assertSee('مدیریت پرداخت')
             ->assertSee('قیمت؟');
     }
@@ -106,8 +107,9 @@ class LandingPageManagementTest extends TestCase
             ->assertDontSee('<script>alert(1)</script>', false)
             ->assertDontSee('<img src=x', false)
             ->assertDontSee('<script>a</script>', false)
-            // ارقام متن صفحه فرود فارسی نمایش داده می‌شود (مرحله ۱۲۵)
-            ->assertSee('&lt;script&gt;alert(۱)&lt;/script&gt;', false);
+            // متن قالب‌دار پاک‌سازی می‌شود (اسکریپت حذف می‌شود)؛ عنوان ویژگی متن ساده و escape شده است
+            ->assertDontSee('alert(1)', false)
+            ->assertSee('&lt;img src=x onerror=alert(۱)&gt;', false);
     }
 
     public function test_invalid_and_duplicate_slugs_are_rejected(): void
