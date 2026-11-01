@@ -6,6 +6,7 @@ use App\Models\Idea;
 use App\Models\LandingPage;
 use App\Support\ContactChannel;
 use App\Support\Money;
+use App\Support\RichText;
 use App\Support\Slug;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -137,14 +138,15 @@ class LandingPageController extends Controller
             'cta_text' => ['nullable', 'string', 'max:255'],
 
             'body_title' => ['nullable', 'string', 'max:255'],
-            'body_text' => ['nullable', 'string', 'max:5000'],
+            // HTML ویرایشگر؛ طول متن خالص جدا بررسی می‌شود
+            'body_text' => ['nullable', 'string', 'max:30000'],
             // آرایه عنوان/توضیح، یا متن هر خط یک ویژگی (فرم نسخه ۱.۰)
             'features' => ['nullable', is_array($this->featuresInput()) ? 'array' : 'string', is_array($this->featuresInput()) ? 'max:' . (self::MAX_FEATURES + 4) : 'max:3000'],
             'features.*.title' => ['nullable', 'string', 'max:120'],
             'features.*.description' => ['nullable', 'string', 'max:500'],
             'faq' => ['nullable', 'array', 'max:' . self::MAX_FAQ],
             'faq.*.q' => ['nullable', 'string', 'max:255'],
-            'faq.*.a' => ['nullable', 'string', 'max:2000', 'required_with:faq.*.q'],
+            'faq.*.a' => ['nullable', 'string', 'max:10000', 'required_with:faq.*.q'],
             'hero_image' => [
                 'nullable',
                 'image',
@@ -165,11 +167,11 @@ class LandingPageController extends Controller
             'remove_video_file' => ['nullable', 'boolean'],
 
             'preorder_title' => ['nullable', 'string', 'max:120'],
-            'preorder_intro' => ['nullable', 'string', 'max:1000'],
+            'preorder_intro' => ['nullable', 'string', 'max:6000'],
             'preorder_badge' => ['nullable', 'string', 'max:60'],
             'preorder_original_price_toman' => ['nullable', 'string', 'max:20'],
             'preorder_includes' => ['nullable', 'string', 'max:2000'],
-            'preorder_guarantee' => ['nullable', 'string', 'max:1000'],
+            'preorder_guarantee' => ['nullable', 'string', 'max:6000'],
             'preorder_button' => ['nullable', 'string', 'max:60'],
 
             'support_text' => ['nullable', 'string', 'max:300'],
@@ -191,7 +193,7 @@ class LandingPageController extends Controller
         $faq = collect($data['faq'] ?? [])
             ->map(fn ($item) => [
                 'q' => trim((string) ($item['q'] ?? '')),
-                'a' => trim((string) ($item['a'] ?? '')),
+                'a' => (string) $this->richText($item['a'] ?? null, 'faq', 2000),
             ])
             ->filter(fn ($item) => $item['q'] !== '' && $item['a'] !== '')
             ->values()
@@ -237,7 +239,7 @@ class LandingPageController extends Controller
 
         return [
             'body_title' => $data['body_title'] ?? null,
-            'body_text' => $data['body_text'] ?? null,
+            'body_text' => $this->richText($data['body_text'] ?? null, 'body_text', 5000),
             'features' => $features,
             'faq' => $faq,
             'hero_image' => $heroImage,
@@ -249,16 +251,33 @@ class LandingPageController extends Controller
             'video_aparat' => $aparat,
             'video_file' => $video,
             'preorder_title' => $data['preorder_title'] ?? null,
-            'preorder_intro' => $data['preorder_intro'] ?? null,
+            'preorder_intro' => $this->richText($data['preorder_intro'] ?? null, 'preorder_intro', 1000),
             'preorder_badge' => $data['preorder_badge'] ?? null,
             'preorder_original_price_toman' => $originalPrice,
             'preorder_includes' => $includes,
-            'preorder_guarantee' => $data['preorder_guarantee'] ?? null,
+            'preorder_guarantee' => $this->richText($data['preorder_guarantee'] ?? null, 'preorder_guarantee', 1000),
             'preorder_button' => $data['preorder_button'] ?? null,
             'support_text' => $data['support_text'] ?? null,
             'support_channels' => $this->supportChannels($data['support_channels'] ?? []),
             'show_trust' => $request->boolean('show_trust', true),
+            'rich_text' => true,
         ];
+    }
+
+    /**
+     * HTML ویرایشگر ← HTML امن. ورودی بدون تگ (مرورگر بدون جاوااسکریپت یا
+     * درخواست قدیمی) متن ساده است و خط‌هایش حفظ می‌شود.
+     */
+    private function richText(?string $input, string $field, int $maxPlainLength): ?string
+    {
+        $input = (string) $input;
+        $html = str_contains($input, '<') ? RichText::sanitize($input) : RichText::fromPlain($input);
+
+        if ($html !== null && mb_strlen(RichText::plain($html)) > $maxPlainLength) {
+            throw ValidationException::withMessages([$field => 'متن حداکثر ' . number_format($maxPlainLength) . ' نویسه باشد.']);
+        }
+
+        return $html;
     }
 
     private function featuresInput(): mixed

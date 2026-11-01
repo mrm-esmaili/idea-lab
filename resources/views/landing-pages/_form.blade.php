@@ -100,10 +100,12 @@
                 <div class="mb-3">
                     <label for="body_text" class="form-label">متن معرفی</label>
                     <textarea
-                        id="body_text" name="body_text" rows="5" maxlength="5000"
+                        id="body_text" name="body_text" rows="8" maxlength="30000" data-rich-editor
+                        placeholder="معرفی محصول؛ تیتر، فهرست، نقل قول و خط جداکننده از نوار ابزار"
                         @class(['form-control', 'is-invalid' => $errors->has('body_text')])
                     >{{ old('body_text', $content['body_text']) }}</textarea>
-                    @error('body_text')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                    @error('body_text')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
+                    <div class="form-text">تیتر ۱ تا ۶، فهرست، نقل قول، خط جداکننده، پررنگ و پیوند. برای شکستن خط Shift+Enter. متن چسبانده‌شده از Word یا سایت دیگر خودکار تمیز می‌شود.</div>
                 </div>
 
             </div>
@@ -161,10 +163,10 @@
                     </div>
                     <div class="col-12">
                         <label for="preorder_intro" class="form-label">متن معرفی</label>
-                        <textarea id="preorder_intro" name="preorder_intro" rows="2" maxlength="1000"
+                        <textarea id="preorder_intro" name="preorder_intro" rows="2" maxlength="6000" data-rich-editor="compact"
                             placeholder="اگر به این محصول علاقه‌مند هستید، اطلاعات خود را وارد کنید تا به صفحه پرداخت هدایت شوید."
                             @class(['form-control', 'is-invalid' => $errors->has('preorder_intro')])>{{ old('preorder_intro', $content['preorder_intro']) }}</textarea>
-                        @error('preorder_intro')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                        @error('preorder_intro')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
                     </div>
                     <div class="col-md-6">
                         <label for="preorder_original_price_toman" class="form-label">قیمت اصلی برای نمایش خط‌خورده (تومان)</label>
@@ -187,12 +189,12 @@
                             @class(['form-control', 'is-invalid' => $errors->has('preorder_includes')])>{{ $includes }}</textarea>
                         @error('preorder_includes')<div class="invalid-feedback">{{ $message }}</div>@enderror
                     </div>
-                    <div class="col-md-6">
+                    <div class="col-12">
                         <label for="preorder_guarantee" class="form-label">ضمانت</label>
-                        <textarea id="preorder_guarantee" name="preorder_guarantee" rows="4" maxlength="1000"
+                        <textarea id="preorder_guarantee" name="preorder_guarantee" rows="4" maxlength="6000" data-rich-editor="compact"
                             placeholder="اگر محصول عرضه نشد یا راضی نبودید، کل مبلغ بازگردانده می‌شود."
                             @class(['form-control', 'is-invalid' => $errors->has('preorder_guarantee')])>{{ old('preorder_guarantee', $content['preorder_guarantee']) }}</textarea>
-                        @error('preorder_guarantee')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                        @error('preorder_guarantee')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
                         <div class="form-text">خلاصه شرایط بازپرداخت ثبت‌شده همیشه کنار آن نمایش داده می‌شود.</div>
                     </div>
                 </div>
@@ -217,7 +219,7 @@
                         </div>
                         <div class="col-md-7">
                             <textarea
-                                name="faq[{{ $i }}][a]" rows="1" maxlength="2000"
+                                name="faq[{{ $i }}][a]" rows="2" maxlength="10000" data-rich-editor="compact"
                                 placeholder="پاسخ"
                                 aria-label="پاسخ پرسش {{ $i + 1 }}"
                                 @class(['form-control', 'is-invalid' => $errors->has("faq.$i.a")])
