@@ -97,8 +97,10 @@
                 </div>
 
                 <p class="small text-body-secondary mb-2">
-                    برای بله، تلگرام و ایتا نام کاربری (بدون @) یا شماره موبایل؛ برای واتساپ و تلفن شماره؛ ردیف‌های بدون نوع نادیده گرفته می‌شوند.
-                    واتساپ، تلگرام (نام کاربری یا شماره)، تلفن و ایمیل لینک مستقیم دارند؛ برای بله و ایتا با شماره، فقط شماره نمایش داده می‌شود.
+                    <strong>واتساپ:</strong> شماره موبایل (ایران یا خارج با +)، لینک (<span class="ltr">wa.me/...</span>، لینک گروه یا کانال) یا شناسه.
+                    <strong>تلگرام، بله و ایتا:</strong> نام کاربری (بدون @)، لینک کامل (<span class="ltr">t.me/...</span>، <span class="ltr">ble.ir/...</span>، <span class="ltr">eitaa.com/...</span>) یا شماره موبایل.
+                    شماره و نام کاربری بله و ایتا، و شناسه واتساپ، لینک مستقیم ندارند و فقط نمایش داده می‌شوند.
+                    ردیف‌های بدون نوع نادیده گرفته می‌شوند.
                 </p>
 
                 @foreach ($channels as $index => $channel)
@@ -114,7 +116,7 @@
                         </div>
                         <div class="col-sm-5">
                             <label class="visually-hidden" for="channel-value-{{ $index }}">شماره یا نام کاربری</label>
-                            <input id="channel-value-{{ $index }}" name="channels[{{ $index }}][value]" type="text" maxlength="120" placeholder="09121234567 یا itmb_support"
+                            <input id="channel-value-{{ $index }}" name="channels[{{ $index }}][value]" type="text" maxlength="120" placeholder="09121234567، itmb_support یا wa.me/..."
                                 value="{{ old("channels.{$index}.value", $channel['value']) }}" @class(['form-control', 'ltr', 'is-invalid' => $errors->has("channels.{$index}.value")])>
                             @error("channels.{$index}.value")<div class="invalid-feedback">{{ $message }}</div>@enderror
                         </div>

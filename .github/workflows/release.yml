@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: 'شماره نسخه، مثلاً 1.1.0 یا 1.1.0-beta2'
+        description: 'شماره نسخه، مثلاً 1.1.1 (ارقام فارسی و v ابتدایی هم پذیرفته می‌شود)'
         required: true
         type: string
       lite:
@@ -46,6 +46,16 @@ jobs:
       - name: Install dependencies (with dev, for tests)
         run: composer install --no-interaction --prefer-dist
 
+      # نسخه پیش از آزمون‌ها بررسی می‌شود تا ورودی نادرست زود و با پیام روشن رد شود
+      - name: Validate version
+        id: version
+        env:
+          VERSION_INPUT: ${{ inputs.version }}
+        run: |
+          VERSION=$(php artisan release:build "$VERSION_INPUT" --validate)
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "Version: $VERSION"
+
       - name: Run tests on MariaDB 11.4
         env:
           DB_CONNECTION: mariadb
@@ -61,7 +71,7 @@ jobs:
 
       - name: Build production package
         env:
-          VERSION: ${{ inputs.version }}
+          VERSION: ${{ steps.version.outputs.version }}
           LITE: ${{ inputs.lite }}
         run: |
           rm .env
@@ -79,6 +89,6 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
-          name: idea-lab-${{ inputs.version }}
+          name: idea-lab-${{ steps.version.outputs.version }}${{ inputs.lite && '-lite' || '' }}
           path: dist/*.zip
           retention-days: 30

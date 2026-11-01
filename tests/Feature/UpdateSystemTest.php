@@ -10,6 +10,7 @@ use App\Services\Updates\ReleaseBuilder;
 use App\Services\Updates\UpdateException;
 use App\Services\Updates\UpdateInstaller;
 use App\Services\Updates\UpdatePackage;
+use App\Support\AppVersion;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Artisan;
@@ -334,6 +335,23 @@ class UpdateSystemTest extends TestCase
         $this->assertSame('1.1.0', $update->to_version);
         $this->assertSame(SystemUpdate::COMPLETED, $update->status);
         $this->assertFileExists($this->root . '/updates/' . UpdateInstaller::INSTALLED_MANIFEST);
+    }
+
+    /**
+     * ورودی دستی نسخه در GitHub Actions (صفحه‌کلید فارسی، v ابتدایی، فاصله).
+     */
+    public function test_version_input_is_normalized(): void
+    {
+        foreach (['1.1.1', '۱.۱.۱', 'v1.1.1', ' 1.1.1 ', "\u{200F}1.1.1", '1٫1٫1', '1.1'] as $input) {
+            $this->assertSame(str_ends_with($input, '1.1') && ! str_contains($input, '1.1.1') ? '1.1.0' : '1.1.1', AppVersion::normalize($input), bin2hex($input));
+        }
+
+        $this->assertSame('1.2.0-beta2', AppVersion::normalize('۱.۲.۰–beta2'));
+        $this->assertNull(AppVersion::normalize('abc'));
+        $this->assertNull(AppVersion::normalize('1'));
+
+        $this->artisan('release:build', ['version' => '۱.۱.۱', '--validate' => true])->expectsOutput('1.1.1')->assertSuccessful();
+        $this->artisan('release:build', ['version' => 'abc', '--validate' => true])->assertFailed();
     }
 
     public function test_htaccess_merge_keeps_cpanel_php_handler(): void

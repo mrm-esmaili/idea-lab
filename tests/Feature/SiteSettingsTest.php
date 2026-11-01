@@ -108,8 +108,22 @@ class SiteSettingsTest extends TestCase
         $this->assertSame('https://ble.ir/itmb_support', $url('bale', 'itmb_support'));
         $this->assertSame('https://eitaa.com/itmb_support', $url('eitaa', 'itmb_support'));
         $this->assertNull($url('bale', '09121234567'));
-        $this->assertSame('tel:02112345678', $url('phone', '021-1234-5678'));
+        $this->assertSame('tel:+982112345678', $url('phone', '021-1234-5678'));
         $this->assertSame('mailto:support@itmb.ir', $url('email', 'support@itmb.ir'));
+
+        // واتساپ: شناسه، لینک رسمی و شماره خارجی
+        $this->assertNotNull(ContactChannel::fromArray(['type' => 'whatsapp', 'value' => 'itmb_support']));
+        $this->assertNull($url('whatsapp', 'itmb_support'));
+        $this->assertSame('@itmb_support', ContactChannel::fromArray(['type' => 'whatsapp', 'value' => 'itmb_support'])->display());
+        $this->assertSame('https://wa.me/message/ABCD12', $url('whatsapp', 'wa.me/message/ABCD12'));
+        $this->assertSame('https://chat.whatsapp.com/Invite123', $url('whatsapp', 'https://chat.whatsapp.com/Invite123'));
+        $this->assertSame('https://wa.me/971501234567', $url('whatsapp', '+971 50 123 4567'));
+        $this->assertSame('https://t.me/itmb', $url('telegram', 'https://t.me/itmb'));
+        $this->assertSame('https://ble.ir/itmb', $url('bale', 'ble.ir/itmb'));
+        // لینک دامنه دیگر یا نشانی دست‌کاری‌شده پذیرفته نمی‌شود
+        foreach (['https://evil.com/wa.me', 'wa.me.evil.com/x', 'https://user@wa.me/x', 'wa.me/x"onmouseover=y', 'javascript:alert(1)', 'wa.me/'] as $bad) {
+            $this->assertNull(ContactChannel::fromArray(['type' => 'whatsapp', 'value' => $bad]), $bad);
+        }
 
         $this->assertNull(ContactChannel::fromArray(['type' => 'telegram', 'value' => 'https://evil.example']));
         $this->assertNull(ContactChannel::fromArray(['type' => 'sms', 'value' => '09121234567']));

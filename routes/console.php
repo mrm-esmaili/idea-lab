@@ -7,6 +7,7 @@ use App\Services\Updates\ReleaseBuilder;
 use App\Services\Updates\UpdateException;
 use App\Services\Updates\UpdateInstaller;
 use App\Services\Updates\UpdatePackage;
+use App\Support\AppVersion;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Schedule;
@@ -47,9 +48,24 @@ Schedule::command('backup:database')->dailyAt('23:40')->withoutOverlapping(60);
  * ساخت بسته نصب/به‌روزرسانی (GitHub Actions ← release.yml). --lite بدون vendor
  * است و فقط وقتی نصب می‌شود که composer.lock سرور با بسته یکی باشد.
  */
-Artisan::command('release:build {version} {--output=} {--lite} {--commit=}', function (ReleaseBuilder $builder) {
-    $output = $this->option('output') ?: base_path('dist/idea-lab-' . $this->argument('version') . ($this->option('lite') ? '-lite' : '') . '.zip');
-    $manifest = $builder->build(base_path(), $this->argument('version'), $output, ! $this->option('lite'), $this->option('commit') ?: null);
+Artisan::command('release:build {version} {--output=} {--lite} {--commit=} {--validate : فقط بررسی و چاپ نسخه استاندارد}', function (ReleaseBuilder $builder) {
+    $version = AppVersion::normalize((string) $this->argument('version'));
+
+    if ($version === null) {
+        // stderr: در workflow خروجی عادی در متغیر گرفته می‌شود و پیام باید در لاگ دیده شود
+        $this->output->getErrorStyle()->error('Invalid version "' . $this->argument('version') . '" (hex ' . bin2hex($this->argument('version')) . '). Use 1.2.3 or 1.2.3-beta1.');
+
+        return 1;
+    }
+
+    if ($this->option('validate')) {
+        $this->line($version);
+
+        return 0;
+    }
+
+    $output = $this->option('output') ?: base_path('dist/idea-lab-' . $version . ($this->option('lite') ? '-lite' : '') . '.zip');
+    $manifest = $builder->build(base_path(), $version, $output, ! $this->option('lite'), $this->option('commit') ?: null);
 
     $this->info(sprintf('%s: %d files, sha256 %s', $output, count($manifest['files']), hash_file('sha256', $output)));
 })->purpose('Build an installable update package with a checksum manifest');
