@@ -13,12 +13,13 @@
         <div class="card-body p-0">
             <div class="table-responsive">
                 <table class="table table-sm align-middle mb-0">
-                    <thead><tr><th>ایده</th><th>صفحه فرود</th><th>کمپین</th><th></th></tr></thead>
+                    <thead><tr><th>ایده</th><th></th><th>صفحه فرود</th><th>کمپین</th><th></th></tr></thead>
                     <tbody>
                         @forelse ($ideas as $idea)
                             @foreach ($idea->landingPages->whenEmpty(fn ($c) => collect([null])) as $page)
                                 <tr>
                                     <td>@if ($loop->first)<a href="{{ route('ideas.show', $idea) }}">{{ $idea->name }}</a>@endif</td>
+                                    <td>@if ($loop->first){!! ($modes[$idea->id] ?? 'create') === 'update' ? '<span class="badge text-bg-info">به‌روزرسانی</span>' : '<span class="badge text-bg-success">جدید</span>' !!}@endif</td>
                                     <td>{{ $page?->title ?? '—' }}</td>
                                     <td>{{ $page ? number_format($page->campaigns->count()) : '—' }}</td>
                                     <td class="text-end text-nowrap">
@@ -30,7 +31,7 @@
                                 </tr>
                             @endforeach
                         @empty
-                            <x-admin.empty-row colspan="4">موردی نیست.</x-admin.empty-row>
+                            <x-admin.empty-row colspan="5">موردی نیست.</x-admin.empty-row>
                         @endforelse
                     </tbody>
                 </table>

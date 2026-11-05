@@ -38,6 +38,9 @@ class IdeaImporter
     /** slugهای رزروشده در همین فایل (علاوه بر پایگاه داده) */
     private array $reserved = ['idea' => [], 'page' => [], 'campaign' => []];
 
+    /** ایده‌های موجود برای تشخیص تکراری (یک بار در هر بررسی خوانده می‌شود) */
+    private ?array $existing = null;
+
     public function __construct(
         private readonly AuditLogger $audit,
     ) {
@@ -99,23 +102,26 @@ class IdeaImporter
     /**
      * بررسی بدون ساخت چیزی.
      *
-     * @return list<array{index: int, name: string, errors: list<string>, warnings: list<string>, plan: ?array}>
+     * @param  array<int|string, string|int>  $decisions  شماره ایده در فایل => «new» یا شناسه ایده موجود برای به‌روزرسانی؛
+     *                                                    بدون انتخاب، ایده هم‌نام یا هم‌نامک به‌روزرسانی می‌شود
+     * @return list<array{index: int, name: string, errors: list<string>, warnings: list<string>, plan: ?array, matches: list<array>, target: ?array}>
      */
-    public function preview(array $ideas): array
+    public function preview(array $ideas, array $decisions = []): array
     {
         $this->reserved = ['idea' => [], 'page' => [], 'campaign' => []];
+        $this->existing = null;
 
-        return array_map(fn ($raw, $index) => $this->plan($raw, $index), $ideas, array_keys($ideas));
+        return array_map(fn ($raw, $index) => $this->plan($raw, $index, $decisions[$index] ?? null), $ideas, array_keys($ideas));
     }
 
     /**
-     * ساخت همه ایده‌های بدون خطا در یک تراکنش (همه یا هیچ).
+     * ساخت یا به‌روزرسانی همه ایده‌های بدون خطا در یک تراکنش (همه یا هیچ).
      *
-     * @return list<Idea>
+     * @return list<array{idea: Idea, mode: string}>
      */
-    public function import(array $ideas, User $user, bool $skipInvalid = false): array
+    public function import(array $ideas, User $user, bool $skipInvalid = false, array $decisions = []): array
     {
-        $plans = $this->preview($ideas);
+        $plans = $this->preview($ideas, $decisions);
         $invalid = array_filter($plans, fn ($plan) => $plan['errors'] !== []);
 
         if ($invalid !== [] && ! $skipInvalid) {
@@ -123,17 +129,19 @@ class IdeaImporter
         }
 
         return DB::transaction(function () use ($plans, $user) {
-            $created = [];
+            $results = [];
 
             foreach ($plans as $plan) {
                 if ($plan['errors'] !== []) {
                     continue;
                 }
 
-                $created[] = $this->create($plan['plan'], $user);
+                $results[] = $plan['plan']['mode'] === 'update'
+                    ? ['idea' => $this->update($plan['plan'], $user), 'mode' => 'update']
+                    : ['idea' => $this->create($plan['plan'], $user), 'mode' => 'create'];
             }
 
-            return $created;
+            return $results;
         });
     }
 
@@ -147,13 +155,11 @@ class IdeaImporter
 
         $pages = [];
         foreach ($plan['pages'] as $key => $page) {
-            $pages[$key] = $idea->landingPages()->create($page);
+            $pages[$key] = $idea->landingPages()->create($page['attributes'] + ['content' => $page['content']]);
         }
 
         foreach ($plan['campaigns'] as $campaign) {
-            $pageKey = $campaign['page'];
-            unset($campaign['page']);
-            Campaign::create($campaign + ['landing_page_id' => $pages[$pageKey]->id]);
+            Campaign::create($campaign['attributes'] + ['landing_page_id' => $pages[$campaign['page']]->id]);
         }
 
         $this->audit->log($idea, 'idea.imported', [
@@ -165,13 +171,115 @@ class IdeaImporter
     }
 
     /**
-     * @return array{index: int, name: string, errors: list<string>, warnings: list<string>, plan: ?array}
+     * فقط فیلدهای موجود در فایل تغییر می‌کنند؛ تصویر، ویدیو، انتشار، وضعیت
+     * ایده و نشانی صفحه دست نمی‌خورد.
      */
-    private function plan(array $raw, int $index): array
+    private function update(array $plan, User $user): Idea
+    {
+        $idea = Idea::whereKey($plan['target']['id'])->lockForUpdate()->firstOrFail();
+        $idea->update($plan['idea']);
+
+        $current = $idea->currentRefundPolicy;
+        if ($plan['refund_policy'] && ! ($current && $this->samePolicy($current->only(['is_refundable', 'refund_window_days', 'eligibility', 'terms']), $plan['refund_policy']))) {
+            // نسخه جدید؛ سفارش‌های قبلی نسخه پذیرفته‌شده خود را نگه می‌دارند
+            $idea->refundPolicies()->create($plan['refund_policy'] + [
+                'version' => (int) $idea->refundPolicies()->max('version') + 1,
+                'created_by' => $user->id,
+            ]);
+        }
+
+        $pages = [];
+        foreach ($plan['pages'] as $key => $page) {
+            if ($page['existing_id']) {
+                $model = LandingPage::whereKey($page['existing_id'])->where('idea_id', $idea->id)->firstOrFail();
+                $content = $model->contentData();
+
+                foreach ($page['provided'] as $field) {
+                    $content[$field] = $page['content'][$field];
+                }
+
+                // محتوای قدیمی در contentData() به HTML تبدیل شده است
+                $content['rich_text'] = true;
+                $model->update($page['attributes'] + ['content' => $content]);
+                $pages[$key] = $model;
+            } else {
+                $pages[$key] = $idea->landingPages()->create($page['attributes'] + ['content' => $page['content']]);
+            }
+        }
+
+        foreach ($plan['campaigns'] as $campaign) {
+            $attributes = $campaign['attributes'];
+
+            if ($campaign['existing_id']) {
+                if ($campaign['page_explicit']) {
+                    $attributes['landing_page_id'] = $pages[$campaign['page']]->id;
+                }
+                Campaign::whereKey($campaign['existing_id'])->firstOrFail()->update($attributes);
+            } else {
+                Campaign::create($attributes + ['landing_page_id' => $pages[$campaign['page']]->id]);
+            }
+        }
+
+        $this->audit->log($idea, 'idea.import_updated', [
+            'fields' => array_keys($plan['idea']),
+            'pages' => count($pages),
+            'campaigns' => count($plan['campaigns']),
+        ], $user);
+
+        return $idea;
+    }
+
+    private function samePolicy(array $current, array $new): bool
+    {
+        return (bool) $current['is_refundable'] === $new['is_refundable']
+            && (int) $current['refund_window_days'] === (int) $new['refund_window_days']
+            && (string) $current['eligibility'] === (string) $new['eligibility']
+            && (string) $current['terms'] === (string) $new['terms'];
+    }
+
+    /**
+     * ایده‌های موجود با همان نامک یا نام (یکسان‌شده: ی/ي، ک/ك، نیم‌فاصله و فاصله اضافه).
+     *
+     * @return list<array{id: int, name: string, slug: string, pages: int, archived: bool, by: string}>
+     */
+    private function matches(?string $slug, string $name): array
+    {
+        $this->existing ??= Idea::query()->withCount('landingPages')->get(['id', 'name', 'slug', 'archived_at'])->all();
+        $key = $this->nameKey($name);
+        $slug = $slug !== null ? strtolower(trim($slug)) : null;
+        $found = [];
+
+        foreach ($this->existing as $idea) {
+            $by = match (true) {
+                $slug !== null && $slug !== '' && $idea->slug === $slug => 'نامک',
+                $key !== '' && $this->nameKey($idea->name) === $key => 'نام',
+                default => null,
+            };
+
+            if ($by) {
+                $found[] = ['id' => $idea->id, 'name' => $idea->name, 'slug' => $idea->slug, 'pages' => $idea->landing_pages_count, 'archived' => $idea->archived_at !== null, 'by' => $by];
+            }
+        }
+
+        return $found;
+    }
+
+    private function nameKey(string $name): string
+    {
+        $name = strtr($name, ['ي' => 'ی', 'ى' => 'ی', 'ك' => 'ک', "\u{200C}" => ' ', 'ـ' => '']);
+
+        return mb_strtolower(trim(preg_replace('/\s+/u', ' ', $name)));
+    }
+
+    /**
+     * @return array{index: int, name: string, errors: list<string>, warnings: list<string>, plan: ?array, matches: list<array>, target: ?array}
+     */
+    private function plan(array $raw, int $index, string|int|null $decision): array
     {
         $name = trim((string) ($raw['name'] ?? ''));
         $errors = [];
         $warnings = [];
+        $result = fn (array $extra) => $extra + ['index' => $index, 'name' => $name ?: 'ایده ' . ($index + 1), 'errors' => [], 'warnings' => [], 'plan' => null, 'matches' => [], 'target' => null];
 
         $data = $this->normalize($raw);
         $validator = Validator::make($data, $this->rules(), $this->messages());
@@ -180,11 +288,25 @@ class IdeaImporter
             $errors[] = $this->fieldLabel($field) . ': ' . $messages[0];
         }
 
+        $matches = $name !== '' ? $this->matches(is_string($data['slug'] ?? null) ? $data['slug'] : null, $name) : [];
+
         if ($errors !== []) {
-            return ['index' => $index, 'name' => $name ?: 'ایده ' . ($index + 1), 'errors' => $errors, 'warnings' => [], 'plan' => null];
+            return $result(['errors' => $errors, 'matches' => $matches]);
         }
 
-        $slug = $this->uniqueSlug('idea', $data['slug'] ?? null, $name, $warnings, 'نامک ایده');
+        // ایده موجود: انتخاب مدیر، وگرنه اولین ایده هم‌نامک یا هم‌نام
+        $target = null;
+        if ($decision !== 'new') {
+            $target = $decision !== null
+                ? (collect($matches)->firstWhere('id', (int) $decision) ?? $this->targetById((int) $decision))
+                : ($matches[0] ?? null);
+        }
+
+        $update = $target !== null;
+        $existingPages = $update ? LandingPage::where('idea_id', $target['id'])->orderBy('id')->get() : collect();
+        $existingCampaigns = $update ? Campaign::whereIn('landing_page_id', $existingPages->pluck('id'))->get()->keyBy('slug') : collect();
+
+        $slug = $update ? $target['slug'] : $this->uniqueSlug('idea', $data['slug'] ?? null, $name, $warnings, 'نامک ایده');
 
         // صفحه‌ها: «landing_page» یک صفحه، یا «landing_pages» چند صفحه
         $rawPages = $data['landing_pages'] ?? (isset($data['landing_page']) ? [$data['landing_page']] : []);
@@ -192,12 +314,19 @@ class IdeaImporter
         $pageKeys = [];
 
         foreach ($rawPages as $pageIndex => $page) {
-            [$attributes, $pageErrors, $pageWarnings] = $this->page($page, $name, $pageIndex);
+            // صفحه هم‌نامک همین ایده، یا تنها صفحه ایده وقتی فایل هم یک صفحه دارد
+            $existing = null;
+            if ($update) {
+                $existing = $existingPages->firstWhere('slug', $page['slug'] ?? '__none__')
+                    ?? ($existingPages->count() === 1 && count($rawPages) === 1 ? $existingPages->first() : null);
+            }
+
+            [$built, $pageErrors, $pageWarnings] = $this->page($page, $name, $pageIndex, $existing);
             array_push($errors, ...$pageErrors);
             array_push($warnings, ...$pageWarnings);
-            $pages[$pageIndex] = $attributes;
+            $pages[$pageIndex] = $built;
             $pageKeys[strtolower((string) ($page['slug'] ?? ''))] = $pageIndex;
-            $pageKeys[$attributes['slug']] = $pageIndex;
+            $pageKeys[$built['slug']] = $pageIndex;
         }
 
         $campaigns = [];
@@ -213,12 +342,9 @@ class IdeaImporter
                 continue;
             }
 
-            $code = $this->uniqueSlug('campaign', $campaign['code'] ?? null, $slug . '-' . ($campaign['source'] ?? ($campaignIndex + 1)), $warnings, 'کد کمپین ' . ($campaignIndex + 1));
-
-            $campaigns[] = [
-                'page' => $reference !== '' ? $pageKeys[$reference] : array_key_first($pages),
+            $existingCampaign = isset($campaign['code']) ? $existingCampaigns->get($campaign['code']) : null;
+            $attributes = [
                 'name' => $campaign['name'],
-                'slug' => $code,
                 'source' => $campaign['source'] ?? null,
                 'medium' => $campaign['medium'] ?? null,
                 'status' => $campaign['status'] ?? 'planned',
@@ -227,10 +353,26 @@ class IdeaImporter
                 'budget_rial' => isset($campaign['budget_toman']) ? Money::tomanToRial((int) $campaign['budget_toman']) : null,
                 'notes' => $campaign['notes'] ?? null,
             ];
+
+            if ($existingCampaign) {
+                // فقط کلیدهای موجود در فایل؛ کد رهگیری ثابت می‌ماند
+                $map = ['budget_toman' => 'budget_rial'];
+                $attributes = array_intersect_key($attributes, array_flip(array_map(fn ($key) => $map[$key] ?? $key, array_keys($campaign))));
+            } else {
+                $attributes['slug'] = $this->uniqueSlug('campaign', $campaign['code'] ?? null, $slug . '-' . ($campaign['source'] ?? ($campaignIndex + 1)), $warnings, 'کد کمپین ' . ($campaignIndex + 1));
+            }
+
+            $campaigns[] = [
+                'page' => $reference !== '' ? $pageKeys[$reference] : array_key_first($pages),
+                'page_explicit' => $reference !== '',
+                'existing_id' => $existingCampaign?->id,
+                'code' => $existingCampaign?->slug ?? $attributes['slug'],
+                'attributes' => $attributes,
+            ];
         }
 
         if ($errors !== []) {
-            return ['index' => $index, 'name' => $name, 'errors' => $errors, 'warnings' => $warnings, 'plan' => null];
+            return $result(['errors' => $errors, 'warnings' => $warnings, 'matches' => $matches, 'target' => $target]);
         }
 
         $policy = null;
@@ -242,43 +384,60 @@ class IdeaImporter
                 'eligibility' => $refundable ? ($data['refund_policy']['eligibility'] ?? null) : null,
                 'terms' => $data['refund_policy']['terms'],
             ];
-        } elseif ($pages !== []) {
+        } elseif ($pages !== [] && ! $update) {
             $warnings[] = 'شرایط بازپرداخت ندارد؛ تا ثبت آن در پنل، فرم پیش‌خرید نمایش داده نمی‌شود.';
         }
 
-        if (! isset($data['preorder_amount_toman']) && $pages !== []) {
+        if (! isset($data['preorder_amount_toman']) && $pages !== [] && ! $update) {
             $warnings[] = 'مبلغ پیش‌پرداخت ندارد؛ تا تعیین آن در تنظیمات ایده، فرم پیش‌خرید نمایش داده نمی‌شود.';
         }
 
-        return [
-            'index' => $index,
+        $idea = [
             'name' => $name,
-            'errors' => [],
+            'description' => $data['description'] ?? null,
+            'budget_rial' => isset($data['budget_toman']) ? Money::tomanToRial((int) $data['budget_toman']) : null,
+            'preorder_amount_rial' => isset($data['preorder_amount_toman']) ? Money::tomanToRial((int) $data['preorder_amount_toman']) : null,
+            'test_starts_on' => $data['test_starts_on'] ?? null,
+            'test_ends_on' => $data['test_ends_on'] ?? null,
+            'lead_goal' => $data['lead_goal'] ?? null,
+            'paid_preorder_goal' => $data['paid_preorder_goal'] ?? null,
+        ];
+
+        if ($update) {
+            // به‌روزرسانی: فقط کلیدهای موجود در فایل؛ وضعیت و نامک ایده ثابت می‌مانند
+            $map = ['budget_toman' => 'budget_rial', 'preorder_amount_toman' => 'preorder_amount_rial'];
+            $idea = array_intersect_key($idea, array_flip(array_map(fn ($key) => $map[$key] ?? $key, array_keys($data))));
+        } else {
+            $idea += ['slug' => $slug, 'status' => $data['status'] ?? IdeaStatus::Draft->value];
+        }
+
+        return $result([
             'warnings' => $warnings,
+            'matches' => $matches,
+            'target' => $target,
             'plan' => [
-                'idea' => [
-                    'name' => $name,
-                    'slug' => $slug,
-                    'description' => $data['description'] ?? null,
-                    'status' => $data['status'] ?? IdeaStatus::Draft->value,
-                    'budget_rial' => isset($data['budget_toman']) ? Money::tomanToRial((int) $data['budget_toman']) : null,
-                    'preorder_amount_rial' => isset($data['preorder_amount_toman']) ? Money::tomanToRial((int) $data['preorder_amount_toman']) : null,
-                    'test_starts_on' => $data['test_starts_on'] ?? null,
-                    'test_ends_on' => $data['test_ends_on'] ?? null,
-                    'lead_goal' => $data['lead_goal'] ?? null,
-                    'paid_preorder_goal' => $data['paid_preorder_goal'] ?? null,
-                ],
+                'mode' => $update ? 'update' : 'create',
+                'target' => $target,
+                'slug' => $slug,
+                'idea' => $idea,
                 'refund_policy' => $policy,
                 'pages' => $pages,
                 'campaigns' => $campaigns,
             ],
-        ];
+        ]);
+    }
+
+    private function targetById(int $id): ?array
+    {
+        $idea = Idea::withCount('landingPages')->find($id, ['id', 'name', 'slug', 'archived_at']);
+
+        return $idea ? ['id' => $idea->id, 'name' => $idea->name, 'slug' => $idea->slug, 'pages' => $idea->landing_pages_count, 'archived' => $idea->archived_at !== null, 'by' => 'انتخاب'] : null;
     }
 
     /**
-     * @return array{0: array, 1: list<string>, 2: list<string>}
+     * @return array{0: array{attributes: array, content: array, provided: list<string>, existing_id: ?int, slug: string, title: string}, 1: list<string>, 2: list<string>}
      */
-    private function page(array $page, string $ideaName, int $pageIndex): array
+    private function page(array $page, string $ideaName, int $pageIndex, ?LandingPage $existing = null): array
     {
         $errors = [];
         $warnings = [];
@@ -337,16 +496,61 @@ class IdeaImporter
             'rich_text' => true,
         ];
 
+        // کلیدهای محتوایی که در فایل آمده‌اند (برای به‌روزرسانی صفحه موجود)
+        $provided = [];
+        foreach (['body_title' => 'body_title', 'body' => 'body_text', 'features' => 'features', 'faq' => 'faq', 'demo_url' => 'demo_url', 'demo_label' => 'demo_label',
+            'support_text' => 'support_text', 'show_lead_form' => 'show_lead_form', 'show_preorder_form' => 'show_preorder_form', 'show_trust' => 'show_trust'] as $key => $field) {
+            if (array_key_exists($key, $page)) {
+                $provided[] = $field;
+            }
+        }
+        foreach (['title' => 'preorder_title', 'intro' => 'preorder_intro', 'badge' => 'preorder_badge', 'original_price_toman' => 'preorder_original_price_toman',
+            'includes' => 'preorder_includes', 'guarantee' => 'preorder_guarantee', 'button' => 'preorder_button'] as $key => $field) {
+            if (array_key_exists($key, $preorder)) {
+                $provided[] = $field;
+            }
+        }
+        if ($aparat !== null) {
+            $provided[] = 'video_aparat';
+        }
+
+        if ($existing) {
+            // نامک (نشانی) و وضعیت انتشار صفحه موجود تغییر نمی‌کند
+            $attributes = array_intersect_key([
+                'name' => $page['name'] ?? null,
+                'title' => $page['title'] ?? null,
+                'description' => $page['description'] ?? null,
+                'cta_text' => $page['cta_text'] ?? null,
+            ], array_flip(array_keys($page)));
+
+            return [[
+                'attributes' => $attributes,
+                'content' => $content,
+                'provided' => $provided,
+                'existing_id' => $existing->id,
+                'slug' => $existing->slug,
+                'title' => $page['title'] ?? $existing->title,
+                'is_active' => $existing->is_active,
+            ], $errors, $warnings];
+        }
+
         $slug = $this->uniqueSlug('page', $page['slug'] ?? null, $page['title'] ?? $ideaName, $warnings, "نامک {$label}");
 
         return [[
-            'name' => $page['name'] ?? ('صفحه ' . $ideaName),
+            'attributes' => [
+                'name' => $page['name'] ?? ('صفحه ' . $ideaName),
+                'slug' => $slug,
+                'title' => $page['title'],
+                'description' => $page['description'] ?? null,
+                'cta_text' => $page['cta_text'] ?? null,
+                // منتشرنشده تا بازبینی، تصویر و ویدیو
+                'is_active' => (bool) ($page['publish'] ?? false),
+            ],
+            'content' => $content,
+            'provided' => $provided,
+            'existing_id' => null,
             'slug' => $slug,
             'title' => $page['title'],
-            'description' => $page['description'] ?? null,
-            'cta_text' => $page['cta_text'] ?? null,
-            'content' => $content,
-            // منتشرنشده تا بازبینی، تصویر و ویدیو
             'is_active' => (bool) ($page['publish'] ?? false),
         ], $errors, $warnings];
     }

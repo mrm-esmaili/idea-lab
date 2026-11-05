@@ -67,10 +67,12 @@ class IdeaImportController extends Controller
     public function preview(Request $request, string $token, IdeaImporter $importer)
     {
         $stored = $this->load($request, $token);
-        $plans = $importer->preview($stored['ideas']);
+        $decisions = $this->decisions($request);
+        $plans = $importer->preview($stored['ideas'], $decisions);
 
         return view('admin.imports.preview', [
             'token' => $token,
+            'decisions' => $decisions,
             'file' => $stored['file'],
             'parseErrors' => $stored['parse_errors'],
             'plans' => $plans,
@@ -83,7 +85,7 @@ class IdeaImportController extends Controller
         $stored = $this->load($request, $token);
 
         try {
-            $ideas = $importer->import($stored['ideas'], $request->user(), $request->boolean('skip_invalid'));
+            $results = $importer->import($stored['ideas'], $request->user(), $request->boolean('skip_invalid'), $this->decisions($request));
         } catch (Throwable $e) {
             report($e);
 
@@ -92,18 +94,26 @@ class IdeaImportController extends Controller
 
         File::delete($this->path($token));
 
+        $created = collect($results)->where('mode', 'create')->count();
+        $updated = collect($results)->where('mode', 'update')->count();
+
         return redirect()
             ->route('admin.imports.done')
-            ->with('imported_ids', array_map(fn (Idea $idea) => $idea->id, $ideas))
-            ->with('success', number_format(count($ideas)) . ' ایده با صفحه فرود و کمپین‌هایشان ساخته شد. صفحه‌ها منتشرنشده‌اند؛ بازبینی کنید و تصویر و ویدیو بگذارید.');
+            ->with('imported', collect($results)->map(fn ($result) => ['id' => $result['idea']->id, 'mode' => $result['mode']])->all())
+            ->with('success', trim(
+                ($created ? number_format($created) . ' ایده جدید ساخته شد. ' : '')
+                . ($updated ? number_format($updated) . ' ایده موجود به‌روزرسانی شد. ' : '')
+                . 'صفحه‌های جدید منتشرنشده‌اند؛ بازبینی کنید و تصویر و ویدیو بگذارید.'
+            ));
     }
 
     public function done(Request $request)
     {
-        $ids = (array) $request->session()->get('imported_ids', []);
+        $imported = collect((array) $request->session()->get('imported', []));
 
         return view('admin.imports.done', [
-            'ideas' => Idea::whereIn('id', $ids)->with(['landingPages.campaigns'])->orderBy('id')->get(),
+            'ideas' => Idea::whereIn('id', $imported->pluck('id'))->with(['landingPages.campaigns'])->orderBy('id')->get(),
+            'modes' => $imported->pluck('mode', 'id')->all(),
         ]);
     }
 
@@ -112,9 +122,41 @@ class IdeaImportController extends Controller
         return response()->download(resource_path('import/ai-prompt.md'), 'idealab-ai-prompt.md', ['Content-Type' => 'text/markdown; charset=UTF-8']);
     }
 
+    /**
+     * فهرست ایده‌های فعلی برای پرامپت، تا هوش مصنوعی همان نام و نامک را بنویسد
+     * و ورود، ایده‌ها را به‌روزرسانی کند نه تکراری بسازد.
+     */
+    public function existing()
+    {
+        $lines = ["# ایده‌های فعلی ایده‌لب", '', 'برای به‌روزرسانی این ایده‌ها، «name» و «slug» را دقیقاً همین‌طور بنویس:', ''];
+
+        foreach (Idea::whereNull('archived_at')->with('landingPages:id,idea_id,slug')->orderBy('id')->get() as $idea) {
+            $pages = $idea->landingPages->pluck('slug')->join('، ');
+            $lines[] = "- name: \"{$idea->name}\" — slug: \"{$idea->slug}\"" . ($pages ? " — landing_page.slug: \"{$pages}\"" : ' — (بدون صفحه فرود)');
+        }
+
+        return response(implode("\n", $lines) . "\n", 200, [
+            'Content-Type' => 'text/markdown; charset=UTF-8',
+            'Content-Disposition' => 'attachment; filename="idealab-existing-ideas.md"',
+        ]);
+    }
+
     public function sample()
     {
         return response()->download(resource_path('import/sample.md'), 'idealab-import-sample.md', ['Content-Type' => 'text/markdown; charset=UTF-8']);
+    }
+
+    /**
+     * انتخاب مدیر برای هر ایده: «new» یا شناسه ایده موجود.
+     *
+     * @return array<int, string|int>
+     */
+    private function decisions(Request $request): array
+    {
+        return collect((array) $request->input('decision', []))
+            ->filter(fn ($value, $key) => ctype_digit((string) $key) && ($value === 'new' || ctype_digit((string) $value)))
+            ->map(fn ($value) => $value === 'new' ? 'new' : (int) $value)
+            ->all();
     }
 
     private function load(Request $request, string $token): array

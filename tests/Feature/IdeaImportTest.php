@@ -61,7 +61,7 @@ class IdeaImportTest extends TestCase
         $this->actingAs($this->manager)->get(route('admin.imports.preview', $token))
             ->assertOk()
             ->assertSee('باشگاه‌یار')
-            ->assertSee('1 آماده')
+            ->assertSee('1 جدید')
             ->assertSee('5 کمپین')
             ->assertSee('clubyar-instagram')
             ->assertSee('490,000 تومان')
@@ -111,23 +111,119 @@ class IdeaImportTest extends TestCase
         $this->actingAs($this->manager)->get(route('admin.imports.preview', $token))->assertNotFound();
     }
 
-    public function test_second_import_gets_new_slugs_with_warnings(): void
+    public function test_duplicate_idea_is_updated_by_default_or_created_new_on_request(): void
     {
         $sample = file_get_contents(resource_path('import/sample.md'));
-
         $this->actingAs($this->manager)->post(route('admin.imports.confirm', $this->token($this->upload($sample))));
-        $token = $this->token($this->upload($sample));
 
+        // بار دوم: پیش‌فرض به‌روزرسانی همان ایده، صفحه و کمپین‌ها
+        $token = $this->token($this->upload($sample));
+        $idea = Idea::sole();
         $this->actingAs($this->manager)->get(route('admin.imports.preview', $token))
+            ->assertSee('این ایده تکراری است؛ چه کنیم؟')
+            ->assertSee('به‌روزرسانی «باشگاه‌یار»')
+            ->assertSee('1 به‌روزرسانی')
+            ->assertSee('name="decision[0]" value="' . $idea->id . '"', false)
+            ->assertDontSee('تکراری بود');
+
+        $this->actingAs($this->manager)->post(route('admin.imports.confirm', $token))
+            ->assertSessionHas('success', fn ($m) => str_contains($m, '1 ایده موجود به‌روزرسانی شد'));
+        $this->assertSame(1, Idea::count());
+        $this->assertSame(1, LandingPage::count());
+        $this->assertSame(5, Campaign::count());
+        // شرایط یکسان نسخه جدید نمی‌سازد
+        $this->assertSame(1, $idea->refundPolicies()->count());
+        $this->assertSame(1, AuditLog::where('action', 'idea.import_updated')->count());
+
+        // انتخاب «ساخت ایده جدید»: نامک‌ها و کدهای جدید با هشدار
+        $token = $this->token($this->upload($sample));
+        $this->actingAs($this->manager)->get(route('admin.imports.preview', [$token, 'decision' => [0 => 'new']]))
+            ->assertSee('1 جدید')
             ->assertSee('نامک ایده «clubyar» تکراری بود')
             ->assertSee('کد کمپین 1 «clubyar-divar» تکراری بود');
+        $this->actingAs($this->manager)->post(route('admin.imports.confirm', $token), ['decision' => [0 => 'new']])->assertSessionHasNoErrors();
+
+        $this->assertSame(2, Idea::count());
+        $this->assertSame(10, Campaign::count());
+        $this->assertSame(10, Campaign::distinct()->count('slug'));
+    }
+
+    /**
+     * حالت مالک: ایده‌ها فقط با نام و توضیح دستی ساخته شده‌اند؛ فایل همان ایده‌ها
+     * را با صفحه و کمپین کامل می‌کند و تکراری نمی‌سازد.
+     */
+    public function test_manually_created_ideas_are_completed_not_duplicated(): void
+    {
+        $existing = Idea::create(['name' => 'باشگاه يار', 'slug' => 'my-own-slug', 'description' => 'توضیح دستی', 'status' => 'testing']);
+        $sample = str_replace('"slug": "clubyar",' . "\n  \"description\"", '"description"', file_get_contents(resource_path('import/sample.md')));
+        $sample = preg_replace('/"name": "باشگاه‌یار",\n  "slug": "clubyar",/u', '"name": "باشگاه‌یار",', $sample);
+
+        $token = $this->token($this->upload($sample));
+        $this->actingAs($this->manager)->get(route('admin.imports.preview', $token))
+            ->assertSee('به‌روزرسانی «باشگاه يار»')
+            ->assertSee('هم‌نام')
+            ->assertSee('نام، توضیح، بودجه، مبلغ پیش‌پرداخت');
 
         $this->actingAs($this->manager)->post(route('admin.imports.confirm', $token))->assertSessionHasNoErrors();
 
-        $this->assertSame(2, Idea::count());
-        $this->assertSame(2, LandingPage::count());
-        $this->assertSame(10, Campaign::count());
-        $this->assertSame(10, Campaign::distinct()->count('slug'));
+        $idea = Idea::sole();
+        $this->assertSame($existing->id, $idea->id);
+        $this->assertSame('my-own-slug', $idea->slug, 'نامک ایده موجود تغییر نمی‌کند');
+        $this->assertSame('testing', $idea->status, 'وضعیت ایده موجود تغییر نمی‌کند');
+        $this->assertSame('باشگاه‌یار', $idea->name);
+        $this->assertStringStartsWith('نرم‌افزار ابری', $idea->description);
+        $this->assertSame(4_900_000, $idea->preorder_amount_rial);
+        $this->assertSame(1, $idea->refundPolicies()->count());
+        $this->assertSame(1, $idea->landingPages()->count());
+        $this->assertFalse($idea->landingPages()->first()->is_active);
+        $this->assertSame(5, Campaign::count());
+    }
+
+    public function test_update_keeps_media_publish_state_and_address(): void
+    {
+        $this->actingAs($this->manager)->post(route('admin.imports.confirm', $this->token($this->upload(file_get_contents(resource_path('import/sample.md'))))));
+
+        $page = LandingPage::sole();
+        $content = $page->content;
+        $content['hero_image'] = 'landing-pages/hero.jpg';
+        $content['video_aparat'] = 'Abc123';
+        $page->update(['is_active' => true, 'content' => $content]);
+        Campaign::where('slug', 'clubyar-divar')->update(['status' => 'running']);
+
+        // فایل جدید: تیتر، متن معرفی، شرایط بازپرداخت و یک کمپین تغییر کرده، یک کمپین تازه
+        $file = $this->idea([
+            'name' => 'باشگاه‌یار', 'slug' => 'clubyar',
+            'refund_policy' => ['is_refundable' => true, 'refund_window_days' => 14, 'terms' => 'تا ۱۴ روز'],
+            'landing_page' => ['title' => 'تیتر تازه', 'body' => '<h2>متن تازه</h2>'],
+            'campaigns' => [
+                ['name' => 'دیوار با بودجه بیشتر', 'code' => 'clubyar-divar', 'budget_toman' => 9000000],
+                ['name' => 'ایتا', 'code' => 'clubyar-eitaa', 'source' => 'eitaa'],
+            ],
+        ]);
+        $token = $this->token($this->upload($file));
+        $this->actingAs($this->manager)->post(route('admin.imports.confirm', $token))->assertSessionHasNoErrors();
+
+        $page->refresh();
+        $content = $page->contentData();
+        $this->assertTrue($page->is_active);
+        $this->assertSame('clubyar', $page->slug);
+        $this->assertSame('تیتر تازه', $page->title);
+        $this->assertSame('<h2>متن تازه</h2>', $content['body_text']);
+        $this->assertSame('landing-pages/hero.jpg', $content['hero_image']);
+        $this->assertSame('Abc123', $content['video_aparat']);
+        // کلیدهایی که در فایل نبودند حفظ می‌شوند
+        $this->assertCount(4, $content['features']);
+        $this->assertSame('۵۰٪ تخفیف پیش‌خرید', $content['preorder_badge']);
+
+        $divar = Campaign::where('slug', 'clubyar-divar')->sole();
+        $this->assertSame('دیوار با بودجه بیشتر', $divar->name);
+        $this->assertSame(90_000_000, $divar->budget_rial);
+        $this->assertSame('running', $divar->status, 'وضعیت کمپین بدون کلید status تغییر نمی‌کند');
+        $this->assertSame('divar', $divar->source);
+        $this->assertSame(6, Campaign::count());
+
+        // شرایط متفاوت ← نسخه ۲
+        $this->assertSame([2, 1], Idea::sole()->refundPolicies()->pluck('version')->all());
     }
 
     public function test_invalid_ideas_block_import_unless_skipped(): void
@@ -143,7 +239,7 @@ class IdeaImportTest extends TestCase
         $token = $this->token($this->upload($file));
 
         $this->actingAs($this->manager)->get(route('admin.imports.preview', $token))
-            ->assertSee('1 آماده')
+            ->assertSee('1 جدید')
             ->assertSee('1 دارای خطا')
             ->assertSee('مبلغ پیش‌پرداخت حداقل ۱٬۰۰۰ تومان است.')
             ->assertSee('کمپین 1 ← کد')
@@ -201,5 +297,10 @@ class IdeaImportTest extends TestCase
         $guide->assertOk()->assertDownload('idealab-ai-prompt.md');
         $this->assertStringContainsString('شروع پرامپت', file_get_contents($guide->baseResponse->getFile()->getPathname()));
         $this->actingAs($this->manager)->get(route('admin.imports.sample'))->assertOk()->assertDownload('idealab-import-sample.md');
+
+        Idea::create(['name' => 'ایده دستی', 'slug' => 'manual-idea', 'status' => 'draft']);
+        $existing = $this->actingAs($this->manager)->get(route('admin.imports.existing'));
+        $existing->assertOk()->assertDownload('idealab-existing-ideas.md');
+        $this->assertStringContainsString('name: "ایده دستی" — slug: "manual-idea" — (بدون صفحه فرود)', $existing->getContent());
     }
 }

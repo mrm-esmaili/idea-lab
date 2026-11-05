@@ -177,6 +177,7 @@ Route::middleware(['auth:web', 'admin'])->group(function () {
         Route::get('/admin/imports/done', [IdeaImportController::class, 'done'])->name('admin.imports.done');
         Route::get('/admin/imports/guide', [IdeaImportController::class, 'guide'])->name('admin.imports.guide');
         Route::get('/admin/imports/sample', [IdeaImportController::class, 'sample'])->name('admin.imports.sample');
+        Route::get('/admin/imports/existing', [IdeaImportController::class, 'existing'])->name('admin.imports.existing');
         Route::get('/admin/imports/{token}', [IdeaImportController::class, 'preview'])->name('admin.imports.preview');
         Route::post('/admin/imports/{token}', [IdeaImportController::class, 'confirm'])->middleware('throttle:10,10,admin.imports.confirm')->name('admin.imports.confirm');
 

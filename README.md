@@ -15,6 +15,7 @@
 | [`ADMIN_GUIDE.md`](ADMIN_GUIDE.md) | راهنمای مدیر: نقش‌ها و کار روزمره با هر بخش پنل |
 | [`DEPLOYMENT.md`](DEPLOYMENT.md) | استقرار روی cPanel بدون SSH، متغیرهای محیط، به‌روزرسانی و بازیابی |
 | [`OPERATIONS_CHECKLIST.md`](OPERATIONS_CHECKLIST.md) | چک‌لیست پیش از راه‌اندازی، روزانه، هفتگی و ماهانه |
+| [`RELEASE_NOTES_1.5.6.md`](RELEASE_NOTES_1.5.6.md) | ورود از فایل: به‌روزرسانی ایده‌های تکراری با انتخاب برای هر ایده |
 | [`RELEASE_NOTES_1.1.4.md`](RELEASE_NOTES_1.1.4.md) | ورود گروهی ایده، صفحه فرود و کمپین از فایل هوش مصنوعی |
 | [`resources/import/ai-prompt.md`](resources/import/ai-prompt.md) | راهنمای پرامپت هوش مصنوعی برای ساخت فایل ورود (و [`sample.md`](resources/import/sample.md)) |
 | [`RELEASE_NOTES_1.1.3.md`](RELEASE_NOTES_1.1.3.md) | رفع خطای طول پارامتر SMS.ir و شمارش نویسه در قالب‌ها |

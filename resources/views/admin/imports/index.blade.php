@@ -40,13 +40,15 @@
                         <li><strong>راهنمای پرامپت</strong> را دریافت کنید و همراه فایل اطلاعات خود (PDF، Word یا متن) به هوش مصنوعی بدهید.</li>
                         <li>پرامپت داخل راهنما را بفرستید. اگر لازم است تعداد ایده‌ها و کمپین‌ها را در آن تغییر دهید.</li>
                         <li>خروجی را با پسوند <span class="ltr">.md</span> ذخیره و اینجا بارگذاری کنید، یا متن را بچسبانید.</li>
-                        <li>در پیش‌نمایش خطاها را ببینید و تأیید کنید.</li>
+                        <li>در پیش‌نمایش خطاها را ببینید. اگر ایده‌ای از قبل در سیستم باشد (هم‌نام یا هم‌نامک)، انتخاب کنید <strong>به‌روزرسانی</strong> شود یا ایده <strong>جدید</strong> ساخته شود. سپس تأیید کنید.</li>
                         <li>ایده‌ها «پیش‌نویس» و صفحه‌ها <strong>منتشرنشده</strong> ساخته می‌شوند. بازبینی کنید، تصویر و ویدیو بگذارید و منتشر کنید.</li>
                     </ol>
                     <div class="d-flex flex-wrap gap-2">
                         <a href="{{ route('admin.imports.guide') }}" class="btn btn-outline-primary btn-sm"><i class="bi bi-robot"></i> دریافت راهنمای پرامپت</a>
                         <a href="{{ route('admin.imports.sample') }}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-file-earmark-text"></i> دریافت فایل نمونه</a>
+                        <a href="{{ route('admin.imports.existing') }}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-list-check"></i> فهرست ایده‌های فعلی</a>
                     </div>
+                    <div class="form-text mt-2">اگر ایده‌ها را قبلاً ثبت کرده‌اید (مثلاً فقط نام و توضیح)، «فهرست ایده‌های فعلی» را هم به هوش مصنوعی بدهید تا همان نام‌ها را بنویسد و ایده‌ها تکمیل شوند، نه تکراری.</div>
                 </div>
             </div>
         </div>
