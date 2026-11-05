@@ -21,4 +21,28 @@ class SmsText
 
         return $length <= $single ? 1 : (int) ceil($length / $multi);
     }
+
+    /**
+     * مقدار پارامتر قالب در حد مجاز SMS.ir (۲۵ نویسه)؛ مقدار بلندتر با «…»
+     * کوتاه می‌شود تا کل پیامک رد نشود. ۰ یعنی بدون محدودیت.
+     */
+    public static function fit(string $value, ?int $max = null): string
+    {
+        $max ??= (int) config('sms.template_param_max', 25);
+        $value = trim(preg_replace('/\s+/u', ' ', $value));
+
+        if ($max <= 0 || mb_strlen($value) <= $max) {
+            return $value;
+        }
+
+        return rtrim(mb_substr($value, 0, $max - 1)) . '…';
+    }
+
+    /**
+     * نشانی کوتاه برای پیامک: بدون https:// (گوشی‌ها دامنه را خودکار لینک می‌کنند).
+     */
+    public static function shortUrl(string $url): string
+    {
+        return preg_replace('#^https?://(www\.)?#i', '', rtrim($url, '/'));
+    }
 }

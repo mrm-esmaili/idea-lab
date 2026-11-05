@@ -63,7 +63,8 @@ class RefundAndFinanceTest extends TestCase
             'status' => 'paid',
             'authority' => 'A1',
             'ref_id' => '555',
-            'verified_at' => now(),
+            // پس از فاصله اجباری ۲۴ ساعته (نسخه ۱.۱.۱)
+            'verified_at' => now()->subHours(25),
         ]);
     }
 
@@ -81,7 +82,7 @@ class RefundAndFinanceTest extends TestCase
     private function customerRequest(): RefundRequest
     {
         $this->asContact()
-            ->post(route('account.refund', $this->preorder->id), ['reason' => 'محصول را لازم ندارم'])
+            ->post(route('account.refund', $this->preorder->id), ['reason' => 'محصول را لازم ندارم', 'confirm' => '1'])
             ->assertRedirect(route('account.dashboard'));
 
         return RefundRequest::sole();
@@ -103,7 +104,7 @@ class RefundAndFinanceTest extends TestCase
         $this->assertSame($this->contact->id, $log->contact_id);
 
         // درخواست دوم تا بسته‌شدن درخواست اول ممکن نیست
-        $this->asContact()->post(route('account.refund', $this->preorder->id), ['reason' => 'دوباره درخواست'])
+        $this->asContact()->post(route('account.refund', $this->preorder->id), ['reason' => 'دوباره درخواست', 'confirm' => '1'])
             ->assertSessionHasErrors('refund_' . $this->preorder->id);
         $this->assertSame(1, RefundRequest::count());
     }
@@ -113,7 +114,7 @@ class RefundAndFinanceTest extends TestCase
         $this->travel(15)->days();
 
         $this->asContact()->get(route('account.dashboard'))->assertSee('مهلت درخواست بازپرداخت');
-        $this->asContact()->post(route('account.refund', $this->preorder->id), ['reason' => 'دیر شده است'])
+        $this->asContact()->post(route('account.refund', $this->preorder->id), ['reason' => 'دیر شده است', 'confirm' => '1'])
             ->assertSessionHasErrors('refund_' . $this->preorder->id);
 
         $this->travelBack();
@@ -121,10 +122,58 @@ class RefundAndFinanceTest extends TestCase
         $nonRefundable = $this->idea->refundPolicies()->create(['version' => 2, 'is_refundable' => false, 'terms' => 'غیرقابل بازپرداخت']);
         $this->preorder->update(['refund_policy_id' => $nonRefundable->id]);
 
-        $this->asContact()->post(route('account.refund', $this->preorder->id), ['reason' => 'لطفاً برگردانید'])
+        $this->asContact()->post(route('account.refund', $this->preorder->id), ['reason' => 'لطفاً برگردانید', 'confirm' => '1'])
             ->assertSessionHasErrors('refund_' . $this->preorder->id);
 
         $this->assertSame(0, RefundRequest::count());
+    }
+
+    /**
+     * نسخه ۱.۱.۱: تا ۲۴ ساعت (قابل تنظیم) پس از پرداخت درخواست آنلاین ممکن
+     * نیست و تأیید صریح هشدار لغو پیش‌خرید لازم است.
+     */
+    public function test_customer_refund_waits_after_payment_and_needs_confirmation(): void
+    {
+        $this->payment->update(['verified_at' => now()->subHours(3)]);
+
+        $this->asContact()->get(route('account.dashboard'))
+            ->assertSee('درخواست بازپرداخت از ۲۴ ساعت پس از پرداخت ممکن است')
+            ->assertDontSee('style="margin-top: 8px" data-refund-confirm', false);
+        $this->asContact()->post(route('account.refund', $this->preorder->id), ['reason' => 'خیلی زود است', 'confirm' => '1'])
+            ->assertSessionHasErrors('refund_' . $this->preorder->id);
+        $this->assertSame(0, RefundRequest::count());
+
+        // پس از ۲۴ ساعت: فرم با هشدار، و بدون تیک تأیید ثبت نمی‌شود
+        $this->travel(22)->hours();
+        $this->asContact()->get(route('account.dashboard'))
+            ->assertSee('style="margin-top: 8px" data-refund-confirm', false)
+            ->assertSee('پیش‌خرید شما و مزایای آن')
+            ->assertSee('name="confirm"', false);
+        $this->asContact()->post(route('account.refund', $this->preorder->id), ['reason' => 'دیگر لازم ندارم'])
+            ->assertSessionHasErrors('confirm');
+        $this->assertSame(0, RefundRequest::count());
+
+        $this->asContact()->post(route('account.refund', $this->preorder->id), ['reason' => 'دیگر لازم ندارم', 'confirm' => '1'])
+            ->assertRedirect(route('account.dashboard'));
+        $this->assertSame(1, RefundRequest::count());
+    }
+
+    public function test_refund_wait_is_configurable_and_never_exceeds_policy_window(): void
+    {
+        $settings = app(\App\Services\SiteSettings::class);
+        $refunds = app(\App\Services\Refunds\RefundService::class);
+        $this->payment->update(['verified_at' => now()->subHours(3)]);
+
+        $settings->save('refunds', ['min_hours_after_payment' => 0], null);
+        $this->assertTrue($refunds->customerEligibility($this->preorder->fresh())['eligible']);
+
+        $settings->save('refunds', ['min_hours_after_payment' => 48], null);
+        $this->assertFalse($refunds->customerEligibility($this->preorder->fresh())['eligible']);
+
+        // مهلت شرایط ۱ روزه کوتاه‌تر از ۴۸ ساعت است: مهلت شرایط مقدم است
+        $short = $this->idea->refundPolicies()->create(['version' => 2, 'is_refundable' => true, 'refund_window_days' => 1, 'terms' => 'یک روز']);
+        $this->preorder->update(['refund_policy_id' => $short->id]);
+        $this->assertTrue($refunds->customerEligibility($this->preorder->fresh())['eligible']);
     }
 
     public function test_customer_cannot_request_refund_for_someone_elses_order(): void
@@ -132,7 +181,7 @@ class RefundAndFinanceTest extends TestCase
         $other = Contact::create(['mobile' => '09129999999']);
 
         $this->asContact($other)
-            ->post(route('account.refund', $this->preorder->id), ['reason' => 'سفارش من نیست'])
+            ->post(route('account.refund', $this->preorder->id), ['reason' => 'سفارش من نیست', 'confirm' => '1'])
             ->assertNotFound();
     }
 

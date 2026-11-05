@@ -130,7 +130,52 @@ class SmsNotificationTest extends TestCase
         app(\App\Services\Notifications\CustomerNotifier::class)->paymentPaid($this->paidPreorder()->payments()->sole());
         $this->dispatch();
 
-        $this->assertSame(route('account.login'), SmsMessage::sole()->parameters['LINK']);
+        // نشانی کوتاه بدون https تا در حد ۲۵ نویسه SMS.ir بماند
+        $link = SmsMessage::sole()->parameters['LINK'];
+        $this->assertSame(\App\Support\SmsText::shortUrl(route('short.account')), $link);
+        $this->assertLessThanOrEqual(25, mb_strlen($link));
+        $this->get(route('short.account'))->assertRedirect(route('account.login'));
+    }
+
+    /**
+     * SMS.ir مقدار پارامتر بیش از ۲۵ نویسه را رد می‌کند («طول رشته مقدار پارامتر
+     * بیش از حد مجاز»)؛ مقدار بلند پیش از ارسال کوتاه می‌شود.
+     */
+    public function test_long_parameter_values_are_shortened_to_smsir_limit(): void
+    {
+        $this->enable('refund_requested', 'refund_rejected');
+        $this->idea->update(['name' => 'مجموعه نرم‌افزاری جامع مدیریت باشگاه‌های ورزشی']);
+        $this->contact->update(['name' => 'محمدرضا عبدالحسین‌زاده خراسانی اصفهانی']);
+
+        $preorder = $this->paidPreorder();
+        app(\App\Services\Notifications\CustomerNotifier::class)->refundRequested(
+            \App\Models\RefundRequest::create([
+                'preorder_id' => $preorder->id, 'payment_id' => $preorder->payments()->sole()->id, 'refund_policy_id' => $preorder->refund_policy_id,
+                'requested_amount_rial' => 1_200_000, 'reason' => 'x', 'status' => 'pending', 'requested_by_type' => 'customer',
+            ])
+        );
+        $this->dispatch();
+
+        $message = SmsMessage::sole();
+        $this->assertSame('sent', $message->status);
+        foreach ($message->parameters as $value) {
+            $this->assertLessThanOrEqual(25, mb_strlen($value));
+        }
+        $this->assertStringEndsWith('…', $message->parameters['IDEA']);
+        $this->assertStringStartsWith('مجموعه نرم‌افزاری', $message->parameters['IDEA']);
+
+        Http::assertSent(fn ($r) => str_ends_with($r->url(), 'send/verify')
+            && collect($r['parameters'])->every(fn ($p) => mb_strlen($p['value']) <= 25));
+
+        // صفحه قالب طول‌ها را نشان می‌دهد و فهرست قالب‌ها هشدار می‌دهد
+        $admin = $this->admin();
+        $template = SmsTemplate::where('key', 'refund_requested')->sole();
+        $this->actingAs($admin, 'web')->get(route('admin.sms.templates.edit', $template))
+            ->assertOk()
+            ->assertSee('طول مقدار پارامترها (حد SMS.ir: 25 نویسه)')
+            ->assertSee('کوتاه می‌شود')
+            ->assertSee('id="body-counter"', false);
+        $this->actingAs($admin, 'web')->get(route('admin.sms.index'))->assertSee('بلندتر از ۲۵ نویسه: نام مخاطب، نام ایده');
     }
 
     public function test_payment_success_notifies_once_after_server_verification(): void

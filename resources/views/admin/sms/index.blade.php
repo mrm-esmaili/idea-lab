@@ -79,7 +79,11 @@
                                         @else
                                             <span class="badge text-bg-secondary">غیرفعال</span>
                                         @endif
-                                    </td>
+                                    
+                                        @if ($overLimit[$template->id] ?? [])
+                                            <div class="small text-danger mt-1"><i class="bi bi-exclamation-triangle"></i> بلندتر از ۲۵ نویسه: {{ collect($overLimit[$template->id])->map(fn ($v) => config("statuses.sms_variable.{$v}", $v))->join('، ') }}</div>
+                                        @endif
+</td>
                                     <td class="small text-body-secondary d-none d-lg-table-cell" style="max-width: 320px">{{ \Illuminate\Support\Str::limit($template->body, 90) }}</td>
                                     <td class="text-end">
                                         <a href="{{ route('admin.sms.templates.edit', $template) }}" class="btn btn-sm btn-outline-secondary text-nowrap">

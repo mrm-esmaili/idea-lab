@@ -136,6 +136,25 @@
             </div>
         </div>
 
+        <div class="card mb-3">
+            <div class="card-header"><h2 class="card-title h6 mb-0">درخواست بازپرداخت مشتری</h2></div>
+            <div class="card-body">
+                <div class="row g-3 align-items-end">
+                    <div class="col-sm-4">
+                        <label for="refund_wait_hours" class="form-label">حداقل فاصله از پرداخت (ساعت)</label>
+                        <input id="refund_wait_hours" name="refund_wait_hours" type="number" min="0" max="720" required
+                            value="{{ old('refund_wait_hours', $refunds['min_hours_after_payment']) }}" @class(['form-control', 'is-invalid' => $errors->has('refund_wait_hours')])>
+                        @error('refund_wait_hours')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                    </div>
+                    <div class="col-sm-8 small text-body-secondary">
+                        مشتری تا این مدت پس از پرداخت نمی‌تواند از حساب کاربری درخواست بازپرداخت بدهد (۰ = بدون محدودیت).
+                        اگر مهلت شرایط بازپرداخت سفارش کوتاه‌تر باشد، مهلت شرایط مقدم است. ثبت درخواست از پنل (پشتیبانی یا مالی) محدودیتی ندارد.
+                        مشتری پیش از ثبت باید هشدار لغو پیش‌خرید را تأیید کند.
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <button type="submit" class="btn btn-primary">ذخیره تنظیمات</button>
     </form>
 @endsection

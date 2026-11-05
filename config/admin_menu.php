@@ -49,6 +49,13 @@ return [
                 'permission' => 'ideas.manage',
                 'active' => ['ideas.create'],
             ],
+            [
+                'label' => 'ورود از فایل',
+                'icon' => 'bi-file-earmark-arrow-up',
+                'route' => 'admin.imports.index',
+                'permission' => 'ideas.manage',
+                'active' => ['admin.imports.*'],
+            ],
         ],
     ],
 

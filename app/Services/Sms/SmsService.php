@@ -4,6 +4,7 @@ namespace App\Services\Sms;
 
 use App\Models\SmsMessage;
 use App\Models\SmsTemplate;
+use App\Support\SmsText;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Facades\Log;
 
@@ -91,7 +92,8 @@ class SmsService
                 continue;
             }
 
-            $value = (string) ($values[$variable] ?? '');
+            // SMS.ir مقدار بلندتر از ۲۵ نویسه را رد می‌کند و کل پیامک ارسال نمی‌شود
+            $value = SmsText::fit((string) ($values[$variable] ?? ''));
             $parameters[$parameterName] = $value;
             $logged[$parameterName] = in_array($variable, $secret, true) ? '***' : $value;
         }

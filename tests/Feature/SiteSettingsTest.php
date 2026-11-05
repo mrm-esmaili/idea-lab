@@ -33,6 +33,7 @@ class SiteSettingsTest extends TestCase
             'enamad_id' => '123456',
             'enamad_code' => 'AbCd1234',
             'support_help_text' => 'سؤال دارید؟ پیام دهید.',
+            'refund_wait_hours' => 24,
             'channels' => [
                 ['type' => 'bale', 'value' => '09121234567', 'label' => ''],
                 ['type' => 'whatsapp', 'value' => '۰۹۱۲۱۲۳۴۵۶۷', 'label' => 'واتساپ فروش'],

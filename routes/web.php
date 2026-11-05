@@ -34,6 +34,7 @@ use App\Http\Controllers\Admin\SmsTemplateController;
 use App\Http\Controllers\Admin\SiteSettingsController;
 use App\Http\Controllers\Admin\SystemStatusController;
 use App\Http\Controllers\Admin\UpdateController;
+use App\Http\Controllers\Admin\IdeaImportController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\ZarinpalPaymentController;
 
@@ -65,6 +66,14 @@ Route::post('/logout', [
 ])->middleware('auth:web')->name('logout');
 
 // صفحات عمومی
+// نشانی‌های کوتاه پیامک (پارامتر SMS.ir حداکثر ۲۵ نویسه است)
+Route::get('/a', fn () => redirect()->route('account.login'))->name('short.account');
+Route::get('/p/{landingPage}', function (\App\Models\LandingPage $landingPage) {
+    abort_unless(\App\Models\LandingPage::whereKey($landingPage->id)->publiclyVisible()->exists(), 404);
+
+    return redirect()->route('landing-pages.show', $landingPage->slug);
+})->whereNumber('landingPage')->name('short.page');
+
 Route::get('/l/{slug}', [
     PublicLandingPageController::class,
     'show',
@@ -162,6 +171,16 @@ Route::middleware(['auth:web', 'admin'])->group(function () {
         ->name('admin.search');
 
     Route::middleware('can:ideas.manage')->group(function () {
+        // ورود ایده، صفحه فرود و کمپین از فایل هوش مصنوعی (نسخه ۱.۲)
+        Route::get('/admin/imports', [IdeaImportController::class, 'index'])->name('admin.imports.index');
+        Route::post('/admin/imports', [IdeaImportController::class, 'upload'])->middleware('throttle:20,10,admin.imports.upload')->name('admin.imports.upload');
+        Route::get('/admin/imports/done', [IdeaImportController::class, 'done'])->name('admin.imports.done');
+        Route::get('/admin/imports/guide', [IdeaImportController::class, 'guide'])->name('admin.imports.guide');
+        Route::get('/admin/imports/sample', [IdeaImportController::class, 'sample'])->name('admin.imports.sample');
+        Route::get('/admin/imports/existing', [IdeaImportController::class, 'existing'])->name('admin.imports.existing');
+        Route::get('/admin/imports/{token}', [IdeaImportController::class, 'preview'])->name('admin.imports.preview');
+        Route::post('/admin/imports/{token}', [IdeaImportController::class, 'confirm'])->middleware('throttle:10,10,admin.imports.confirm')->name('admin.imports.confirm');
+
         Route::resource('ideas', IdeaController::class);
 
         Route::get('/ideas/{idea}/settings', [

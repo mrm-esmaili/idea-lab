@@ -63,9 +63,9 @@
                         @enderror
 
                         @if ($eligibility['eligible'])
-                            <details style="margin-top: 8px">
+                            <details style="margin-top: 8px" @if ($errors->has('reason') || $errors->has('confirm')) open @endif>
                                 <summary class="button button-secondary small" style="display: inline-block; padding: 6px 16px">درخواست بازپرداخت</summary>
-                                <form method="POST" action="{{ route('account.refund', $preorder->id) }}" style="margin-top: 8px">
+                                <form method="POST" action="{{ route('account.refund', $preorder->id) }}" style="margin-top: 8px" data-refund-confirm>
                                     @csrf
                                     <p class="small muted">
                                         مبلغ قابل بازپرداخت: {{ \App\Support\Format::faDigits(\App\Support\Money::formatRialAsToman($eligibility['max_rial'])) }}
@@ -78,6 +78,18 @@
                                         <textarea id="reason-{{ $preorder->id }}" name="reason" rows="3" maxlength="2000" required
                                             style="width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 10px; font: inherit">{{ old('reason') }}</textarea>
                                         @error('reason')<div class="field-error">{{ $message }}</div>@enderror
+                                    </div>
+                                    <div class="alert alert-warning small" role="note">
+                                        <strong>پیش از ثبت توجه کنید:</strong>
+                                        با بازپرداخت، پیش‌خرید شما و مزایای آن (مثل تخفیف پیش‌خرید و اولویت دریافت) لغو می‌شود
+                                        و پس از ثبت، درخواست قابل پس‌گرفتن نیست. اگر سؤال یا مشکلی دارید، پیش از آن با پشتیبانی در تماس باشید.
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="check">
+                                            <input type="checkbox" name="confirm" value="1" required>
+                                            <span>مطمئنم و می‌خواهم پیش‌خریدم لغو و مبلغ بازپرداخت شود.</span>
+                                        </label>
+                                        @error('confirm')<div class="field-error">{{ $message }}</div>@enderror
                                     </div>
                                     <button type="submit" class="button-secondary">ثبت درخواست بازپرداخت</button>
                                 </form>
@@ -164,3 +176,16 @@
         </form>
     </section>
 @endsection
+
+@push('scripts')
+    <script>
+        // تأیید دوم پیش از ارسال؛ تیک «مطمئنم» در سرور هم اجباری است
+        document.querySelectorAll('form[data-refund-confirm]').forEach(function (form) {
+            form.addEventListener('submit', function (event) {
+                if (!window.confirm('آیا مطمئن هستید؟ با بازپرداخت، پیش‌خرید و مزایای آن لغو می‌شود و درخواست قابل پس‌گرفتن نیست.')) {
+                    event.preventDefault();
+                }
+            });
+        });
+    </script>
+@endpush

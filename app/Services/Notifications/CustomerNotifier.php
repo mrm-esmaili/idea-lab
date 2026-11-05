@@ -12,6 +12,7 @@ use App\Models\RefundRequest;
 use App\Services\Sms\SmsService;
 use App\Support\Money;
 use App\Support\PhoneNumber;
+use App\Support\SmsText;
 
 /**
  * پیامک‌های تراکنشی به مشتری (مراحل ۵۹ تا ۶۱).
@@ -41,7 +42,8 @@ class CustomerNotifier
         $this->toCustomer($preorder, 'payment_paid', "payment.paid:{$payment->id}", [
             'amount' => $this->toman($payment->amount_rial),
             'ref_id' => (string) $payment->ref_id,
-            'link' => route('account.login'),
+            // نشانی کوتاه (مثلاً il.itmb.ir/a)؛ پارامتر SMS.ir حداکثر ۲۵ نویسه است
+            'link' => SmsText::shortUrl(route('short.account')),
         ]);
     }
 
@@ -124,7 +126,7 @@ class CustomerNotifier
             $message = $this->sms->queueTemplate('idea_launched_notify', $mobile, [
                 'name' => $lead->contact?->name ?: $lead->name,
                 'idea' => $idea->name,
-                'link' => $lead->landingPage ? route('landing-pages.show', $lead->landingPage->slug) : '',
+                'link' => $lead->landingPage ? SmsText::shortUrl(route('short.page', $lead->landingPage->id)) : '',
             ], "idea.launch_notify:{$idea->id}:{$mobile}", ['contact_id' => $lead->contact_id]);
 
             $queued += $message ? 1 : 0;

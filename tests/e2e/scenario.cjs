@@ -175,9 +175,18 @@ const openPages = [];
     await submit(customer, 'form[action$="/account/verify"] button[type=submit]');
     check(customer.url().endsWith('/account'), 'ورود مشتری با کد یک‌بارمصرف');
 
+    // تا ۲۴ ساعت پس از پرداخت درخواست آنلاین ممکن نیست (نسخه ۱.۱.۱)
+    check((await customer.content()).includes('ساعت پس از پرداخت ممکن است'), 'بازپرداخت در ۲۴ ساعت اول پس از پرداخت بسته است');
+    db(`UPDATE payments SET verified_at = verified_at - INTERVAL 25 HOUR WHERE preorder_id = (SELECT id FROM preorders WHERE phone = '${MOBILE}')`);
+    await customer.reload();
+
     await customer.click('details summary:has-text("درخواست بازپرداخت")');
     await customer.fill('textarea[name=reason]', 'زمان راه‌اندازی برای ما مناسب نیست.');
+    await customer.check('form[action*="/refund"] input[name=confirm]');
+    let refundDialog = '';
+    customer.once('dialog', (dialog) => { refundDialog = dialog.message(); dialog.accept(); });
     await submit(customer, 'form[action*="/refund"] button[type=submit]');
+    check(refundDialog.includes('مطمئن'), 'هشدار تأیید پیش از ثبت بازپرداخت');
     const requestId = db('SELECT id FROM refund_requests ORDER BY id DESC LIMIT 1');
     check(db(`SELECT status FROM refund_requests WHERE id = ${requestId}`) === 'pending', 'ثبت درخواست بازپرداخت توسط مشتری');
     await shot(customer, '03-account-refund');
